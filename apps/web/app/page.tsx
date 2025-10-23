@@ -22,6 +22,7 @@ export default function Home() {
   return (
     <div className={styles.page}>
       <main className={styles.main}>
+        <span>hey</span>
         <ThemeImage
           className={styles.logo}
           srcLight="turborepo-dark.svg"
