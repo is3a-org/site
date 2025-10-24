@@ -4,10 +4,15 @@
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev",
-    "format": "prettier --write .",
     "types:check": "turbo run types:check",
-    "lint": "oxlint",
-    "test": "turbo run test"
+    "test": "turbo run test",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "format:changed": "prettier -u --write $(git ls-files --others --exclude-standard && git diff --name-only --diff-filter=d HEAD | sort -u | xargs)",
+    "lint": "oxlint .",
+    "lint:fix": "oxlint --fix .",
+    "clean": "find . -type d \\( -name dist -o -name node_modules -o -name .turbo -o -name .next -o -name .output -o -name .nuxt -o -name .react-router -o -name .open-next -o -name .source -o -name .svelte-kit \\) -prune -exec rm -rf {} + -o -name tsconfig.tsbuildinfo -o -name coverage.json -exec rm -f {} +",
+    "clean:install": "pnpm run clean && pnpm install"
   },
   "devDependencies": {
     "lefthook": "^2.0.0",

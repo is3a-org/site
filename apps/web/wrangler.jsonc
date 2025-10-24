@@ -17,6 +17,14 @@
       "invocation_logs": true,
     },
   },
+  "d1_databases": [
+    {
+      "binding": "IS3A_D1",
+      "database_name": "is3a-d1",
+      "database_id": "eea0212a-4be6-41ce-ba3a-1704771b974a",
+      "migrations_dir": "app/db/is3a-d1/migrations",
+    },
+  ],
   /**
    * Smart Placement
    * Docs: https://developers.cloudflare.com/workers/configuration/smart-placement/#smart-placement

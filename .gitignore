@@ -44,8 +44,8 @@ yarn-error.log*
 *.tsbuildinfo
 
 # React Router
-/.react-router/
-/build/
+.react-router/
+build/
 
 # Cloudflare
 .mf
@@ -56,3 +56,4 @@ worker-configuration.d.ts
 
 !.dev.vars.example
 !.env.example
+
