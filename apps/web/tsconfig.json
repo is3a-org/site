@@ -6,6 +6,12 @@
     },
     {
       "path": "./tsconfig.cloudflare.json"
+    },
+    {
+      "path": "../../packages/stripe"
+    },
+    {
+      "path": "../../packages/simple-auth-fragment"
     }
   ],
   "compilerOptions": {
