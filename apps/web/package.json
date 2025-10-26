@@ -14,6 +14,7 @@
     "db:is3a-d1:migrate:prod": "wrangler d1 migrations apply --remote IS3A_D1"
   },
   "dependencies": {
+    "@radix-ui/react-label": "^2.1.7",
     "@radix-ui/react-slot": "^1.2.3",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",

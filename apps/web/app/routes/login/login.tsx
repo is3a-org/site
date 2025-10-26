@@ -1,4 +1,8 @@
 import type { Route } from "./+types/login";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 export function meta(_: Route.MetaArgs) {
   return [
@@ -10,53 +14,42 @@ export function meta(_: Route.MetaArgs) {
 export default function Login() {
   return (
     <div className="flex min-h-screen w-full items-center justify-center bg-gray-50 px-4 py-12">
-      <div className="w-full max-w-md">
-        <div className="rounded-lg bg-white p-8 shadow-lg">
-          <h1 className="mb-8 text-center text-3xl font-bold text-gray-900">Member Login</h1>
-
+      <Card className="w-full max-w-md">
+        <CardHeader className="text-center">
+          <CardTitle className="text-3xl">Member Login</CardTitle>
+          <CardDescription>Enter your credentials to access your account</CardDescription>
+        </CardHeader>
+        <CardContent>
           <form className="space-y-6">
-            <div>
-              <label htmlFor="email" className="mb-2 block text-sm font-medium text-gray-700">
-                Email Address
-              </label>
-              <input
-                type="email"
-                id="email"
-                name="email"
-                required
-                className="w-full rounded-md border border-gray-300 px-4 py-2 focus:border-transparent focus:ring-2 focus:ring-red-600"
-              />
+            <div className="space-y-2">
+              <Label htmlFor="email">Email Address</Label>
+              <Input type="email" id="email" name="email" placeholder="you@example.com" required />
             </div>
 
-            <div>
-              <label htmlFor="password" className="mb-2 block text-sm font-medium text-gray-700">
-                Password
-              </label>
-              <input
+            <div className="space-y-2">
+              <Label htmlFor="password">Password</Label>
+              <Input
                 type="password"
                 id="password"
                 name="password"
+                placeholder="••••••••"
                 required
-                className="w-full rounded-md border border-gray-300 px-4 py-2 focus:border-transparent focus:ring-2 focus:ring-red-600"
               />
             </div>
 
-            <button
-              type="submit"
-              className="w-full rounded-md bg-red-600 px-6 py-3 font-semibold text-white transition-colors hover:bg-red-700"
-            >
+            <Button type="submit" className="w-full">
               Sign In
-            </button>
+            </Button>
           </form>
 
-          <p className="mt-6 text-center text-sm text-gray-600">
+          <p className="text-muted-foreground mt-6 text-center text-sm">
             Not a member yet?{" "}
-            <a href="/join" className="font-semibold text-red-600 hover:text-red-700">
+            <a href="/join" className="text-primary font-semibold hover:underline">
               Join IS3A
             </a>
           </p>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
