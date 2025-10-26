@@ -56,3 +56,38 @@ jobs:
 
       - name: Run tests
         run: pnpm turbo run test
+
+  deploy:
+    # Only run on pushes to main, not on PRs
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    # Wait for all CI jobs to pass before deploying
+    needs: [lint, build, test]
+    runs-on: ubuntu-latest
+    env:
+      TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+      TURBO_TEAM: ${{ vars.TURBO_TEAM }}
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build project
+        run: pnpm turbo run build
+
+      - name: Run database migrations
+        working-directory: apps/web
+        env:
+          PG_DATABASE_URL: ${{ secrets.PG_DATABASE_URL }}
+        run: pnpm exec drizzle-kit migrate --config postgres.drizzle.config.ts
+
+      - name: Deploy Worker
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: apps/web
+          packageManager: pnpm
