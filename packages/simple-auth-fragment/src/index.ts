@@ -156,7 +156,9 @@ const authRoutesFactory = defineRoutes<AuthConfig, AuthDeps, AuthServices>().cre
           const user = await services.createUser(email, password);
 
           // Create session
+          console.log("creating session for user", user.id);
           const session = await services.createSession(user.id);
+          console.log("session created", session);
 
           return json({
             sessionId: session.id,
@@ -273,7 +275,7 @@ const authFragmentDefinition = defineFragmentWithDatabase<AuthConfig>("simple-au
           passwordHash,
         });
         return {
-          id: id.toJSON(),
+          id: id.valueOf(),
           email,
         };
       },
@@ -293,17 +295,22 @@ const authFragmentDefinition = defineFragmentWithDatabase<AuthConfig>("simple-au
         });
 
         return {
-          id: id.toJSON(),
+          id: id.valueOf(),
           userId,
           expiresAt,
         };
       },
       validateSession: async (sessionId: string) => {
-        const sessions = await orm.find("session", (b) =>
-          b.whereIndex("primary", (eb) => eb("id", "=", sessionId)),
+        const session = await orm.findFirst("session", (b) =>
+          b
+            .whereIndex("primary", (eb) => eb("id", "=", sessionId))
+            .join((j) => j.sessionOwner((b) => b.select(["id", "email"]))),
         );
 
-        const session = sessions[0];
+        console.log({
+          session,
+        });
+
         if (!session) {
           return null;
         }
@@ -314,13 +321,7 @@ const authFragmentDefinition = defineFragmentWithDatabase<AuthConfig>("simple-au
           return null;
         }
 
-        // Get user
-        const users = await orm.find("user", (b) =>
-          b.whereIndex("primary", (eb) => eb("id", "=", session.userId)),
-        );
-
-        const user = users[0];
-        if (!user) {
+        if (!session.sessionOwner) {
           return null;
         }
 
@@ -328,8 +329,8 @@ const authFragmentDefinition = defineFragmentWithDatabase<AuthConfig>("simple-au
           id: session.id.toJSON(),
           userId: session.userId,
           user: {
-            id: user.id.toJSON(),
-            email: user.email,
+            id: session.sessionOwner.id.valueOf(),
+            email: session.sessionOwner.email,
           },
         };
       },
