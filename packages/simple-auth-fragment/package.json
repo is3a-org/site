@@ -65,7 +65,8 @@
   "scripts": {
     "types:check": "tsc --noEmit",
     "build": "tsdown",
-    "build:watch": "tsdown --watch"
+    "build:watch": "tsdown --watch",
+    "test": "vitest"
   },
   "type": "module",
   "private": true,
@@ -75,10 +76,14 @@
     "zod": "^4.0.5"
   },
   "devDependencies": {
+    "@electric-sql/pglite": "^0.3.11",
     "@fragno-dev/cli": "^0.1.3",
     "@fragno-dev/unplugin-fragno": "^0.0.2",
     "@types/node": "^22",
-    "tsdown": "^0.11.9"
+    "kysely": "^0.28.8",
+    "kysely-pglite": "^0.6.1",
+    "tsdown": "^0.11.9",
+    "vitest": "^4.0.3"
   },
   "peerDependencies": {
     "react": ">=18.0.0",
