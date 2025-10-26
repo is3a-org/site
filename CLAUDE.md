@@ -25,9 +25,6 @@ site/
 │       └── package.json
 │
 ├── packages/
-│   ├── ui/                     # React component library
-│   │   ├── src/                # Reusable UI components (Button, Card, Code)
-│   │   └── package.json
 │   │
 │   └── typescript-config/      # Shared TypeScript configurations
 │       ├── base.json           # Base TS config (ES2022, strict mode)
