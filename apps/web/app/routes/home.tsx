@@ -37,7 +37,7 @@ export default function Home() {
       {/* IS3A in a nutshell */}
       <section className="px-4 py-16">
         <div className="mx-auto max-w-4xl text-center">
-          <h2 className="mb-6 text-3xl font-bold text-red-600">IS3A in a nutshell</h2>
+          <h2 className="mb-6 text-3xl font-bold text-red-800">IS3A in a nutshell</h2>
           <p className="text-lg leading-relaxed text-gray-700">
             The Information Sciences Association for Amsterdam Alumni (IS3A) is a new association
             for graduates of computer science, information science, and artificial intelligence
@@ -52,7 +52,7 @@ export default function Home() {
       {/* Who is IS3A for? */}
       <section className="bg-gray-50 px-4 py-16">
         <div className="mx-auto max-w-4xl text-center">
-          <h2 className="mb-6 text-3xl font-bold text-red-600">Who is IS3A for?</h2>
+          <h2 className="mb-6 text-3xl font-bold text-red-800">Who is IS3A for?</h2>
           <p className="text-lg leading-relaxed text-gray-700">
             Bachelor and Master graduates of any information science study from either UvA or VU.
             Please note that if you are still studying, this association might not be for you. Our
@@ -95,13 +95,13 @@ export default function Home() {
       {/* CTA Section */}
       <section className="bg-gray-50 px-4 py-16">
         <div className="mx-auto max-w-4xl text-center">
-          <h2 className="mb-6 text-3xl font-bold text-red-600">Become a member!</h2>
+          <h2 className="mb-6 text-3xl font-bold text-red-800">Become a member!</h2>
           <p className="mb-8 text-lg leading-relaxed text-gray-700">
             Reap the benefits! Become a member now and get notified of all future activities.
           </p>
           <Link
             to="/join"
-            className="inline-block rounded-md bg-red-600 px-8 py-3 text-lg font-semibold text-white transition-colors hover:bg-red-700"
+            className="inline-block rounded-md bg-red-800 px-8 py-3 text-lg font-semibold text-white transition-colors hover:bg-red-700"
           >
             Become a member!
           </Link>

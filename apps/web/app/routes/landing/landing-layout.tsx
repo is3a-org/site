@@ -9,18 +9,18 @@ export default function LandingLayout() {
           <div className="flex h-16 items-center justify-between">
             {/* Logo */}
             <Link to="/" className="flex items-center space-x-2">
-              <span className="text-2xl font-bold text-red-600">IS3A</span>
+              <img src="/is3a.png" alt="IS3A Logo" className="h-8" />
             </Link>
 
             {/* Navigation Links */}
             <div className="hidden items-center space-x-8 md:flex">
-              <Link to="/" className="text-gray-700 transition-colors hover:text-red-600">
+              <Link to="/" className="text-gray-700 transition-colors hover:text-red-800">
                 Home
               </Link>
-              <Link to="/join" className="text-gray-700 transition-colors hover:text-red-600">
+              <Link to="/join" className="text-gray-700 transition-colors hover:text-red-800">
                 Join
               </Link>
-              <Link to="/team" className="text-gray-700 transition-colors hover:text-red-600">
+              <Link to="/team" className="text-gray-700 transition-colors hover:text-red-800">
                 Team
               </Link>
             </div>
@@ -54,7 +54,7 @@ export default function LandingLayout() {
                 href="https://instagram.com/is3a.nl"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="transition-colors hover:text-red-600"
+                className="transition-colors hover:text-red-800"
               >
                 🖼️ Instagram
               </a>
@@ -63,14 +63,14 @@ export default function LandingLayout() {
                 href="https://www.linkedin.com/company/is3a/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="transition-colors hover:text-red-600"
+                className="transition-colors hover:text-red-800"
               >
                 🧑‍💼 LinkedIn
               </a>
             </div>
             <div className="flex items-center space-x-2 text-sm text-gray-600">
               <span>E:</span>
-              <a href="mailto:contact@is3a.nl" className="transition-colors hover:text-red-600">
+              <a href="mailto:contact@is3a.nl" className="transition-colors hover:text-red-800">
                 contact@is3a.nl
               </a>
               <span>|</span>
@@ -80,7 +80,7 @@ export default function LandingLayout() {
                 href="https://calendar.google.com/calendar/ical/c_ehjqad1bljvvebaed6gv2tb8vo%40group.calendar.google.com/public/basic.ics"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="transition-colors hover:text-red-600"
+                className="transition-colors hover:text-red-800"
               >
                 Events iCal
               </a>

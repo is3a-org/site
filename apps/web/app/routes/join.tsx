@@ -15,7 +15,7 @@ export default function Join() {
   return (
     <div className="w-full">
       {/* Hero Section */}
-      <section className="bg-gradient-to-r from-red-600 to-red-700 px-4 py-20 text-white">
+      <section className="bg-gradient-to-r from-red-800 to-red-700 px-4 py-20 text-white">
         <div className="mx-auto max-w-4xl text-center">
           <h1 className="mb-4 text-5xl font-bold">Join IS3A</h1>
           <p className="text-xl">
@@ -163,7 +163,7 @@ export default function Join() {
               <div className="pt-4">
                 <button
                   type="submit"
-                  className="w-full rounded-md bg-red-600 px-6 py-3 text-lg font-semibold text-white transition-colors hover:bg-red-700"
+                  className="w-full rounded-md bg-red-800 px-6 py-3 text-lg font-semibold text-white transition-colors hover:bg-red-700"
                 >
                   Submit Application
                 </button>
@@ -186,7 +186,7 @@ export default function Join() {
           </p>
           <a
             href="mailto:contact@is3a.nl"
-            className="font-semibold text-red-600 hover:text-red-700"
+            className="font-semibold text-red-800 hover:text-red-700"
           >
             contact@is3a.nl
           </a>

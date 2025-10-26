@@ -16,7 +16,7 @@ export default function LoginError() {
           <div className="mb-6 text-center">
             <div className="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-full bg-red-100">
               <svg
-                className="h-8 w-8 text-red-600"
+                className="h-8 w-8 text-red-800"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -38,7 +38,7 @@ export default function LoginError() {
           <div className="space-y-4">
             <Link
               to="/login"
-              className="block w-full rounded-md bg-red-600 px-6 py-3 text-center font-semibold text-white transition-colors hover:bg-red-700"
+              className="block w-full rounded-md bg-red-800 px-6 py-3 text-center font-semibold text-white transition-colors hover:bg-red-700"
             >
               Try Again
             </Link>
@@ -55,7 +55,7 @@ export default function LoginError() {
             Need help?{" "}
             <a
               href="mailto:contact@is3a.nl"
-              className="font-semibold text-red-600 hover:text-red-700"
+              className="font-semibold text-red-800 hover:text-red-700"
             >
               Contact us
             </a>

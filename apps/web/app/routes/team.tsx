@@ -16,7 +16,7 @@ const teamMembers = [
     role: "President",
     description: "Leading IS3A's vision and strategy",
     initials: "BM",
-    color: "bg-red-600",
+    color: "bg-red-800",
   },
   {
     name: "Board Member",
@@ -59,7 +59,7 @@ export default function Team() {
   return (
     <div className="w-full">
       {/* Hero Section */}
-      <section className="bg-gradient-to-r from-red-600 to-red-700 px-4 py-20 text-white">
+      <section className="bg-gradient-to-r from-red-800 to-red-700 px-4 py-20 text-white">
         <div className="mx-auto max-w-4xl text-center">
           <h1 className="mb-4 text-5xl font-bold">Our Team</h1>
           <p className="text-xl">Meet the dedicated volunteers making IS3A possible</p>
@@ -100,7 +100,7 @@ export default function Team() {
                   {/* Info */}
                   <div className="text-center">
                     <h3 className="mb-1 text-xl font-bold text-gray-900">{member.name}</h3>
-                    <p className="mb-3 font-semibold text-red-600">{member.role}</p>
+                    <p className="mb-3 font-semibold text-red-800">{member.role}</p>
                     <p className="text-sm text-gray-600">{member.description}</p>
                   </div>
                 </div>
@@ -121,7 +121,7 @@ export default function Team() {
           </p>
           <a
             href="mailto:contact@is3a.nl"
-            className="inline-block rounded-md bg-red-600 px-8 py-3 text-lg font-semibold text-white transition-colors hover:bg-red-700"
+            className="inline-block rounded-md bg-red-800 px-8 py-3 text-lg font-semibold text-white transition-colors hover:bg-red-700"
           >
             Get in Touch
           </a>

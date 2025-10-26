@@ -7,6 +7,18 @@
   --font-sans:
     "Inter", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
     "Segoe UI Symbol", "Noto Color Emoji";
+
+  --color-red-50: #fff1ef;
+  --color-red-100: #ffe1dc;
+  --color-red-200: #ffc7bf;
+  --color-red-300: #ffa092;
+  --color-red-400: #ff6b54;
+  --color-red-500: #ff3d1f;
+  --color-red-600: #ff2200;
+  --color-red-700: #db1d00;
+  --color-red-800: #bd1900; /* IS3A Logo Color */
+  --color-red-900: #941b08;
+  --color-red-950: #520b00;
 }
 
 html,
