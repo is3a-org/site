@@ -1,4 +1,5 @@
 {
+  "name": "@is3a/simple-auth-fragment",
   "description": "A Fragno fragment",
   "version": "0.0.1",
   "files": [
@@ -63,27 +64,27 @@
   "types": "./dist/node/index.d.ts",
   "scripts": {
     "types:check": "tsc --noEmit",
-    "build": "tsdown"
+    "build": "tsdown",
+    "build:watch": "tsdown --watch"
   },
   "type": "module",
   "private": true,
   "dependencies": {
     "@fragno-dev/core": "^0.1.2",
-    "zod": "^4.0.5",
-    "@fragno-dev/db": "^0.1.3"
+    "@fragno-dev/db": "^0.1.3",
+    "zod": "^4.0.5"
   },
   "devDependencies": {
     "@fragno-dev/cli": "^0.1.3",
-    "@types/node": "^22",
     "@fragno-dev/unplugin-fragno": "^0.0.2",
+    "@types/node": "^22",
     "tsdown": "^0.11.9"
   },
   "peerDependencies": {
-    "typescript": "^5",
     "react": ">=18.0.0",
-    "svelte": ">=4.0.0",
     "solid-js": ">=1.0.0",
+    "svelte": ">=4.0.0",
+    "typescript": "^5",
     "vue": ">=3.0.0"
-  },
-  "name": "simple-auth-fragment"
+  }
 }

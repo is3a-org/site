@@ -9,133 +9,360 @@ import {
   defineFragmentWithDatabase,
   type FragnoPublicConfigWithDatabase,
 } from "@fragno-dev/db/fragment";
-import type { AbstractQuery, TableToInsertValues } from "@fragno-dev/db/query";
-import { noteSchema } from "./schema";
-
-// NOTE: We use zod here for defining schemas, but any StandardSchema library can be used!
-//       For a complete list see:
-// https://github.com/standard-schema/standard-schema#what-schema-libraries-implement-the-spec
+import type { AbstractQuery } from "@fragno-dev/db/query";
+import { authSchema } from "./schema";
 import { z } from "zod";
 
-export interface ExampleConfig {
-  // Add any server-side configuration here if needed
+export interface AuthConfig {
+  sendEmail?: (params: { to: string; subject: string; body: string }) => Promise<void>;
 }
 
-type ExampleServices = {
-  createNote: (note: TableToInsertValues<typeof noteSchema.tables.note>) => Promise<{
+// Password hashing utilities using WebCrypto
+async function hashPassword(password: string): Promise<string> {
+  const encoder = new TextEncoder();
+  const salt = crypto.getRandomValues(new Uint8Array(16));
+  const iterations = 100000;
+
+  const keyMaterial = await crypto.subtle.importKey(
+    "raw",
+    encoder.encode(password),
+    "PBKDF2",
+    false,
+    ["deriveBits"],
+  );
+
+  const hashBuffer = await crypto.subtle.deriveBits(
+    {
+      name: "PBKDF2",
+      salt: salt,
+      iterations: iterations,
+      hash: "SHA-256",
+    },
+    keyMaterial,
+    256,
+  );
+
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  const saltArray = Array.from(salt);
+
+  return `${saltArray.map((b) => b.toString(16).padStart(2, "0")).join("")}:${iterations}:${hashArray.map((b) => b.toString(16).padStart(2, "0")).join("")}`;
+}
+
+async function verifyPassword(password: string, storedHash: string): Promise<boolean> {
+  const [saltHex, iterationsStr, hashHex] = storedHash.split(":");
+  const iterations = parseInt(iterationsStr, 10);
+
+  const salt = new Uint8Array(saltHex.match(/.{1,2}/g)!.map((byte) => parseInt(byte, 16)));
+  const storedHashBytes = new Uint8Array(
+    hashHex.match(/.{1,2}/g)!.map((byte) => parseInt(byte, 16)),
+  );
+
+  const encoder = new TextEncoder();
+  const keyMaterial = await crypto.subtle.importKey(
+    "raw",
+    encoder.encode(password),
+    "PBKDF2",
+    false,
+    ["deriveBits"],
+  );
+
+  const hashBuffer = await crypto.subtle.deriveBits(
+    {
+      name: "PBKDF2",
+      salt: salt,
+      iterations: iterations,
+      hash: "SHA-256",
+    },
+    keyMaterial,
+    256,
+  );
+
+  const hashArray = new Uint8Array(hashBuffer);
+
+  if (hashArray.length !== storedHashBytes.length) {
+    return false;
+  }
+
+  let isEqual = true;
+  for (let i = 0; i < hashArray.length; i++) {
+    if (hashArray[i] !== storedHashBytes[i]) {
+      isEqual = false;
+    }
+  }
+  return isEqual;
+}
+
+type AuthServices = {
+  createUser: (
+    email: string,
+    password: string,
+  ) => Promise<{
     id: string;
-    content: string;
-    userId: string;
-    createdAt: Date;
+    email: string;
   }>;
-  getNotes: () => Promise<
-    Array<{
+  getUserByEmail: (email: string) => Promise<{
+    id: string;
+    email: string;
+    passwordHash: string;
+  } | null>;
+  createSession: (userId: string) => Promise<{
+    id: string;
+    userId: string;
+    expiresAt: Date;
+  }>;
+  validateSession: (sessionId: string) => Promise<{
+    id: string;
+    userId: string;
+    user: {
       id: string;
-      content: string;
-      userId: string;
-      createdAt: Date;
-    }>
-  >;
-  getNotesByUser: (userId: string) => Promise<
-    Array<{
-      id: string;
-      content: string;
-      userId: string;
-      createdAt: Date;
-    }>
-  >;
+      email: string;
+    };
+  } | null>;
+  invalidateSession: (sessionId: string) => Promise<boolean>;
 };
 
-type ExampleDeps = {
-  orm: AbstractQuery<typeof noteSchema>;
+type AuthDeps = {
+  orm: AbstractQuery<typeof authSchema>;
 };
 
-const exampleRoutesFactory = defineRoutes<ExampleConfig, ExampleDeps, ExampleServices>().create(
+const authRoutesFactory = defineRoutes<AuthConfig, AuthDeps, AuthServices>().create(
   ({ services }) => {
     return [
       defineRoute({
-        method: "GET",
-        path: "/notes",
-        queryParameters: ["userId"],
-        outputSchema: z.array(
-          z.object({
-            id: z.string(),
-            content: z.string(),
-            userId: z.string(),
-            createdAt: z.date(),
-          }),
-        ),
-        handler: async ({ query }, { json }) => {
-          const userId = query.get("userId");
-
-          if (userId) {
-            const notes = await services.getNotesByUser(userId);
-            return json(notes);
+        method: "POST",
+        path: "/sign-up",
+        inputSchema: z.object({
+          email: z.email(),
+          password: z.string().min(8).max(100),
+        }),
+        outputSchema: z.object({
+          sessionId: z.string(),
+          userId: z.string(),
+          email: z.string(),
+        }),
+        errorCodes: ["email_already_exists", "invalid_input"],
+        handler: async ({ input, headers }, { json, error }) => {
+          console.log("sign-up", headers);
+          const { email, password } = await input.valid();
+          console.log("sign-up", email, password);
+          // Check if user already exists
+          const existingUser = await services.getUserByEmail(email);
+          if (existingUser) {
+            return error({ message: "Email already exists", code: "email_already_exists" }, 400);
           }
 
-          const notes = await services.getNotes();
-          return json(notes);
+          // Create user
+          const user = await services.createUser(email, password);
+
+          // Create session
+          const session = await services.createSession(user.id);
+
+          return json({
+            sessionId: session.id,
+            userId: user.id,
+            email: user.email,
+          });
         },
       }),
 
       defineRoute({
         method: "POST",
-        path: "/notes",
-        inputSchema: z.object({ content: z.string(), userId: z.string() }),
-        outputSchema: z.object({
-          id: z.string(),
-          content: z.string(),
-          userId: z.string(),
-          createdAt: z.date(),
+        path: "/sign-in",
+        inputSchema: z.object({
+          email: z.string().email(),
+          password: z.string(),
         }),
-        errorCodes: [],
-        handler: async ({ input }, { json }) => {
-          const { content, userId } = await input.valid();
+        outputSchema: z.object({
+          sessionId: z.string(),
+          userId: z.string(),
+          email: z.string(),
+        }),
+        errorCodes: ["invalid_credentials"],
+        handler: async ({ input }, { json, error }) => {
+          const { email, password } = await input.valid();
 
-          const note = await services.createNote({ content, userId });
-          return json(note);
+          // Get user by email
+          const user = await services.getUserByEmail(email);
+          if (!user) {
+            return error({ message: "Invalid credentials", code: "invalid_credentials" }, 401);
+          }
+
+          // Verify password
+          const isValid = await verifyPassword(password, user.passwordHash);
+          if (!isValid) {
+            return error({ message: "Invalid credentials", code: "invalid_credentials" }, 401);
+          }
+
+          // Create session
+          const session = await services.createSession(user.id);
+
+          return json({
+            sessionId: session.id,
+            userId: user.id,
+            email: user.email,
+          });
+        },
+      }),
+
+      defineRoute({
+        method: "POST",
+        path: "/sign-out",
+        inputSchema: z.object({
+          sessionId: z.string(),
+        }),
+        outputSchema: z.object({
+          success: z.boolean(),
+        }),
+        errorCodes: ["session_not_found"],
+        handler: async ({ input }, { json, error }) => {
+          const { sessionId } = await input.valid();
+
+          const success = await services.invalidateSession(sessionId);
+
+          if (!success) {
+            return error({ message: "Session not found", code: "session_not_found" }, 404);
+          }
+
+          return json({ success: true });
+        },
+      }),
+
+      defineRoute({
+        method: "GET",
+        path: "/me",
+        queryParameters: ["sessionId"],
+        outputSchema: z
+          .object({
+            userId: z.string(),
+            email: z.string(),
+          })
+          .nullable(),
+        errorCodes: ["session_invalid"],
+        handler: async ({ query }, { json, error }) => {
+          const sessionId = query.get("sessionId");
+
+          if (!sessionId) {
+            return error({ message: "Session ID required", code: "session_invalid" }, 400);
+          }
+
+          const session = await services.validateSession(sessionId);
+
+          if (!session) {
+            return json(null);
+          }
+
+          return json({
+            userId: session.user.id,
+            email: session.user.email,
+          });
         },
       }),
     ];
   },
 );
 
-const exampleFragmentDefinition = defineFragmentWithDatabase<ExampleConfig>("example-fragment")
-  .withDatabase(noteSchema)
+const authFragmentDefinition = defineFragmentWithDatabase<AuthConfig>("simple-auth")
+  .withDatabase(authSchema)
   .withServices(({ orm }) => {
     return {
-      createNote: async (note: TableToInsertValues<typeof noteSchema.tables.note>) => {
-        const id = await orm.create("note", note);
+      createUser: async (email: string, password: string) => {
+        const passwordHash = await hashPassword(password);
+        const id = await orm.create("user", {
+          email,
+          passwordHash,
+        });
         return {
-          ...note,
           id: id.toJSON(),
-          createdAt: note.createdAt ?? new Date(),
+          email,
         };
       },
-      getNotes: () => {
-        return orm.find("note", (b) => b);
-      },
-      getNotesByUser: (userId: string) => {
-        return orm.find("note", (b) =>
-          b.whereIndex("idx_note_user", (eb) => eb("userId", "=", userId)),
+      getUserByEmail: async (email: string) => {
+        const users = await orm.find("user", (b) =>
+          b.whereIndex("idx_user_email", (eb) => eb("email", "=", email)),
         );
+        return users[0] ?? null;
+      },
+      createSession: async (userId: string) => {
+        const expiresAt = new Date();
+        expiresAt.setDate(expiresAt.getDate() + 30); // 30 days from now
+
+        const id = await orm.create("session", {
+          userId,
+          expiresAt,
+        });
+
+        return {
+          id: id.toJSON(),
+          userId,
+          expiresAt,
+        };
+      },
+      validateSession: async (sessionId: string) => {
+        const sessions = await orm.find("session", (b) =>
+          b.whereIndex("primary", (eb) => eb("id", "=", sessionId)),
+        );
+
+        const session = sessions[0];
+        if (!session) {
+          return null;
+        }
+
+        // Check if session has expired
+        if (session.expiresAt < new Date()) {
+          await orm.delete("session", session.id);
+          return null;
+        }
+
+        // Get user
+        const users = await orm.find("user", (b) =>
+          b.whereIndex("primary", (eb) => eb("id", "=", session.userId)),
+        );
+
+        const user = users[0];
+        if (!user) {
+          return null;
+        }
+
+        return {
+          id: session.id.toJSON(),
+          userId: session.userId,
+          user: {
+            id: user.id.toJSON(),
+            email: user.email,
+          },
+        };
+      },
+      invalidateSession: async (sessionId: string) => {
+        const sessions = await orm.find("session", (b) =>
+          b.whereIndex("primary", (eb) => eb("id", "=", sessionId)),
+        );
+
+        const session = sessions[0];
+        if (!session) {
+          return false;
+        }
+
+        await orm.delete("session", session.id);
+        return true;
       },
     };
   });
 
-export function createExampleFragment(
-  config: ExampleConfig = {},
+export function createAuthFragment(
+  config: AuthConfig = {},
   fragnoConfig: FragnoPublicConfigWithDatabase,
 ) {
-  return createFragment(exampleFragmentDefinition, config, [exampleRoutesFactory], fragnoConfig);
+  return createFragment(authFragmentDefinition, config, [authRoutesFactory], fragnoConfig);
 }
 
-export function createExampleFragmentClients(fragnoConfig: FragnoPublicClientConfig) {
-  const b = createClientBuilder(exampleFragmentDefinition, fragnoConfig, [exampleRoutesFactory]);
+export function createAuthFragmentClients(fragnoConfig: FragnoPublicClientConfig) {
+  const b = createClientBuilder(authFragmentDefinition, fragnoConfig, [authRoutesFactory]);
 
   return {
-    useNotes: b.createHook("/notes"),
-    useCreateNote: b.createMutator("POST", "/notes"),
+    useSignUp: b.createMutator("POST", "/sign-up"),
+    useSignIn: b.createMutator("POST", "/sign-in"),
+    useSignOut: b.createMutator("POST", "/sign-out"),
+    useMe: b.createHook("/me"),
   };
 }
 export type { FragnoRouteConfig } from "@fragno-dev/core/api";

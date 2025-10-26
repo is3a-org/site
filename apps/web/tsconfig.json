@@ -1,6 +1,13 @@
 {
   "files": [],
-  "references": [{ "path": "./tsconfig.node.json" }, { "path": "./tsconfig.cloudflare.json" }],
+  "references": [
+    {
+      "path": "./tsconfig.node.json"
+    },
+    {
+      "path": "./tsconfig.cloudflare.json"
+    }
+  ],
   "compilerOptions": {
     "checkJs": true,
     "verbatimModuleSyntax": true,
@@ -11,6 +18,7 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["./app/*"]
-    }
+    },
+    "allowImportingTsExtensions": true
   }
 }
