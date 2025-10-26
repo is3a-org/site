@@ -147,6 +147,7 @@ const authRoutesFactory = defineRoutes<AuthConfig, AuthDeps, AuthServices>().cre
           console.log("sign-up", email, password);
           // Check if user already exists
           const existingUser = await services.getUserByEmail(email);
+          console.log("existingUser", existingUser);
           if (existingUser) {
             return error({ message: "Email already exists", code: "email_already_exists" }, 400);
           }
@@ -277,10 +278,10 @@ const authFragmentDefinition = defineFragmentWithDatabase<AuthConfig>("simple-au
         };
       },
       getUserByEmail: async (email: string) => {
-        const users = await orm.find("user", (b) =>
+        const users = await orm.findFirst("user", (b) =>
           b.whereIndex("idx_user_email", (eb) => eb("email", "=", email)),
         );
-        return users[0] ?? null;
+        return users ?? null;
       },
       createSession: async (userId: string) => {
         const expiresAt = new Date();

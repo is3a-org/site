@@ -9,10 +9,11 @@
     "preview": "pnpm run build && vite preview",
     "types:check": "pnpm run types:generate && react-router typegen && tsc -b",
     "types:generate": "wrangler types --env-interface CloudflareEnv",
-    "db:fragno:generate": "./node_modules/@fragno-dev/cli/dist/cli.js db generate app/fragno/simple-auth-server.ts -o app/db/is3a-d1/fragno-schema.ts",
+    "db:fragno:generate": "./node_modules/@fragno-dev/cli/dist/cli.js db generate app/fragno/simple-auth-server.ts -o app/db/postgres/fragno-schema.ts",
     "db:postgres:push": "drizzle-kit push --config postgres.drizzle.config.ts"
   },
   "dependencies": {
+    "@fragno-dev/cli": "^0.1.3",
     "@fragno-dev/db": "^0.1.3",
     "@is3a/simple-auth-fragment": "workspace:*",
     "@paralleldrive/cuid2": "^3.1.0",

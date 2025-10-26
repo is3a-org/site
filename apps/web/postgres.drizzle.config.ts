@@ -11,7 +11,7 @@ if (!process.env.PG_DATABASE_URL) {
 
 export default defineConfig({
   dialect: "postgresql",
-  schema: ["./app/db/postgres/postgres.schema.ts"],
+  schema: ["./app/db/postgres/postgres.schema.ts", "./app/db/postgres/fragno-schema.ts"],
   out: "./app/db/postgres/migrations",
   dbCredentials: {
     url: process.env.PG_DATABASE_URL!,
