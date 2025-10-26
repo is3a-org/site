@@ -1,5 +1,14 @@
 import type { UpdateDeleteAction } from "drizzle-orm/pg-core";
-import { pgTable, text, integer, serial, timestamp, boolean, jsonb, pgEnum } from "drizzle-orm/pg-core";
+import {
+  pgTable,
+  text,
+  integer,
+  serial,
+  timestamp,
+  boolean,
+  jsonb,
+  pgEnum,
+} from "drizzle-orm/pg-core";
 import { simple_auth_db_schema } from "./fragno-schema.ts";
 
 const foreignKeyActions: Record<"onUpdate" | "onDelete", UpdateDeleteAction> = {
