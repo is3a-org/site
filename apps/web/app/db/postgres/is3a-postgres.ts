@@ -7,4 +7,4 @@ const pool = new Pool({
   connectionString: process.env.PG_DATABASE_URL!,
 });
 
-export const db = drizzle({ client: pool, schema });
+export const db = drizzle({ client: pool, schema, casing: "snake_case" });

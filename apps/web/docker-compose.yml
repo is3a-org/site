@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: postgres:18
+    environment:
+      POSTGRES_DB: is3a
+      POSTGRES_USER: is3a
+      POSTGRES_PASSWORD: is3a
+
+    ports:
+      - 5432:5432
+
+    volumes:
+      - db-data:/var/lib/postgresql
+
+volumes:
+  db-data:
