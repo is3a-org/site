@@ -1,56 +1,84 @@
-import { assert, beforeAll, describe, expect, it } from "vitest";
-import { Kysely } from "kysely";
-import { KyselyPGlite } from "kysely-pglite";
-import { KyselyAdapter } from "@fragno-dev/db/adapters/kysely";
-import { authSchema } from "./schema";
-import { createAuthFragment } from ".";
+import { assert, describe, expect, it } from "vitest";
+import { authFragmentDefinition, authRoutesFactory } from ".";
+import { createDatabaseFragmentForTest } from "@fragno-dev/test";
 
-describe("simple-auth-fragment", () => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let kysely: Kysely<any>;
-  let adapter: KyselyAdapter;
-  let fragment: ReturnType<typeof createAuthFragment>;
+describe("simple-auth-fragment", async () => {
+  const fragment = await createDatabaseFragmentForTest(authFragmentDefinition);
 
-  beforeAll(async () => {
-    const { dialect } = await KyselyPGlite.create();
-    kysely = new Kysely({
-      dialect,
+  describe("Full session flow", async () => {
+    const routes = [authRoutesFactory] as const;
+    const [signUpRoute, signInRoute, signOutRoute, meRoute] = fragment.initRoutes(routes);
+
+    let sessionId: string;
+    let userId: string;
+
+    it("/sign-up - create user", async () => {
+      const response = await fragment.handler(signUpRoute, {
+        body: {
+          email: "test@test.com",
+          password: "password",
+        },
+      });
+      assert(response.type === "json");
+      expect(response.data).toMatchObject({
+        sessionId: expect.any(String),
+        userId: expect.any(String),
+        email: "test@test.com",
+      });
+      sessionId = response.data.sessionId;
+      userId = response.data.userId;
     });
 
-    adapter = new KyselyAdapter({
-      db: kysely,
-      provider: "postgresql",
+    it("/me - get active session", async () => {
+      const response = await fragment.handler(meRoute, {
+        query: { sessionId },
+      });
+
+      assert(response.type === "json");
+      expect(response.data).toMatchObject({
+        userId: userId,
+        email: "test@test.com",
+      });
     });
 
-    fragment = createAuthFragment(
-      {},
-      {
-        databaseAdapter: adapter,
-      },
-    );
-  }, 12000);
-
-  it("should run migrations", async () => {
-    const schemaVersion = await adapter.getSchemaVersion("simple-auth-db");
-    expect(schemaVersion).toBeUndefined();
-
-    const migrator = adapter.createMigrationEngine(authSchema, "simple-auth-db");
-    const preparedMigration = await migrator.prepareMigration({
-      updateSettings: false,
+    it("/sign-out - invalidate session", async () => {
+      const response = await fragment.handler(signOutRoute, {
+        body: { sessionId },
+      });
+      assert(response.type === "json");
+      expect(response.data).toMatchObject({ success: true });
     });
-    assert(preparedMigration.getSQL);
-    await preparedMigration.execute();
-  });
 
-  it("should create a user", async () => {
-    const user = await fragment.services.createUser("test@test.com", "password");
-    expect(user).toBeDefined();
-    expect(user.email).toBe("test@test.com");
-  });
+    it("/me - get inactive session", async () => {
+      const response = await fragment.handler(meRoute, {
+        query: { sessionId },
+      });
 
-  it("should get user by email", async () => {
-    const user = await fragment.services.getUserByEmail("test@test.com");
-    expect(user).toBeDefined();
-    expect(user?.email).toBe("test@test.com");
+      assert(response.type === "error");
+      expect(response.error.code).toBe("session_invalid");
+    });
+
+    it("/sign-in - invalid credentials", async () => {
+      const response = await fragment.handler(signInRoute, {
+        body: { email: "test@test.com", password: "wrongpassword" },
+      });
+      assert(response.type === "error");
+      expect(response.error.code).toBe("invalid_credentials");
+    });
+
+    it("/sign-in - sign in user", async () => {
+      const response = await fragment.handler(signInRoute, {
+        body: { email: "test@test.com", password: "password" },
+      });
+      assert(response.type === "json");
+      expect(response.data).toMatchObject({
+        sessionId: expect.any(String),
+        userId: expect.any(String),
+        email: "test@test.com",
+      });
+
+      sessionId = response.data.sessionId;
+      userId = response.data.userId;
+    });
   });
 });

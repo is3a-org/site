@@ -125,7 +125,7 @@ type AuthDeps = {
   orm: AbstractQuery<typeof authSchema>;
 };
 
-const authRoutesFactory = defineRoutes<AuthConfig, AuthDeps, AuthServices>().create(
+export const authRoutesFactory = defineRoutes<AuthConfig, AuthDeps, AuthServices>().create(
   ({ services }) => {
     return [
       defineRoute({
@@ -141,13 +141,10 @@ const authRoutesFactory = defineRoutes<AuthConfig, AuthDeps, AuthServices>().cre
           email: z.string(),
         }),
         errorCodes: ["email_already_exists", "invalid_input"],
-        handler: async ({ input, headers }, { json, error }) => {
-          console.log("sign-up", headers);
+        handler: async ({ input }, { json, error }) => {
           const { email, password } = await input.valid();
-          console.log("sign-up", email, password);
           // Check if user already exists
           const existingUser = await services.getUserByEmail(email);
-          console.log("existingUser", existingUser);
           if (existingUser) {
             return error({ message: "Email already exists", code: "email_already_exists" }, 400);
           }
@@ -156,9 +153,7 @@ const authRoutesFactory = defineRoutes<AuthConfig, AuthDeps, AuthServices>().cre
           const user = await services.createUser(email, password);
 
           // Create session
-          console.log("creating session for user", user.id);
           const session = await services.createSession(user.id);
-          console.log("session created", session);
 
           return json({
             sessionId: session.id,
@@ -172,8 +167,8 @@ const authRoutesFactory = defineRoutes<AuthConfig, AuthDeps, AuthServices>().cre
         method: "POST",
         path: "/sign-in",
         inputSchema: z.object({
-          email: z.string().email(),
-          password: z.string(),
+          email: z.email(),
+          password: z.string().min(8).max(100),
         }),
         outputSchema: z.object({
           sessionId: z.string(),
@@ -251,7 +246,7 @@ const authRoutesFactory = defineRoutes<AuthConfig, AuthDeps, AuthServices>().cre
           const session = await services.validateSession(sessionId);
 
           if (!session) {
-            return json(null);
+            return error({ message: "Session ID required", code: "session_invalid" }, 400);
           }
 
           return json({
@@ -264,7 +259,7 @@ const authRoutesFactory = defineRoutes<AuthConfig, AuthDeps, AuthServices>().cre
   },
 );
 
-const authFragmentDefinition = defineFragmentWithDatabase<AuthConfig>("simple-auth")
+export const authFragmentDefinition = defineFragmentWithDatabase<AuthConfig>("simple-auth")
   .withDatabase(authSchema)
   .withServices(({ orm }) => {
     return {
@@ -283,7 +278,13 @@ const authFragmentDefinition = defineFragmentWithDatabase<AuthConfig>("simple-au
         const users = await orm.findFirst("user", (b) =>
           b.whereIndex("idx_user_email", (eb) => eb("email", "=", email)),
         );
-        return users ?? null;
+        return users
+          ? {
+              id: users.id.valueOf(),
+              email: users.email,
+              passwordHash: users.passwordHash,
+            }
+          : null;
       },
       createSession: async (userId: string) => {
         const expiresAt = new Date();
@@ -306,10 +307,6 @@ const authFragmentDefinition = defineFragmentWithDatabase<AuthConfig>("simple-au
             .whereIndex("primary", (eb) => eb("id", "=", sessionId))
             .join((j) => j.sessionOwner((b) => b.select(["id", "email"]))),
         );
-
-        console.log({
-          session,
-        });
 
         if (!session) {
           return null;
