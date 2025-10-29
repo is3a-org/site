@@ -1,10 +1,19 @@
 import { drizzle } from "drizzle-orm/node-postgres";
-import { Pool } from "pg";
 
 import { schema } from "./postgres.schema.ts";
+import { Client } from "pg";
 
-const pool = new Pool({
-  connectionString: process.env.PG_DATABASE_URL!,
-});
+export function createPostgresClient() {
+  return new Client({
+    connectionString: process.env.PG_DATABASE_URL!,
+    query_timeout: 1000,
+    statement_timeout: 1000,
+    connectionTimeoutMillis: 1000,
+  });
+}
 
-export const db = drizzle({ client: pool, schema, casing: "snake_case" });
+export function createDrizzleDatabase(client: Client) {
+  return drizzle({ client, schema, casing: "snake_case" });
+}
+
+export type DrizzleDatabase = ReturnType<typeof createDrizzleDatabase>;

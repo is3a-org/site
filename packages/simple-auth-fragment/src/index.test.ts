@@ -1,12 +1,20 @@
-import { assert, describe, expect, it } from "vitest";
-import { authFragmentDefinition, authRoutesFactory } from ".";
+import { afterAll, assert, describe, expect, it } from "vitest";
+import { authFragmentDefinition } from ".";
+import { userRoutesFactory } from "./user/user";
+import { sessionRoutesFactory } from "./session/session";
 import { createDatabaseFragmentForTest } from "@fragno-dev/test";
 
 describe("simple-auth-fragment", async () => {
-  const fragment = await createDatabaseFragmentForTest(authFragmentDefinition);
+  const { fragment, test } = await createDatabaseFragmentForTest(authFragmentDefinition, {
+    adapter: { type: "drizzle-pglite" },
+  });
+
+  afterAll(async () => {
+    await test.cleanup();
+  });
 
   describe("Full session flow", async () => {
-    const routes = [authRoutesFactory] as const;
+    const routes = [userRoutesFactory, sessionRoutesFactory] as const;
     const [signUpRoute, signInRoute, signOutRoute, meRoute] = fragment.initRoutes(routes);
 
     let sessionId: string;
@@ -25,8 +33,9 @@ describe("simple-auth-fragment", async () => {
         userId: expect.any(String),
         email: "test@test.com",
       });
-      sessionId = response.data.sessionId;
-      userId = response.data.userId;
+      const data = response.data;
+      sessionId = data.sessionId;
+      userId = data.userId;
     });
 
     it("/me - get active session", async () => {
@@ -77,8 +86,9 @@ describe("simple-auth-fragment", async () => {
         email: "test@test.com",
       });
 
-      sessionId = response.data.sessionId;
-      userId = response.data.userId;
+      const data = response.data as { sessionId: string; userId: string; email: string };
+      sessionId = data.sessionId;
+      userId = data.userId;
     });
   });
 });

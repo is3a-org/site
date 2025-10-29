@@ -38,7 +38,7 @@ export const fragnoDbSettingSchemaVersion = 1;
 // ============================================================================
 
 export const user_simple_auth_db = pgTable(
-  "user_simple-auth-db",
+  "user_simple_auth_db",
   {
     id: varchar("id", { length: 30 })
       .notNull()
@@ -53,7 +53,7 @@ export const user_simple_auth_db = pgTable(
 );
 
 export const session_simple_auth_db = pgTable(
-  "session_simple-auth-db",
+  "session_simple_auth_db",
   {
     id: varchar("id", { length: 30 })
       .notNull()
@@ -68,11 +68,17 @@ export const session_simple_auth_db = pgTable(
     foreignKey({
       columns: [table.userId],
       foreignColumns: [user_simple_auth_db._internalId],
-      name: "fk_session_user_sessionOwner_simple-auth-db",
+      name: "fk_session_user_sessionOwner_simple_auth_db",
     }),
     index("idx_session_user_simple-auth-db").on(table.userId),
   ],
 );
+
+export const user_simple_auth_dbRelations = relations(user_simple_auth_db, ({ many }) => ({
+  sessionList: many(session_simple_auth_db, {
+    relationName: "session_user",
+  }),
+}));
 
 export const session_simple_auth_dbRelations = relations(session_simple_auth_db, ({ one }) => ({
   sessionOwner: one(user_simple_auth_db, {
@@ -83,9 +89,13 @@ export const session_simple_auth_dbRelations = relations(session_simple_auth_db,
 }));
 
 export const simple_auth_db_schema = {
-  "user_simple-auth-db": user_simple_auth_db,
+  user_simple_auth_db: user_simple_auth_db,
+  user_simple_auth_dbRelations: user_simple_auth_dbRelations,
   user: user_simple_auth_db,
-  "session_simple-auth-db": session_simple_auth_db,
+  userRelations: user_simple_auth_dbRelations,
+  session_simple_auth_db: session_simple_auth_db,
+  session_simple_auth_dbRelations: session_simple_auth_dbRelations,
   session: session_simple_auth_db,
+  sessionRelations: session_simple_auth_dbRelations,
   schemaVersion: 3,
 };
