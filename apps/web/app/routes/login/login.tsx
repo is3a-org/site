@@ -3,7 +3,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { db } from "~/db/postgres/is3a-postgres";
 import { schema } from "~/db/postgres/postgres.schema";
 
 export function meta(_: Route.MetaArgs) {
@@ -13,8 +12,8 @@ export function meta(_: Route.MetaArgs) {
   ];
 }
 
-export async function loader() {
-  const locations = await db.select().from(schema.location).limit(1);
+export async function loader({ context }: Route.LoaderArgs) {
+  const locations = await context.db.select().from(schema.location).limit(1);
 
   return {
     locations,

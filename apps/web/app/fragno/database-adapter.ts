@@ -1,9 +1,9 @@
 import { DrizzleAdapter } from "@fragno-dev/db/adapters/drizzle";
-import { db } from "../db/postgres/is3a-postgres.ts";
+import type { DrizzleDatabase } from "../db/postgres/is3a-postgres.ts";
 
-export function createAdapter() {
+export function createAdapter(db: DrizzleDatabase | (() => DrizzleDatabase)) {
   return new DrizzleAdapter({
-    db,
+    db: async () => (typeof db === "function" ? db() : db),
     provider: "postgresql",
   });
 }

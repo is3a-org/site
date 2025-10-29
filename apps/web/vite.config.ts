@@ -3,6 +3,7 @@ import { cloudflare } from "@cloudflare/vite-plugin";
 import tailwindcss from "@tailwindcss/vite";
 import { defineConfig } from "vite";
 import tsconfigPaths from "vite-tsconfig-paths";
+import devtoolsJson from "vite-plugin-devtools-json";
 
 export default defineConfig({
   plugins: [
@@ -10,5 +11,6 @@ export default defineConfig({
     tailwindcss(),
     reactRouter(),
     tsconfigPaths(),
+    devtoolsJson(),
   ],
 });

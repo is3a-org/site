@@ -1,8 +1,9 @@
 {
-  "name": "site",
+  "name": "@is3a/root",
   "private": true,
   "scripts": {
     "build": "turbo run build",
+    "build:watch": "turbo watch build --filter='!@is3a/web'",
     "dev": "turbo run dev",
     "types:check": "turbo run types:check",
     "test": "turbo run test",
@@ -15,16 +16,16 @@
     "clean:install": "pnpm run clean && pnpm install"
   },
   "devDependencies": {
-    "lefthook": "^2.0.0",
+    "lefthook": "^2.0.2",
     "oxlint": "^1.24.0",
     "prettier": "^3.6.2",
     "prettier-plugin-tailwindcss": "^0.7.1",
     "turbo": "^2.5.8",
     "typescript": "5.9.2",
-    "wrangler": "^4.44.0"
+    "wrangler": "^4.45.2"
   },
   "packageManager": "pnpm@10.0.0",
   "engines": {
-    "node": ">=18"
+    "node": ">=22"
   }
 }
