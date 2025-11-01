@@ -1,4 +1,4 @@
-import { Settings2, Building2, Home, Sparkles, ArrowUp } from "lucide-react";
+import { Settings2, Building2, Home, Sparkles, ArrowUp, MapPin } from "lucide-react";
 
 import { NavMain } from "~/components/nav-main";
 import { NavUser } from "~/components/nav-user";
@@ -19,6 +19,11 @@ const navItems = [
     title: "Dashboard",
     url: "/dashboard",
     icon: Home,
+  },
+  {
+    title: "Locations",
+    url: "/dashboard/locations",
+    icon: MapPin,
   },
   {
     title: "Organization",
