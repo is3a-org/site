@@ -3,8 +3,6 @@ import type { Route } from "./+types/simple-auth";
 // import { createSimpleAuthServer } from "~/fragno/simple-auth-server";
 
 export async function loader({ request, context }: Route.LoaderArgs) {
-  console.log("loader", request.url);
-  // return Response.json({ message: "Hello, world!" });
   return createSimpleAuthServer(context.db).handler(request);
 }
 

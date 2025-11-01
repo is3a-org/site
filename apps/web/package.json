@@ -14,8 +14,7 @@
     "db:postgres:generate": "drizzle-kit generate --config postgres.drizzle.config.ts"
   },
   "dependencies": {
-    "@fragno-dev/cli": "^0.1.11",
-    "@fragno-dev/db": "^0.1.10",
+    "@fragno-dev/db": "canary",
     "@is3a/simple-auth-fragment": "workspace:*",
     "@paralleldrive/cuid2": "^3.1.0",
     "@radix-ui/react-avatar": "^1.1.10",
@@ -37,12 +36,13 @@
     "pg": "^8.16.3",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
-    "react-router": "^7.9.4",
+    "react-router": "^7.9.5",
     "tailwind-merge": "^3.3.1"
   },
   "devDependencies": {
+    "@fragno-dev/cli": "canary",
     "@cloudflare/vite-plugin": "^1.13.17",
-    "@react-router/dev": "^7.9.4",
+    "@react-router/dev": "^7.9.5",
     "@tailwindcss/vite": "^4.1.16",
     "@types/node": "^22.18.13",
     "@types/react": "^19.2.2",

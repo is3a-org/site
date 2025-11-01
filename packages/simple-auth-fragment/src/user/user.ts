@@ -3,6 +3,8 @@ import type { AbstractQuery } from "@fragno-dev/db/query";
 import { authSchema } from "../schema";
 import { z } from "zod";
 import { hashPassword, verifyPassword } from "./password";
+import { buildSetCookieHeader } from "../utils/cookie";
+import { FragnoApiValidationError } from "@fragno-dev/core/api";
 
 export interface UserConfig {
   sendEmail?: (params: { to: string; subject: string; body: string }) => Promise<void>;
@@ -75,11 +77,21 @@ export const userRoutesFactory = defineRoutes<
         // Create session
         const session = await services.createSession(user.id);
 
-        return json({
-          sessionId: session.id,
-          userId: user.id,
-          email: user.email,
-        });
+        // Build response with Set-Cookie header
+        const setCookieHeader = buildSetCookieHeader(session.id);
+
+        return json(
+          {
+            sessionId: session.id,
+            userId: user.id,
+            email: user.email,
+          },
+          {
+            headers: {
+              "Set-Cookie": setCookieHeader,
+            },
+          },
+        );
       },
     }),
 
@@ -97,7 +109,17 @@ export const userRoutesFactory = defineRoutes<
       }),
       errorCodes: ["invalid_credentials"],
       handler: async ({ input }, { json, error }) => {
-        const { email, password } = await input.valid();
+        let email: string;
+        let password: string;
+        try {
+          ({ email, password } = await input.valid());
+        } catch (error) {
+          if (error instanceof FragnoApiValidationError) {
+            console.log("validation failed", { issues: error.issues });
+          }
+
+          throw error;
+        }
 
         // Get user by email
         const user = await services.getUserByEmail(email);
@@ -114,11 +136,21 @@ export const userRoutesFactory = defineRoutes<
         // Create session
         const session = await services.createSession(user.id);
 
-        return json({
-          sessionId: session.id,
-          userId: user.id,
-          email: user.email,
-        });
+        // Build response with Set-Cookie header
+        const setCookieHeader = buildSetCookieHeader(session.id);
+
+        return json(
+          {
+            sessionId: session.id,
+            userId: user.id,
+            email: user.email,
+          },
+          {
+            headers: {
+              "Set-Cookie": setCookieHeader,
+            },
+          },
+        );
       },
     }),
   ];

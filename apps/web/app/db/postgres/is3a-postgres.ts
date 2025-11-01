@@ -6,9 +6,9 @@ import { Client } from "pg";
 export function createPostgresClient() {
   return new Client({
     connectionString: process.env.PG_DATABASE_URL!,
-    query_timeout: 1000,
-    statement_timeout: 1000,
-    connectionTimeoutMillis: 1000,
+    // query_timeout: 1000,
+    // statement_timeout: 1000,
+    // connectionTimeoutMillis: 1000,
   });
 }
 

@@ -9,6 +9,7 @@ export default [
       route("", "routes/login/login.tsx"),
       route("error", "routes/login/login-error.tsx"),
     ]),
+    route("sign-up", "routes/sign-up.tsx"),
   ]),
   ...prefix("dashboard", [
     layout("routes/dashboard/dashboard-layout.tsx", [index("routes/dashboard/dashboard-home.tsx")]),

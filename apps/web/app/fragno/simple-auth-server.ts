@@ -1,9 +1,9 @@
 import { createAuthFragment } from "@is3a/simple-auth-fragment";
 import { createAdapter } from "./database-adapter.ts";
 import {
-  createDrizzleDatabase,
   createPostgresClient,
   type DrizzleDatabase,
+  createDrizzleDatabase,
 } from "../db/postgres/is3a-postgres.ts";
 
 export function createSimpleAuthServer(db: DrizzleDatabase | (() => DrizzleDatabase)) {

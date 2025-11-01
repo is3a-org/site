@@ -2,6 +2,7 @@ import { defineRoute, defineRoutes } from "@fragno-dev/core";
 import type { AbstractQuery } from "@fragno-dev/db/query";
 import { authSchema } from "../schema";
 import { z } from "zod";
+import { buildClearCookieHeader, extractSessionId } from "../utils/cookie";
 
 export interface SessionConfig {
   sendEmail?: (params: { to: string; subject: string; body: string }) => Promise<void>;
@@ -82,23 +83,50 @@ export const sessionRoutesFactory = defineRoutes<
     defineRoute({
       method: "POST",
       path: "/sign-out",
-      inputSchema: z.object({
-        sessionId: z.string(),
-      }),
+      inputSchema: z
+        .object({
+          sessionId: z.string().optional(),
+        })
+        .optional(),
       outputSchema: z.object({
         success: z.boolean(),
       }),
       errorCodes: ["session_not_found"],
-      handler: async ({ input }, { json, error }) => {
-        const { sessionId } = await input.valid();
+      handler: async ({ input, headers }, { json, error }) => {
+        const body = await input.valid();
+
+        // Extract session ID from cookies first, then body
+        const sessionId = extractSessionId(headers, null, body?.sessionId);
+
+        if (!sessionId) {
+          return error({ message: "Session ID required", code: "session_not_found" }, 400);
+        }
 
         const success = await services.invalidateSession(sessionId);
 
+        // Build response with clear cookie header
+        const clearCookieHeader = buildClearCookieHeader();
+
         if (!success) {
-          return error({ message: "Session not found", code: "session_not_found" }, 404);
+          // Still clear the cookie even if session not found in DB
+          return json(
+            { success: false },
+            {
+              headers: {
+                "Set-Cookie": clearCookieHeader,
+              },
+            },
+          );
         }
 
-        return json({ success: true });
+        return json(
+          { success: true },
+          {
+            headers: {
+              "Set-Cookie": clearCookieHeader,
+            },
+          },
+        );
       },
     }),
 
@@ -113,8 +141,9 @@ export const sessionRoutesFactory = defineRoutes<
         })
         .nullable(),
       errorCodes: ["session_invalid"],
-      handler: async ({ query }, { json, error }) => {
-        const sessionId = query.get("sessionId");
+      handler: async ({ query, headers }, { json, error }) => {
+        // Extract session ID from cookies first, then query params
+        const sessionId = extractSessionId(headers, query.get("sessionId"));
 
         if (!sessionId) {
           return error({ message: "Session ID required", code: "session_invalid" }, 400);
@@ -123,7 +152,7 @@ export const sessionRoutesFactory = defineRoutes<
         const session = await services.validateSession(sessionId);
 
         if (!session) {
-          return error({ message: "Session ID required", code: "session_invalid" }, 400);
+          return error({ message: "Invalid session", code: "session_invalid" }, 401);
         }
 
         return json({

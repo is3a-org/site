@@ -1,5 +1,5 @@
 import type { Route } from "./+types/dashboard-layout";
-import { isRouteErrorResponse, Outlet } from "react-router";
+import { isRouteErrorResponse, Outlet, redirect } from "react-router";
 import { DashboardNavigationSidebar } from "~/routes/dashboard/dashboard-sidebar";
 import {
   Breadcrumb,
@@ -13,21 +13,13 @@ import { SidebarInset, SidebarProvider, SidebarTrigger } from "~/components/ui/s
 import { Separator } from "~/components/ui/separator";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
 import { AlertCircle } from "lucide-react";
+import { createSimpleAuthServer } from "~/fragno/simple-auth-server";
 
 export function meta(_: Route.MetaArgs) {
   return [{ title: "Dashboard" }, { name: "description", content: "Dashboard" }];
 }
 
-export async function loader({ context: _context, request: _request }: Route.LoaderArgs) {
-  // Mock data for demo purposes
-  const mockUser = {
-    name: "John Doe",
-    email: "john@example.com",
-    avatar: undefined,
-    isAdmin: false,
-    impersonatedBy: null,
-  };
-
+export async function loader({ context, request }: Route.LoaderArgs) {
   const mockOrganizations = [
     {
       id: "org_1",
@@ -45,12 +37,31 @@ export async function loader({ context: _context, request: _request }: Route.Loa
 
   const activeOrganizationId = "org_1";
 
-  return {
-    user: mockUser,
-    organizations: mockOrganizations,
-    activeOrganization: mockOrganizations[0],
-    activeOrganizationId,
-  };
+  const auth = createSimpleAuthServer(context.db);
+
+  const response = await auth.callRoute("GET", "/me", {
+    query: { sessionId: request.url.split("?")[1] },
+    headers: request.headers,
+  });
+
+  if (response.ok) {
+    // This means we're logged in
+    const me = (await response.json()) as { userId: string; email: string };
+    return {
+      user: {
+        name: me.email,
+        email: me.email,
+        avatar: undefined,
+        isAdmin: false,
+        impersonatedBy: null,
+      },
+      organizations: mockOrganizations,
+      activeOrganization: mockOrganizations[0],
+      activeOrganizationId,
+    };
+  }
+
+  return redirect("/login");
 }
 
 export function ErrorBoundary({ error, loaderData }: Route.ErrorBoundaryProps) {
