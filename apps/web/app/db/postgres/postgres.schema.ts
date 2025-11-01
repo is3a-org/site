@@ -16,7 +16,6 @@ const foreignKeyActions: Record<"onUpdate" | "onDelete", UpdateDeleteAction> = {
   onDelete: "restrict",
 };
 
-export const seasonEnum = pgEnum("season", ["summer", "autumn", "winter", "spring"]);
 export const membershipTypeEnum = pgEnum("membership_type", ["full", "flex"]);
 
 export const location = pgTable("location", {
@@ -25,7 +24,10 @@ export const location = pgTable("location", {
   email: text(),
   address: text(),
   website: text(),
-  seasons: seasonEnum(),
+  seasonSummer: boolean().notNull().default(false),
+  seasonAutumn: boolean().notNull().default(false),
+  seasonWinter: boolean().notNull().default(false),
+  seasonSpring: boolean().notNull().default(false),
 });
 
 export const event = pgTable("event", {

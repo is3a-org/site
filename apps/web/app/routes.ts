@@ -12,7 +12,10 @@ export default [
     route("sign-up", "routes/sign-up.tsx"),
   ]),
   ...prefix("dashboard", [
-    layout("routes/dashboard/dashboard-layout.tsx", [index("routes/dashboard/dashboard-home.tsx")]),
+    layout("routes/dashboard/dashboard-layout.tsx", [
+      index("routes/dashboard/dashboard-home.tsx"),
+      route("locations", "routes/dashboard/locations.tsx"),
+    ]),
   ]),
   route("api/simple-auth/*", "routes/api/simple-auth.tsx"),
 ] satisfies RouteConfig;
