@@ -21,9 +21,7 @@ export async function loader({ request, context }: Route.LoaderArgs) {
     headers: request.headers,
   });
 
-  if (response.ok) {
-    // This means we're logged in
-    const _me = (await response.json()) as { userId: string; email: string };
+  if (response.type === "json") {
     return redirect("/dashboard");
   }
 }
@@ -42,16 +40,12 @@ export async function action({ request, context }: Route.ActionArgs) {
       body: { email, password },
     });
 
-    if (!response.ok) {
-      const errorData = (await response.json()) as { message?: string };
+    if (response.type === "error") {
       return {
-        error: errorData.message || "Invalid email or password",
+        error: response.error.message,
         email,
       };
     }
-
-    const result = await response.json();
-    console.log("Sign in successful:", result);
 
     // Redirect to dashboard on success
     return redirect("/dashboard", {

@@ -44,13 +44,13 @@ export async function loader({ context, request }: Route.LoaderArgs) {
     headers: request.headers,
   });
 
-  if (response.ok) {
-    // This means we're logged in
-    const me = (await response.json()) as { userId: string; email: string };
+  if (response.type === "json" && response.data) {
+    const { email } = response.data;
+
     return {
       user: {
-        name: me.email,
-        email: me.email,
+        name: email,
+        email,
         avatar: undefined,
         isAdmin: false,
         impersonatedBy: null,
