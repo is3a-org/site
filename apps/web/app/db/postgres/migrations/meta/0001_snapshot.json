@@ -430,8 +430,8 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.session_simple-auth-db": {
-      "name": "session_simple-auth-db",
+    "public.session_simple_auth_db": {
+      "name": "session_simple_auth_db",
       "schema": "",
       "columns": {
         "id": {
@@ -442,7 +442,7 @@
         },
         "userId": {
           "name": "userId",
-          "type": "text",
+          "type": "bigint",
           "primaryKey": false,
           "notNull": true
         },
@@ -490,15 +490,29 @@
           "concurrently": false
         }
       },
-      "foreignKeys": {},
+      "foreignKeys": {
+        "fk_session_user_sessionOwner_simple_auth_db": {
+          "name": "fk_session_user_sessionOwner_simple_auth_db",
+          "tableFrom": "session_simple_auth_db",
+          "tableTo": "user_simple_auth_db",
+          "columnsFrom": [
+            "userId"
+          ],
+          "columnsTo": [
+            "_internalId"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.user_simple-auth-db": {
-      "name": "user_simple-auth-db",
+    "public.user_simple_auth_db": {
+      "name": "user_simple_auth_db",
       "schema": "",
       "columns": {
         "id": {
