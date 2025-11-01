@@ -11,7 +11,8 @@
     "types:generate": "wrangler types --env-interface CloudflareEnv",
     "db:fragno:generate": "./node_modules/@fragno-dev/cli/dist/cli.js db generate app/fragno/simple-auth-server.ts -o app/db/postgres/fragno-schema.ts",
     "db:postgres:push": "drizzle-kit push --config postgres.drizzle.config.ts",
-    "db:postgres:generate": "drizzle-kit generate --config postgres.drizzle.config.ts"
+    "db:postgres:generate": "drizzle-kit generate --config postgres.drizzle.config.ts",
+    "db:postgres:migrate": "drizzle-kit migrate --config postgres.drizzle.config.ts"
   },
   "dependencies": {
     "@fragno-dev/db": "canary",
