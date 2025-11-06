@@ -1,4 +1,5 @@
-import { Home, MapPin, Users } from "lucide-react";
+import { Home, MapPin, Users, HandCoins, Sparkles, type LucideIcon } from "lucide-react";
+import { StripeIcon } from "~/components/icons/stripe";
 
 import { NavMain } from "~/components/nav-main";
 import { NavUser } from "~/components/nav-user";
@@ -19,6 +20,12 @@ const navItems = [
     adminOnly: false,
   },
   {
+    title: "Membership",
+    url: "/dashboard/subscribe",
+    icon: Sparkles,
+    adminOnly: false,
+  },
+  {
     title: "Locations",
     url: "/dashboard/admin/locations",
     icon: MapPin,
@@ -28,6 +35,18 @@ const navItems = [
     title: "Users",
     url: "/dashboard/admin/users",
     icon: Users,
+    adminOnly: true,
+  },
+  {
+    title: "Members",
+    url: "/dashboard/admin/members",
+    icon: HandCoins,
+    adminOnly: true,
+  },
+  {
+    title: "Stripe",
+    url: "/dashboard/admin/stripe",
+    icon: StripeIcon as LucideIcon,
     adminOnly: true,
   },
 ];

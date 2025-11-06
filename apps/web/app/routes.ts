@@ -14,14 +14,19 @@ export default [
   ...prefix("dashboard", [
     layout("routes/dashboard/dashboard-layout.tsx", [
       index("routes/dashboard/dashboard-home.tsx"),
+      route("subscribe", "routes/dashboard/subscribe.tsx"),
+      route("subscribe-confirm", "routes/dashboard/subscribe-confirm.tsx"),
       ...prefix("admin", [
         layout("routes/dashboard/admin-layout.tsx", [
           route("locations", "routes/dashboard/locations.tsx"),
           route("users", "routes/dashboard/users.tsx"),
+          route("members", "routes/dashboard/members.tsx"),
+          route("stripe", "routes/dashboard/stripe.tsx"),
         ]),
       ]),
     ]),
   ]),
   route("api/simple-auth/*", "routes/api/simple-auth.tsx"),
   route("api/otp/*", "routes/api/otp.tsx"),
+  route("api/stripe/*", "routes/api/stripe.tsx"),
 ] satisfies RouteConfig;

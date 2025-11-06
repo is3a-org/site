@@ -6,6 +6,9 @@
     },
     {
       "path": "./tsconfig.cloudflare.json"
+    },
+    {
+      "path": "../../packages/simple-auth-fragment"
     }
   ],
   "compilerOptions": {

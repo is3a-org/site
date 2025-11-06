@@ -14,7 +14,7 @@ type SessionDeps = {
 };
 
 export function createSessionServices(orm: AbstractQuery<typeof authSchema>) {
-  return {
+  const services = {
     createSession: async (userId: string) => {
       const expiresAt = new Date();
       expiresAt.setDate(expiresAt.getDate() + 30); // 30 days from now
@@ -73,7 +73,28 @@ export function createSessionServices(orm: AbstractQuery<typeof authSchema>) {
       await orm.delete("session", session.id);
       return true;
     },
+    getSession: async (
+      headers: Headers,
+    ): Promise<{ userId: string; email: string } | undefined> => {
+      const sessionId = extractSessionId(headers);
+
+      if (!sessionId) {
+        return undefined;
+      }
+
+      const session = await services.validateSession(sessionId);
+
+      if (!session) {
+        return undefined;
+      }
+
+      return {
+        userId: session.user.id,
+        email: session.user.email,
+      };
+    },
   };
+  return services;
 }
 
 export const sessionRoutesFactory = defineRoutes<
