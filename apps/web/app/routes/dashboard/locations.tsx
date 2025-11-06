@@ -25,90 +25,82 @@ import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import { Checkbox } from "~/components/ui/checkbox";
 import { Plus, Pencil, Trash2, MapPin, Mail, Globe, Calendar } from "lucide-react";
-import { location } from "~/db/postgres/postgres.schema";
-import { eq } from "drizzle-orm";
+import { LocationRepo, NewLocationSchema, type Location } from "~/db/repo/locations";
 
 export async function loader({ context }: Route.LoaderArgs) {
-  const locations = await context.db.select().from(location).orderBy(location.name);
+  const locations = await new LocationRepo(context.db).getAllLocations();
   return { locations };
 }
 
 export async function action({ request, context }: Route.ActionArgs) {
   const formData = await request.formData();
   const intent = formData.get("intent");
+  const repo = new LocationRepo(context.db);
 
   if (intent === "create") {
-    const name = formData.get("name") as string;
-    const email = formData.get("email") as string | null;
-    const address = formData.get("address") as string | null;
-    const website = formData.get("website") as string | null;
-    const seasonSummer = formData.get("seasonSummer") === "on";
-    const seasonAutumn = formData.get("seasonAutumn") === "on";
-    const seasonWinter = formData.get("seasonWinter") === "on";
-    const seasonSpring = formData.get("seasonSpring") === "on";
+    const data = Object.fromEntries(formData.entries());
+    const rawData = {
+      name: data.name,
+      email: data.email === "" ? null : data.email,
+      address: data.address === "" ? null : data.address,
+      website: data.website === "" ? null : data.website,
+      seasonSummer: data.seasonSummer === "on",
+      seasonAutumn: data.seasonAutumn === "on",
+      seasonWinter: data.seasonWinter === "on",
+      seasonSpring: data.seasonSpring === "on",
+    };
 
-    await context.db.insert(location).values({
-      name,
-      email: email || null,
-      address: address || null,
-      website: website || null,
-      seasonSummer,
-      seasonAutumn,
-      seasonWinter,
-      seasonSpring,
-    });
+    const result = NewLocationSchema.safeParse(rawData);
+
+    if (!result.success) {
+      return {
+        success: false,
+        errors: result.error.flatten().fieldErrors,
+      };
+    }
+
+    await repo.createLocation(result.data);
 
     return { success: true };
   }
 
   if (intent === "update") {
-    const id = parseInt(formData.get("id") as string);
-    const name = formData.get("name") as string;
-    const email = formData.get("email") as string | null;
-    const address = formData.get("address") as string | null;
-    const website = formData.get("website") as string | null;
-    const seasonSummer = formData.get("seasonSummer") === "on";
-    const seasonAutumn = formData.get("seasonAutumn") === "on";
-    const seasonWinter = formData.get("seasonWinter") === "on";
-    const seasonSpring = formData.get("seasonSpring") === "on";
+    const data = Object.fromEntries(formData.entries());
+    const id = parseInt(data.id as string);
 
-    await context.db
-      .update(location)
-      .set({
-        name,
-        email: email || null,
-        address: address || null,
-        website: website || null,
-        seasonSummer,
-        seasonAutumn,
-        seasonWinter,
-        seasonSpring,
-      })
-      .where(eq(location.id, id));
+    const rawData = {
+      name: data.name,
+      email: data.email === "" ? null : data.email,
+      address: data.address === "" ? null : data.address,
+      website: data.website === "" ? null : data.website,
+      seasonSummer: data.seasonSummer === "on",
+      seasonAutumn: data.seasonAutumn === "on",
+      seasonWinter: data.seasonWinter === "on",
+      seasonSpring: data.seasonSpring === "on",
+    };
+
+    const result = NewLocationSchema.safeParse(rawData);
+
+    if (!result.success) {
+      return {
+        success: false,
+        errors: result.error.flatten().fieldErrors,
+      };
+    }
+
+    await repo.updateLocation(id, result.data);
 
     return { success: true };
   }
 
   if (intent === "delete") {
     const id = parseInt(formData.get("id") as string);
-    await context.db.delete(location).where(eq(location.id, id));
+    await repo.deleteLocation(id);
     return { success: true };
   }
 
   return { success: false };
 }
-
-type Location = {
-  id: number;
-  name: string;
-  email: string | null;
-  address: string | null;
-  website: string | null;
-  seasonSummer: boolean;
-  seasonAutumn: boolean;
-  seasonWinter: boolean;
-  seasonSpring: boolean;
-};
 
 export default function LocationsPage({ loaderData }: Route.ComponentProps) {
   const { locations } = loaderData;
