@@ -12,7 +12,8 @@ export const authSchema = schema((s) => {
           "createdAt",
           column("timestamp").defaultTo((b) => b.now()),
         )
-        .createIndex("idx_user_email", ["email"]);
+        .createIndex("idx_user_email", ["email"])
+        .createIndex("idx_user_id", ["id"], { unique: true });
     })
     .addTable("session", (t) => {
       return t

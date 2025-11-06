@@ -9,6 +9,7 @@ import {
   index,
   bigint,
   foreignKey,
+  boolean,
 } from "drizzle-orm/pg-core";
 import { createId } from "@fragno-dev/db/id";
 import { relations } from "drizzle-orm";
@@ -52,6 +53,7 @@ export const user_simple_auth_db = pgTable(
   },
   (table) => [
     index("idx_user_email_simple-auth-db").on(table.email),
+    uniqueIndex("idx_user_id_simple-auth-db").on(table.id),
     index("idx_user_createdAt_simple-auth-db").on(table.createdAt),
   ],
 );
@@ -151,4 +153,44 @@ export const one_time_password_db_schema = {
   one_time_token_one_time_password_db: one_time_token_one_time_password_db,
   one_time_token: one_time_token_one_time_password_db,
   schemaVersion: 2,
+};
+
+// ============================================================================
+// Fragment: stripe
+// ============================================================================
+
+export const subscription_stripe = pgTable(
+  "subscription_stripe",
+  {
+    id: varchar("id", { length: 30 })
+      .notNull()
+      .$defaultFn(() => createId()),
+    referenceId: text("referenceId"),
+    stripePriceId: text("stripePriceId").notNull(),
+    stripeCustomerId: text("stripeCustomerId").notNull(),
+    stripeSubscriptionId: text("stripeSubscriptionId").notNull(),
+    status: text("status").notNull().default("incomplete"),
+    periodStart: timestamp("periodStart"),
+    periodEnd: timestamp("periodEnd"),
+    trialStart: timestamp("trialStart"),
+    trialEnd: timestamp("trialEnd"),
+    cancelAtPeriodEnd: boolean("cancelAtPeriodEnd").notNull().default(false),
+    cancelAt: timestamp("cancelAt"),
+    seats: integer("seats"),
+    createdAt: timestamp("createdAt").notNull().defaultNow(),
+    updatedAt: timestamp("updatedAt").notNull().defaultNow(),
+    _internalId: bigserial("_internalId", { mode: "number" }).primaryKey().notNull(),
+    _version: integer("_version").notNull().default(0),
+  },
+  (table) => [
+    index("idx_stripe_customer_id_stripe").on(table.stripeCustomerId),
+    index("idx_stripe_subscription_id_stripe").on(table.stripeSubscriptionId),
+    index("idx_reference_id_stripe").on(table.referenceId),
+  ],
+);
+
+export const stripe_schema = {
+  subscription_stripe: subscription_stripe,
+  subscription: subscription_stripe,
+  schemaVersion: 1,
 };

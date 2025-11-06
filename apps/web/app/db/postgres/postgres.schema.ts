@@ -8,8 +8,13 @@ import {
   boolean,
   jsonb,
   pgEnum,
+  varchar,
 } from "drizzle-orm/pg-core";
-import { simple_auth_db_schema, one_time_password_db_schema } from "./fragno-schema.ts";
+import {
+  simple_auth_db_schema,
+  one_time_password_db_schema,
+  stripe_schema,
+} from "./fragno-schema.ts";
 
 const foreignKeyActions: Record<"onUpdate" | "onDelete", UpdateDeleteAction> = {
   onUpdate: "restrict",
@@ -77,6 +82,15 @@ export const eventAttendee = pgTable("event_attendee", {
   stripeTransactionId: text(),
 });
 
+export const user_stripe = pgTable("user_stripe", {
+  id: serial().primaryKey(),
+  userId: varchar("userId", { length: 30 })
+    .notNull()
+    .references(() => simple_auth_db_schema.user.id, foreignKeyActions)
+    .unique(),
+  stripeCustomerId: text().unique(),
+});
+
 export const schema = {
   location,
   event,
@@ -86,4 +100,6 @@ export const schema = {
   eventAttendee,
   ...simple_auth_db_schema,
   ...one_time_password_db_schema,
+  ...stripe_schema,
+  user_stripe,
 };
