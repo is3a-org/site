@@ -1,4 +1,4 @@
-import { Settings2, Building2, Home, Sparkles, ArrowUp, MapPin } from "lucide-react";
+import { Home, Sparkles, ArrowUp, MapPin } from "lucide-react";
 
 import { NavMain } from "~/components/nav-main";
 import { NavUser } from "~/components/nav-user";
@@ -24,34 +24,6 @@ const navItems = [
     title: "Locations",
     url: "/dashboard/locations",
     icon: MapPin,
-  },
-  {
-    title: "Organization",
-    url: "/dashboard/organization",
-    icon: Building2,
-    isActive: true,
-    items: [
-      {
-        title: "Overview",
-        url: "/dashboard/organization",
-      },
-      {
-        title: "Members",
-        url: "/dashboard/organization/members",
-      },
-    ],
-  },
-  {
-    title: "Developer",
-    url: "#",
-    icon: Settings2,
-    isActive: true,
-    items: [
-      {
-        title: "API Keys",
-        url: "/dashboard/api-keys",
-      },
-    ],
   },
 ];
 
