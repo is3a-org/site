@@ -71,14 +71,14 @@
   "type": "module",
   "private": true,
   "dependencies": {
-    "@fragno-dev/core": "0.0.0-canary-18996503596-1-20251101121037",
-    "@fragno-dev/db": "0.0.0-canary-18996503596-1-20251101121037",
+    "@fragno-dev/core": "0.1.7",
+    "@fragno-dev/db": "0.1.13",
     "zod": "^4.1.12"
   },
   "devDependencies": {
     "@electric-sql/pglite": "^0.3.11",
-    "@fragno-dev/cli": "0.0.0-canary-18996503596-1-20251101121037",
-    "@fragno-dev/test": "0.0.0-canary-18996503596-1-20251101121037",
+    "@fragno-dev/cli": "0.1.16",
+    "@fragno-dev/test": "0.1.11",
     "@fragno-dev/unplugin-fragno": "^0.0.3",
     "@types/node": "^22.18.13",
     "drizzle-orm": "^0.44.7",
