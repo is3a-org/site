@@ -107,7 +107,7 @@ export default function Login({ actionData }: Route.ComponentProps) {
 
             <p className="text-muted-foreground mt-6 text-center text-sm">
               Not a member yet?{" "}
-              <a href="/join" className="text-primary font-semibold hover:underline">
+              <a href="/sign-up" className="text-primary font-semibold hover:underline">
                 Join IS3A
               </a>
             </p>
