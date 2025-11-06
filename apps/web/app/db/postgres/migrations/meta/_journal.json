@@ -22,6 +22,13 @@
       "when": 1762000807618,
       "tag": "0002_multiple_seasons_per_location",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1762426936873,
+      "tag": "0003_awesome_korg",
+      "breakpoints": true
     }
   ]
 }
