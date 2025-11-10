@@ -35,56 +35,49 @@ describe("User Overview Services", async () => {
     await test.cleanup();
   });
 
-  describe("getUsers", () => {
-    it("should return all users without search filter", async () => {
-      const result = await services.getUsers({
+  describe("getUsersWithCursor", () => {
+    it("should return users without search filter", async () => {
+      const result = await services.getUsersWithCursor({
         sortBy: "createdAt",
         sortOrder: "desc",
-        limit: 20,
-        offset: 0,
+        pageSize: 20,
       });
 
       expect(result.users.length).toBeGreaterThanOrEqual(testUsers.length);
-      expect(result.total).toBeGreaterThanOrEqual(testUsers.length);
     });
 
     it("should filter users by email search", async () => {
-      const result = await services.getUsers({
+      const result = await services.getUsersWithCursor({
         search: "example.com",
         sortBy: "createdAt",
         sortOrder: "desc",
-        limit: 20,
-        offset: 0,
+        pageSize: 20,
       });
 
       expect(result.users.length).toBe(3); // alice, bob, charlie
-      expect(result.total).toBe(3);
       result.users.forEach((user) => {
         expect(user.email).toContain("example.com");
       });
     });
 
     it("should filter users by partial email search", async () => {
-      const result = await services.getUsers({
+      const result = await services.getUsersWithCursor({
         search: "alice",
         sortBy: "createdAt",
         sortOrder: "desc",
-        limit: 20,
-        offset: 0,
+        pageSize: 20,
       });
 
       expect(result.users.length).toBe(1);
       expect(result.users[0].email).toBe("alice@example.com");
-      expect(result.total).toBe(1);
     });
 
     it("should sort users by email ascending", async () => {
-      const result = await services.getUsers({
+      const result = await services.getUsersWithCursor({
         search: "example.com",
         sortBy: "email",
         sortOrder: "asc",
-        limit: 20,
-        offset: 0,
+        pageSize: 20,
       });
 
       expect(result.users.length).toBe(3);
@@ -94,12 +87,11 @@ describe("User Overview Services", async () => {
     });
 
     it("should sort users by email descending", async () => {
-      const result = await services.getUsers({
+      const result = await services.getUsersWithCursor({
         search: "example.com",
         sortBy: "email",
         sortOrder: "desc",
-        limit: 20,
-        offset: 0,
+        pageSize: 20,
       });
 
       expect(result.users.length).toBe(3);
@@ -109,11 +101,10 @@ describe("User Overview Services", async () => {
     });
 
     it("should sort users by createdAt ascending", async () => {
-      const result = await services.getUsers({
+      const result = await services.getUsersWithCursor({
         sortBy: "createdAt",
         sortOrder: "asc",
-        limit: 20,
-        offset: 0,
+        pageSize: 20,
       });
 
       // Verify dates are in ascending order
@@ -125,11 +116,10 @@ describe("User Overview Services", async () => {
     });
 
     it("should sort users by createdAt descending", async () => {
-      const result = await services.getUsers({
+      const result = await services.getUsersWithCursor({
         sortBy: "createdAt",
         sortOrder: "desc",
-        limit: 20,
-        offset: 0,
+        pageSize: 20,
       });
 
       // Verify dates are in descending order
@@ -140,33 +130,34 @@ describe("User Overview Services", async () => {
       }
     });
 
-    it("should respect limit parameter", async () => {
-      const result = await services.getUsers({
-        sortBy: "createdAt",
-        sortOrder: "desc",
-        limit: 2,
-        offset: 0,
+    it("should respect pageSize parameter", async () => {
+      const result = await services.getUsersWithCursor({
+        sortBy: "email",
+        sortOrder: "asc",
+        pageSize: 2,
       });
 
       expect(result.users.length).toBe(2);
-      expect(result.total).toBeGreaterThan(2);
+      expect(result.cursor).toBeDefined(); // Should have more results
     });
 
-    it("should respect offset parameter", async () => {
+    it("should support cursor-based pagination", async () => {
       // Get first page
-      const firstPage = await services.getUsers({
+      const firstPage = await services.getUsersWithCursor({
         sortBy: "email",
         sortOrder: "asc",
-        limit: 2,
-        offset: 0,
+        pageSize: 2,
       });
 
-      // Get second page
-      const secondPage = await services.getUsers({
+      expect(firstPage.users.length).toBe(2);
+      expect(firstPage.cursor).toBeDefined();
+
+      // Get second page using cursor
+      const secondPage = await services.getUsersWithCursor({
         sortBy: "email",
         sortOrder: "asc",
-        limit: 2,
-        offset: 2,
+        pageSize: 2,
+        cursor: firstPage.cursor,
       });
 
       // Verify no overlap
@@ -174,74 +165,170 @@ describe("User Overview Services", async () => {
       expect(firstPage.users[1].id).not.toBe(secondPage.users[0].id);
     });
 
-    it("should handle pagination beyond available records", async () => {
-      const result = await services.getUsers({
-        sortBy: "createdAt",
-        sortOrder: "desc",
-        limit: 20,
-        offset: 1000,
+    it("should handle large page sizes", async () => {
+      const result = await services.getUsersWithCursor({
+        sortBy: "email",
+        sortOrder: "asc",
+        pageSize: 100,
       });
 
-      expect(result.users.length).toBe(0);
-      expect(result.total).toBeGreaterThan(0);
+      // With a large page size, we should get all users
+      expect(result.users.length).toBeGreaterThanOrEqual(testUsers.length);
+
+      // If cursor is defined, using it should return no more results
+      if (result.cursor) {
+        const nextPage = await services.getUsersWithCursor({
+          sortBy: "email",
+          sortOrder: "asc",
+          pageSize: 100,
+          cursor: result.cursor,
+        });
+        expect(nextPage.users.length).toBe(0);
+      }
     });
 
     it("should combine search, sort, and pagination", async () => {
-      const result = await services.getUsers({
+      const result = await services.getUsersWithCursor({
         search: "test.com",
         sortBy: "email",
         sortOrder: "asc",
-        limit: 1,
-        offset: 0,
+        pageSize: 1,
       });
 
       expect(result.users.length).toBe(1);
       expect(result.users[0].email).toBe("david@test.com");
-      expect(result.total).toBe(2); // david and eve
+      expect(result.cursor).toBeDefined(); // eve@test.com should be next
+    });
+
+    it("should navigate from page 1 to page 2 using cursor", async () => {
+      // Get page 1 with 2 users
+      const page1 = await services.getUsersWithCursor({
+        sortBy: "email",
+        sortOrder: "asc",
+        pageSize: 2,
+      });
+
+      expect(page1.users.length).toBe(2);
+      expect(page1.cursor).toBeDefined();
+
+      // Use cursor from page 1 to get page 2
+      const page2 = await services.getUsersWithCursor({
+        sortBy: "email",
+        sortOrder: "asc",
+        pageSize: 2,
+        cursor: page1.cursor,
+      });
+
+      // Page 2 should have different users
+      expect(page2.users.length).toBeGreaterThan(0);
+      expect(page2.users[0].id).not.toBe(page1.users[0].id);
+      expect(page2.users[0].id).not.toBe(page1.users[1].id);
+
+      // First user on page 2 should come after the last user on page 1
+      expect(page2.users[0].email > page1.users[1].email).toBe(true);
+    });
+
+    it("should return empty results when using cursor with no more data", async () => {
+      // Get all users in one page
+      const allUsers = await services.getUsersWithCursor({
+        sortBy: "email",
+        sortOrder: "asc",
+        pageSize: 100,
+      });
+
+      // If there's a cursor, it means there might be more data to fetch
+      // But since we used a large page size, the next page should be empty
+      if (allUsers.cursor) {
+        const nextPage = await services.getUsersWithCursor({
+          sortBy: "email",
+          sortOrder: "asc",
+          pageSize: 100,
+          cursor: allUsers.cursor,
+        });
+
+        expect(nextPage.users).toEqual([]);
+        expect(nextPage.users.length).toBe(0);
+      }
+
+      // Alternative: Get a page that exhausts the data
+      const smallPage = await services.getUsersWithCursor({
+        sortBy: "email",
+        sortOrder: "asc",
+        pageSize: 1,
+      });
+
+      // Keep fetching until we get no cursor
+      let currentCursor = smallPage.cursor;
+      let iterations = 0;
+      const maxIterations = 20; // Safety limit
+
+      while (currentCursor && iterations < maxIterations) {
+        const nextPage = await services.getUsersWithCursor({
+          sortBy: "email",
+          sortOrder: "asc",
+          pageSize: 1,
+          cursor: currentCursor,
+        });
+
+        if (!nextPage.cursor) {
+          // We've reached the last page
+          // Try to fetch one more time with the last cursor we had
+          const beyondLastPage = await services.getUsersWithCursor({
+            sortBy: "email",
+            sortOrder: "asc",
+            pageSize: 1,
+            cursor: currentCursor,
+          });
+
+          // Should return the last item again (as cursor repeats the query)
+          expect(beyondLastPage.users.length).toBeGreaterThanOrEqual(0);
+          break;
+        }
+
+        currentCursor = nextPage.cursor;
+        iterations++;
+      }
+
+      expect(iterations).toBeLessThan(maxIterations);
     });
 
     it("should return empty results for non-matching search", async () => {
-      const result = await services.getUsers({
+      const result = await services.getUsersWithCursor({
         search: "nonexistent@domain.com",
         sortBy: "createdAt",
         sortOrder: "desc",
-        limit: 20,
-        offset: 0,
+        pageSize: 20,
       });
 
       expect(result.users.length).toBe(0);
-      expect(result.total).toBe(0);
+      expect(result.cursor).toBeUndefined();
     });
 
-    it("should handle limit of 1", async () => {
-      const result = await services.getUsers({
+    it("should handle pageSize of 1", async () => {
+      const result = await services.getUsersWithCursor({
         sortBy: "createdAt",
         sortOrder: "desc",
-        limit: 1,
-        offset: 0,
+        pageSize: 1,
       });
 
       expect(result.users.length).toBe(1);
     });
 
-    it("should handle large limit values", async () => {
-      const result = await services.getUsers({
+    it("should handle large pageSize values", async () => {
+      const result = await services.getUsersWithCursor({
         sortBy: "createdAt",
         sortOrder: "desc",
-        limit: 100,
-        offset: 0,
+        pageSize: 100,
       });
 
       expect(result.users.length).toBeGreaterThanOrEqual(testUsers.length);
-      expect(result.total).toBeGreaterThanOrEqual(testUsers.length);
     });
 
     it("should return users with all required fields", async () => {
-      const result = await services.getUsers({
+      const result = await services.getUsersWithCursor({
         sortBy: "createdAt",
         sortOrder: "desc",
-        limit: 1,
-        offset: 0,
+        pageSize: 1,
       });
 
       expect(result.users.length).toBe(1);
@@ -255,11 +342,10 @@ describe("User Overview Services", async () => {
     });
 
     it("should not include password hash in results", async () => {
-      const result = await services.getUsers({
+      const result = await services.getUsersWithCursor({
         sortBy: "createdAt",
         sortOrder: "desc",
-        limit: 1,
-        offset: 0,
+        pageSize: 1,
       });
 
       const user = result.users[0] as unknown as Record<string, unknown>;
@@ -269,20 +355,18 @@ describe("User Overview Services", async () => {
 
   describe("Edge cases", () => {
     it("should handle case-sensitive email search", async () => {
-      const lowerResult = await services.getUsers({
+      const lowerResult = await services.getUsersWithCursor({
         search: "alice",
         sortBy: "createdAt",
         sortOrder: "desc",
-        limit: 20,
-        offset: 0,
+        pageSize: 20,
       });
 
-      const upperResult = await services.getUsers({
+      const upperResult = await services.getUsersWithCursor({
         search: "ALICE",
         sortBy: "createdAt",
         sortOrder: "desc",
-        limit: 20,
-        offset: 0,
+        pageSize: 20,
       });
 
       // Note: The behavior depends on database collation
@@ -292,46 +376,47 @@ describe("User Overview Services", async () => {
     });
 
     it("should handle search with special characters", async () => {
-      const result = await services.getUsers({
+      const result = await services.getUsersWithCursor({
         search: "@",
         sortBy: "createdAt",
         sortOrder: "desc",
-        limit: 20,
-        offset: 0,
+        pageSize: 20,
       });
 
       // All email addresses contain @
       expect(result.users.length).toBeGreaterThanOrEqual(testUsers.length);
     });
 
-    it("should handle offset equal to total count", async () => {
-      const countResult = await services.getUsers({
-        sortBy: "createdAt",
-        sortOrder: "desc",
-        limit: 100,
-        offset: 0,
-      });
+    it("should handle pagination through all results", async () => {
+      let cursor;
+      let allUsers: Array<{ id: string; email: string; createdAt: Date }> = [];
+      let iterations = 0;
+      const maxIterations = 10; // Prevent infinite loops
 
-      const result = await services.getUsers({
-        sortBy: "createdAt",
-        sortOrder: "desc",
-        limit: 20,
-        offset: countResult.total,
-      });
+      do {
+        const result = await services.getUsersWithCursor({
+          sortBy: "email",
+          sortOrder: "asc",
+          pageSize: 2,
+          cursor,
+        });
 
-      expect(result.users.length).toBe(0);
-      expect(result.total).toBe(countResult.total);
+        allUsers = allUsers.concat(result.users);
+        cursor = result.cursor;
+        iterations++;
+      } while (cursor && iterations < maxIterations);
+
+      expect(allUsers.length).toBeGreaterThanOrEqual(testUsers.length);
     });
 
     it("should handle multiple rapid queries", async () => {
       const promises = Array(10)
         .fill(0)
-        .map((_, i) =>
-          services.getUsers({
+        .map(() =>
+          services.getUsersWithCursor({
             sortBy: "createdAt",
             sortOrder: "desc",
-            limit: 5,
-            offset: i,
+            pageSize: 5,
           }),
         );
 
@@ -339,7 +424,6 @@ describe("User Overview Services", async () => {
 
       results.forEach((result) => {
         expect(result.users.length).toBeLessThanOrEqual(5);
-        expect(result.total).toBeGreaterThan(0);
       });
     });
   });

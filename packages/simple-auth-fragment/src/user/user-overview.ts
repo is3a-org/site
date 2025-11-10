@@ -1,98 +1,112 @@
 import { defineRoute, defineRoutes } from "@fragno-dev/core";
 import type { AbstractQuery } from "@fragno-dev/db/query";
+import { type Cursor, decodeCursor } from "@fragno-dev/db/cursor";
 import { authSchema } from "../schema";
 import { z } from "zod";
 
+export type SortField = "email" | "createdAt";
+export type SortOrder = "asc" | "desc";
+
+export interface GetUsersParams {
+  search?: string;
+  sortBy: SortField;
+  sortOrder: SortOrder;
+  pageSize: number;
+  cursor?: Cursor;
+}
+
+export interface UserResult {
+  id: string;
+  email: string;
+  createdAt: Date;
+}
+
 export function createUserOverviewServices(db: AbstractQuery<typeof authSchema>) {
+  const mapUser = (user: { id: unknown; email: string; createdAt: Date }): UserResult => ({
+    id: String(user.id),
+    email: user.email,
+    createdAt: user.createdAt,
+  });
+
   return {
-    getUsers: async (params: {
-      search?: string;
-      sortBy: "email" | "createdAt";
-      sortOrder: "asc" | "desc";
-      limit: number;
-      offset: number;
-    }) => {
-      const { search, sortBy, sortOrder, limit, offset } = params;
+    getUsersWithCursor: async (params: GetUsersParams) => {
+      const { search, sortBy, sortOrder, pageSize, cursor } = params;
 
-      // When sorting by email, we can use the database index for efficient sorting
-      if (sortBy === "email") {
-        let allUsers;
+      // Determine which index to use based on search and sortBy
+      // When searching, only email sorting is allowed (search uses email index)
+      const effectiveSortBy: SortField = search ? "email" : sortBy;
+      const indexName = effectiveSortBy === "email" ? "idx_user_email" : "idx_user_createdAt";
 
+      // If cursor is provided, extract its metadata to ensure consistency
+      const effectiveSortOrder = cursor ? cursor.orderDirection : sortOrder;
+      const effectivePageSize = cursor ? cursor.pageSize : pageSize;
+
+      const result = await db.findWithCursor("user", (b) => {
+        // When searching, we must filter by email and can only use the email index
         if (search) {
-          // Use email index for search with database-level sorting
-          allUsers = await db.find("user", (b) =>
-            b
-              .whereIndex("idx_user_email", (eb) => eb("email", "contains", search))
-              .orderByIndex("idx_user_email", sortOrder),
-          );
-        } else {
-          // Fetch all users with email-based sorting at database level
-          // Note: We use a query that matches all records via the email index
-          allUsers = await db.find("user", (b) =>
-            b
-              .whereIndex("idx_user_email", (eb) => eb("email", "!=", ""))
-              .orderByIndex("idx_user_email", sortOrder),
-          );
+          const query = b
+            .whereIndex("idx_user_email", (eb) => eb("email", "contains", search))
+            .orderByIndex("idx_user_email", effectiveSortOrder)
+            .pageSize(effectivePageSize);
+
+          // Add cursor for pagination continuation
+          return cursor ? query.after(cursor) : query;
         }
 
-        // Apply offset-based pagination in memory
-        const paginatedUsers = allUsers.slice(offset, offset + limit);
+        // When not searching, use the appropriate index for sorting
+        const query = b
+          .whereIndex(indexName)
+          .orderByIndex(indexName, effectiveSortOrder)
+          .pageSize(effectivePageSize);
 
-        return {
-          users: paginatedUsers.map((user) => ({
-            id: user.id.valueOf(),
-            email: user.email,
-            createdAt: user.createdAt,
-          })),
-          total: allUsers.length,
-        };
-      }
-
-      // For createdAt sorting, we need to fetch all and sort in memory (no index on createdAt)
-      let users;
-      if (search) {
-        users = await db.find("user", (b) =>
-          b.whereIndex("idx_user_email", (eb) => eb("email", "contains", search)),
-        );
-      } else {
-        // Use email index to get all users (more efficient than primary with != filter)
-        users = await db.find("user", (b) =>
-          b.whereIndex("idx_user_email", (eb) => eb("email", "!=", "")),
-        );
-      }
-
-      // Sort by createdAt in memory
-      users = users.sort((a, b) => {
-        const aTime = a.createdAt.getTime();
-        const bTime = b.createdAt.getTime();
-        return sortOrder === "asc" ? aTime - bTime : bTime - aTime;
+        // Add cursor for pagination continuation
+        return cursor ? query.after(cursor) : query;
       });
 
-      // Apply pagination in memory
-      const paginatedUsers = users.slice(offset, offset + limit);
-
       return {
-        users: paginatedUsers.map((user) => ({
-          id: user.id.valueOf(),
-          email: user.email,
-          createdAt: user.createdAt,
-        })),
-        total: users.length,
+        users: result.items.map(mapUser),
+        cursor: result.cursor,
+        hasNextPage: result.hasNextPage,
       };
     },
   };
 }
+
+const sortBySchema = z.enum(["email", "createdAt"]);
 
 export const userOverviewRoutesFactory = defineRoutes<
   {},
   {},
   ReturnType<typeof createUserOverviewServices>
 >().create(({ services }) => {
+  const parseQueryParams = (query: URLSearchParams) => {
+    const search = query.get("search") || undefined;
+    const requestedSortBy = (query.get("sortBy") || "createdAt") as SortField;
+    const sortOrder = (query.get("sortOrder") || "desc") as SortOrder;
+    const pageSize = Math.min(Math.max(Number(query.get("pageSize")) || 20, 1), 100);
+
+    // When searching, enforce email sorting for efficient queries
+    const sortBy: SortField = search ? "email" : requestedSortBy;
+
+    return { search, sortBy, sortOrder, pageSize };
+  };
+
+  const parseCursor = (cursorParam: string | null): Cursor | undefined => {
+    if (!cursorParam) {
+      return undefined;
+    }
+    try {
+      return decodeCursor(cursorParam);
+    } catch {
+      return undefined;
+    }
+  };
+
   return [
     defineRoute({
       method: "GET",
       path: "/users",
-      queryParameters: ["search", "sortBy", "sortOrder", "limit", "offset"],
+      queryParameters: ["search", "sortBy", "sortOrder", "pageSize", "cursor"],
       outputSchema: z.object({
         users: z.array(
           z.object({
@@ -101,38 +115,29 @@ export const userOverviewRoutesFactory = defineRoutes<
             createdAt: z.string(),
           }),
         ),
-        total: z.number(),
-        limit: z.number(),
-        offset: z.number(),
+        cursor: z.string().optional(),
+        hasNextPage: z.boolean(),
+        sortBy: sortBySchema,
       }),
       errorCodes: ["invalid_input"],
       handler: async ({ query }, { json }) => {
-        // Parse query parameters with defaults
-        const search = query.get("search") || undefined;
-        const sortBy = (query.get("sortBy") || "createdAt") as "email" | "createdAt";
-        const sortOrder = (query.get("sortOrder") || "desc") as "asc" | "desc";
-        const limit = Math.min(Math.max(Number(query.get("limit")) || 20, 1), 100);
-        const offset = Math.max(Number(query.get("offset")) || 0, 0);
+        const params = parseQueryParams(query);
+        const cursor = parseCursor(query.get("cursor"));
 
-        // Get users from service
-        const result = await services.getUsers({
-          search,
-          sortBy,
-          sortOrder,
-          limit,
-          offset,
+        const result = await services.getUsersWithCursor({
+          ...params,
+          cursor,
         });
 
-        // Format response
         return json({
           users: result.users.map((user) => ({
             id: user.id,
             email: user.email,
             createdAt: user.createdAt.toISOString(),
           })),
-          total: result.total,
-          limit,
-          offset,
+          cursor: result.cursor?.encode(),
+          hasNextPage: result.hasNextPage,
+          sortBy: params.sortBy, // Return the actual sortBy used (may differ from requested)
         });
       },
     }),

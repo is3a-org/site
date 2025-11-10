@@ -31,8 +31,9 @@ export default function UsersPage() {
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState<"email" | "createdAt">("createdAt");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
-  const [page, setPage] = useState(0);
-  const limit = 10;
+  const [cursor, setCursor] = useState<string | undefined>(undefined);
+  const [cursorHistory, setCursorHistory] = useState<(string | undefined)[]>([]);
+  const pageSize = 10;
 
   // Use the hook from the simple-auth fragment
   const { data, loading, error } = simpleAuthClient.useUsers({
@@ -40,27 +41,50 @@ export default function UsersPage() {
       search: search || undefined,
       sortBy,
       sortOrder,
-      limit: limit.toString(),
-      offset: (page * limit).toString(),
+      pageSize: pageSize.toString(),
+      cursor,
     },
   });
 
   const handleSearch = (value: string) => {
     setSearch(value);
-    setPage(0); // Reset to first page on new search
+    setCursor(undefined); // Reset to first page on new search
+    setCursorHistory([]); // Clear history
   };
 
   const toggleSort = (column: "email" | "createdAt") => {
+    // When searching, only allow email sorting
+    if (search && column === "createdAt") {
+      return;
+    }
+
     if (sortBy === column) {
       setSortOrder(sortOrder === "asc" ? "desc" : "asc");
     } else {
       setSortBy(column);
       setSortOrder("asc");
     }
-    setPage(0); // Reset to first page on sort change
+    setCursor(undefined); // Reset to first page on sort change
+    setCursorHistory([]); // Clear history
   };
 
-  const totalPages = data ? Math.ceil(data.total / limit) : 0;
+  const handleNextPage = () => {
+    if (data?.cursor) {
+      setCursorHistory([...cursorHistory, cursor]);
+      setCursor(data.cursor);
+    }
+  };
+
+  const handlePreviousPage = () => {
+    const newHistory = [...cursorHistory];
+    const previousCursor = newHistory.pop();
+    setCursorHistory(newHistory);
+    setCursor(previousCursor);
+  };
+
+  const currentPage = cursorHistory.length + 1;
+  const hasPreviousPage = cursorHistory.length > 0;
+  const hasNextPage = data?.hasNextPage ?? false;
 
   return (
     <>
@@ -84,7 +108,7 @@ export default function UsersPage() {
           <CardHeader>
             <CardTitle>User Overview</CardTitle>
             <CardDescription>
-              {data ? `${data.total} total user${data.total !== 1 ? "s" : ""}` : "Loading..."}
+              {loading ? "Loading..." : `Showing ${data?.users.length ?? 0} users`}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -146,6 +170,12 @@ export default function UsersPage() {
                             size="sm"
                             className="data-[state=open]:bg-accent -ml-3 h-8"
                             onClick={() => toggleSort("createdAt")}
+                            disabled={!!search}
+                            title={
+                              search
+                                ? "Sorting by Created At is disabled when searching"
+                                : undefined
+                            }
                           >
                             Created At
                             <ArrowUpDown className="ml-2 h-4 w-4" />
@@ -158,7 +188,7 @@ export default function UsersPage() {
                       {data.users.length === 0 ? (
                         <TableRow>
                           <TableCell colSpan={3} className="h-24 text-center">
-                            {search ? "No users found matching your search." : "No users yet."}
+                            No users found
                           </TableCell>
                         </TableRow>
                       ) : (
@@ -185,32 +215,26 @@ export default function UsersPage() {
                 </div>
 
                 {/* Pagination */}
-                {totalPages > 1 && (
+                {(hasPreviousPage || hasNextPage) && (
                   <div className="mt-4 flex items-center justify-between">
                     <p className="text-muted-foreground text-sm">
-                      Showing {page * limit + 1} to {Math.min((page + 1) * limit, data.total)} of{" "}
-                      {data.total} users
+                      Page {currentPage} • Showing {pageSize} users per page
                     </p>
                     <div className="flex items-center gap-2">
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => setPage(page - 1)}
-                        disabled={page === 0}
+                        onClick={handlePreviousPage}
+                        disabled={!hasPreviousPage || loading}
                       >
                         <ChevronLeft className="h-4 w-4" />
                         Previous
                       </Button>
-                      <div className="flex items-center gap-1">
-                        <span className="text-sm">
-                          Page {page + 1} of {totalPages}
-                        </span>
-                      </div>
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => setPage(page + 1)}
-                        disabled={page >= totalPages - 1}
+                        onClick={handleNextPage}
+                        disabled={!hasNextPage || loading}
                       >
                         Next
                         <ChevronRight className="h-4 w-4" />

@@ -49,7 +49,10 @@ export const user_simple_auth_db = pgTable(
     _internalId: bigserial("_internalId", { mode: "number" }).primaryKey().notNull(),
     _version: integer("_version").notNull().default(0),
   },
-  (table) => [index("idx_user_email_simple-auth-db").on(table.email)],
+  (table) => [
+    index("idx_user_email_simple-auth-db").on(table.email),
+    index("idx_user_createdAt_simple-auth-db").on(table.createdAt),
+  ],
 );
 
 export const session_simple_auth_db = pgTable(
@@ -97,7 +100,7 @@ export const simple_auth_db_schema = {
   session_simple_auth_dbRelations: session_simple_auth_dbRelations,
   session: session_simple_auth_db,
   sessionRelations: session_simple_auth_dbRelations,
-  schemaVersion: 3,
+  schemaVersion: 4,
 };
 
 // ============================================================================
@@ -110,7 +113,7 @@ export const totp_secret_one_time_password_db = pgTable(
     id: varchar("id", { length: 30 })
       .notNull()
       .$defaultFn(() => createId()),
-    userId: bigint("userId", { mode: "number" }).notNull(),
+    userId: text("userId").notNull(),
     secret: text("secret").notNull(),
     backupCodes: text("backupCodes").notNull(),
     createdAt: timestamp("createdAt").notNull().defaultNow(),
@@ -126,7 +129,7 @@ export const one_time_token_one_time_password_db = pgTable(
     id: varchar("id", { length: 30 })
       .notNull()
       .$defaultFn(() => createId()),
-    userId: bigint("userId", { mode: "number" }).notNull(),
+    userId: text("userId").notNull(),
     token: text("token").notNull(),
     type: text("type").notNull(),
     expiresAt: timestamp("expiresAt").notNull(),

@@ -11,7 +11,14 @@ import {
 import { authSchema } from "./schema";
 import { createUserServices, userActionsRoutesFactory } from "./user/user-actions";
 import { createSessionServices, sessionRoutesFactory } from "./session/session";
-import { createUserOverviewServices, userOverviewRoutesFactory } from "./user/user-overview";
+import {
+  createUserOverviewServices,
+  userOverviewRoutesFactory,
+  type GetUsersParams,
+  type UserResult,
+  type SortField,
+  type SortOrder,
+} from "./user/user-overview";
 
 export interface AuthConfig {
   sendEmail?: (params: { to: string; subject: string; body: string }) => Promise<void>;
@@ -147,3 +154,4 @@ export function createAuthFragmentClients(fragnoConfig?: FragnoPublicClientConfi
 }
 
 export type { FragnoRouteConfig } from "@fragno-dev/core/api";
+export type { GetUsersParams, UserResult, SortField, SortOrder };

@@ -34,5 +34,8 @@ export const authSchema = schema((s) => {
         column: "id",
       },
       type: "one",
+    })
+    .alterTable("user", (t) => {
+      return t.createIndex("idx_user_createdAt", ["createdAt"]);
     });
 });
