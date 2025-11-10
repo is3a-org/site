@@ -1,5 +1,4 @@
 {
-  "name": "@is3a/simple-auth-fragment",
   "description": "A Fragno fragment",
   "version": "0.0.1",
   "files": [
@@ -73,19 +72,15 @@
   "dependencies": {
     "@fragno-dev/core": "0.0.0-canary-19136171264-1-20251106124900",
     "@fragno-dev/db": "0.0.0-canary-19136171264-1-20251106124900",
-    "zod": "^4.1.12"
+    "zod": "^4.0.5"
   },
   "devDependencies": {
-    "@electric-sql/pglite": "^0.3.11",
     "@fragno-dev/cli": "canary",
     "@fragno-dev/test": "0.0.0-canary-19136171264-1-20251106124900",
     "@fragno-dev/unplugin-fragno": "canary",
-    "@types/node": "^22.18.13",
-    "drizzle-orm": "^0.44.7",
-    "kysely": "^0.28.8",
-    "kysely-pglite": "^0.6.1",
-    "tsdown": "^0.11.13",
-    "vitest": "^4.0.6"
+    "@types/node": "^22",
+    "tsdown": "^0.11.9",
+    "vitest": "^2.0.0"
   },
   "peerDependencies": {
     "react": ">=18.0.0",
@@ -93,5 +88,6 @@
     "svelte": ">=4.0.0",
     "typescript": "^5",
     "vue": ">=3.0.0"
-  }
+  },
+  "name": "@is3a/one-time-password-fragment"
 }

@@ -1,6 +1,6 @@
 import { defineRoute, defineRoutes } from "@fragno-dev/core";
 import type { AbstractQuery } from "@fragno-dev/db/query";
-import { authSchema } from "../schema";
+import { otpSchema } from "../schema";
 import { z } from "zod";
 
 export interface TotpConfig {
@@ -8,7 +8,7 @@ export interface TotpConfig {
 }
 
 type TotpDeps = {
-  orm: AbstractQuery<typeof authSchema>;
+  orm: AbstractQuery<typeof otpSchema>;
   config: TotpConfig;
 };
 
@@ -200,7 +200,7 @@ function generateBackupCode(): string {
   return code;
 }
 
-export function createTotpServices(orm: AbstractQuery<typeof authSchema>, config: TotpConfig) {
+export function createTotpServices(orm: AbstractQuery<typeof otpSchema>, config: TotpConfig) {
   return {
     enableTotp: async (userId: string) => {
       // Check if TOTP is already enabled
@@ -233,7 +233,7 @@ export function createTotpServices(orm: AbstractQuery<typeof authSchema>, config
       });
 
       // Generate QR code URL
-      const issuer = config.issuer || "SimpleAuth";
+      const issuer = config?.issuer || "SimpleAuth";
       const qrCodeUrl = `otpauth://totp/${encodeURIComponent(issuer)}:${encodeURIComponent(userId)}?secret=${secret}&issuer=${encodeURIComponent(issuer)}`;
 
       return {

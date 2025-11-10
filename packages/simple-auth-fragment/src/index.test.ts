@@ -1,13 +1,15 @@
 import { afterAll, assert, describe, expect, it } from "vitest";
 import { authFragmentDefinition } from ".";
-import { userRoutesFactory } from "./user/user";
+import { userActionsRoutesFactory } from "./user/user-actions";
 import { sessionRoutesFactory } from "./session/session";
 import { createDatabaseFragmentForTest } from "@fragno-dev/test";
 
 describe("simple-auth-fragment", async () => {
   const { fragment, test } = await createDatabaseFragmentForTest(
-    authFragmentDefinition,
-    [userRoutesFactory, sessionRoutesFactory],
+    {
+      definition: authFragmentDefinition,
+      routes: [userActionsRoutesFactory, sessionRoutesFactory] as const,
+    },
     {
       adapter: { type: "drizzle-pglite" },
     },

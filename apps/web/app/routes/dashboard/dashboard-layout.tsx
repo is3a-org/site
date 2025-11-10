@@ -44,7 +44,7 @@ export async function loader({ context, request }: Route.LoaderArgs) {
     headers: request.headers,
   });
 
-  if (response.type === "json" && response.data) {
+  if (response.type === "json") {
     const { email } = response.data;
 
     return {

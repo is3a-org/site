@@ -29,6 +29,20 @@
       "when": 1762426936873,
       "tag": "0003_awesome_korg",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1762506366219,
+      "tag": "0004_friendly_nightmare",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1762507620834,
+      "tag": "0005_salty_roulette",
+      "breakpoints": true
     }
   ]
 }

@@ -1,16 +1,19 @@
 import { afterAll, assert, describe, expect, it } from "vitest";
-import { authFragmentDefinition } from "..";
+import { otpFragmentDefinition } from "..";
+import { ottRoutesFactory } from "../ott/ott";
 import { totpRoutesFactory } from "./totp";
-import { userRoutesFactory } from "../user/user";
-import { sessionRoutesFactory } from "../session/session";
 import { createDatabaseFragmentForTest } from "@fragno-dev/test";
 
 describe("TOTP (Time-based One-Time Password)", async () => {
-  const routes = [userRoutesFactory, sessionRoutesFactory, totpRoutesFactory] as const;
-
-  const { fragment, test } = await createDatabaseFragmentForTest(authFragmentDefinition, routes, {
-    adapter: { type: "drizzle-pglite" },
-  });
+  const { fragment, test } = await createDatabaseFragmentForTest(
+    {
+      definition: otpFragmentDefinition,
+      routes: [ottRoutesFactory, totpRoutesFactory],
+    },
+    {
+      adapter: { type: "drizzle-pglite" },
+    },
+  );
 
   afterAll(async () => {
     await test.cleanup();
@@ -20,16 +23,8 @@ describe("TOTP (Time-based One-Time Password)", async () => {
     let userId: string;
     let backupCodes: string[];
 
-    it("/sign-up - create user", async () => {
-      const response = await fragment.callRoute("POST", "/sign-up", {
-        body: {
-          email: "totp-test@test.com",
-          password: "password123",
-        },
-      });
-      assert(response.type === "json");
-      userId = response.data.userId;
-    });
+    // Use a test user ID for this flow
+    userId = "totp-test-user";
 
     it("/totp/status - check TOTP not enabled initially", async () => {
       const response = await fragment.callRoute("GET", "/totp/status", {

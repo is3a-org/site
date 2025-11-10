@@ -1,25 +1,24 @@
 import { afterAll, describe, expect, it } from "vitest";
-import { authFragmentDefinition } from "..";
+import { otpFragmentDefinition } from "..";
 import { createDatabaseFragmentForTest } from "@fragno-dev/test";
 
+const testUserId = "test-user-id";
+
 describe("OTT Services", async () => {
-  const { fragment, test } = await createDatabaseFragmentForTest(authFragmentDefinition, [], {
-    adapter: { type: "drizzle-pglite" },
-  });
+  const { fragment, test } = await createDatabaseFragmentForTest(
+    {
+      definition: otpFragmentDefinition,
+      routes: [],
+    },
+    {
+      adapter: { type: "drizzle-pglite" },
+    },
+  );
+  const services = fragment.services;
 
   afterAll(async () => {
     await test.cleanup();
   });
-
-  // Access the services directly from the fragment
-  const services = fragment.services;
-
-  // Create a test user for all tests
-  const testUserResult = await services.createUser(
-    "ott-service-test@example.com",
-    "testpassword123",
-  );
-  const testUserId = testUserResult.id;
 
   describe("generateToken", () => {
     it("should generate an 8-character alphanumeric token", async () => {
@@ -139,11 +138,10 @@ describe("OTT Services", async () => {
     });
 
     it("should reject token for wrong user", async () => {
-      // Create another user to test cross-user validation
-      const user2 = await services.createUser("user2@example.com", "password");
+      const user2Id = "user2-id";
       const { token } = await services.generateToken(testUserId, "email_verification");
 
-      const result = await services.validateToken(user2.id, token, "email_verification");
+      const result = await services.validateToken(user2Id, token, "email_verification");
 
       expect(result.valid).toBe(false);
       expect(result.error).toBe("token_invalid");
@@ -263,12 +261,11 @@ describe("OTT Services", async () => {
     });
 
     it("should only invalidate tokens for specified user", async () => {
-      // Create another user
-      const user2 = await services.createUser("invalidate-test@example.com", "password");
+      const user2Id = "user2-id";
 
       // Create tokens for both users
       const token1 = await services.generateToken(testUserId, "email_verification");
-      const token2 = await services.generateToken(user2.id, "email_verification");
+      const token2 = await services.generateToken(user2Id, "email_verification");
 
       const result = await services.invalidateTokens(testUserId, "email_verification");
 
@@ -278,7 +275,7 @@ describe("OTT Services", async () => {
       const result1 = await services.validateToken(testUserId, token1.token, "email_verification");
       expect(result1.valid).toBe(false);
 
-      const result2 = await services.validateToken(user2.id, token2.token, "email_verification");
+      const result2 = await services.validateToken(user2Id, token2.token, "email_verification");
       expect(result2.valid).toBe(true);
     });
 

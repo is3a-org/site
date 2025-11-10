@@ -9,7 +9,7 @@ import {
   jsonb,
   pgEnum,
 } from "drizzle-orm/pg-core";
-import { simple_auth_db_schema } from "./fragno-schema.ts";
+import { simple_auth_db_schema, one_time_password_db_schema } from "./fragno-schema.ts";
 
 const foreignKeyActions: Record<"onUpdate" | "onDelete", UpdateDeleteAction> = {
   onUpdate: "restrict",
@@ -85,4 +85,5 @@ export const schema = {
   membership,
   eventAttendee,
   ...simple_auth_db_schema,
+  ...one_time_password_db_schema,
 };

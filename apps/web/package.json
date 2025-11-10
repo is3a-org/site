@@ -9,13 +9,14 @@
     "preview": "pnpm run build && vite preview",
     "types:check": "pnpm run types:generate && react-router typegen && tsc -b",
     "types:generate": "wrangler types --env-interface CloudflareEnv",
-    "db:fragno:generate": "./node_modules/@fragno-dev/cli/dist/cli.js db generate app/fragno/simple-auth-server.ts -o app/db/postgres/fragno-schema.ts",
+    "db:fragno:generate": "./node_modules/@fragno-dev/cli/dist/cli.js db generate app/fragno/simple-auth-server.ts app/fragno/otp-server.ts -o app/db/postgres/fragno-schema.ts",
     "db:postgres:push": "drizzle-kit push --config postgres.drizzle.config.ts",
     "db:postgres:generate": "drizzle-kit generate --config postgres.drizzle.config.ts",
     "db:postgres:migrate": "drizzle-kit migrate --config postgres.drizzle.config.ts"
   },
   "dependencies": {
-    "@fragno-dev/db": "0.1.13",
+    "@fragno-dev/db": "canary",
+    "@is3a/one-time-password-fragment": "workspace:*",
     "@is3a/simple-auth-fragment": "workspace:*",
     "@paralleldrive/cuid2": "^3.1.0",
     "@radix-ui/react-avatar": "^1.1.10",
@@ -45,7 +46,7 @@
   },
   "devDependencies": {
     "@cloudflare/vite-plugin": "^1.13.18",
-    "@fragno-dev/cli": "0.1.16",
+    "@fragno-dev/cli": "canary",
     "@react-router/dev": "^7.9.5",
     "@tailwindcss/vite": "^4.1.16",
     "@types/node": "^22.18.13",

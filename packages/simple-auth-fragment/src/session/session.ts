@@ -134,12 +134,10 @@ export const sessionRoutesFactory = defineRoutes<
       method: "GET",
       path: "/me",
       queryParameters: ["sessionId"],
-      outputSchema: z
-        .object({
-          userId: z.string(),
-          email: z.string(),
-        })
-        .nullable(),
+      outputSchema: z.object({
+        userId: z.string(),
+        email: z.string(),
+      }),
       errorCodes: ["session_invalid"],
       handler: async ({ query, headers }, { json, error }) => {
         // Extract session ID from cookies first, then query params

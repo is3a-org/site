@@ -1,12 +1,14 @@
 import { defineRoute, defineRoutes } from "@fragno-dev/core";
 import type { AbstractQuery } from "@fragno-dev/db/query";
-import { authSchema } from "../schema";
+import { otpSchema } from "../schema";
 import { z } from "zod";
 
-export interface OttConfig {}
+export interface OttConfig {
+  sendEmail?: (params: { to: string; subject: string; body: string }) => Promise<void>;
+}
 
 type OttDeps = {
-  orm: AbstractQuery<typeof authSchema>;
+  orm: AbstractQuery<typeof otpSchema>;
 };
 
 // Token type enum
@@ -27,7 +29,7 @@ function generateToken(): string {
   return token;
 }
 
-export function createOttServices(orm: AbstractQuery<typeof authSchema>) {
+export function createOttServices(orm: AbstractQuery<typeof otpSchema>) {
   return {
     generateToken: async (userId: string, type: OttType, durationMinutes: number = 15) => {
       // Invalidate any existing tokens of the same type for this user

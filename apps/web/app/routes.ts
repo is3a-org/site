@@ -15,7 +15,9 @@ export default [
     layout("routes/dashboard/dashboard-layout.tsx", [
       index("routes/dashboard/dashboard-home.tsx"),
       route("locations", "routes/dashboard/locations.tsx"),
+      route("users", "routes/dashboard/users.tsx"),
     ]),
   ]),
   route("api/simple-auth/*", "routes/api/simple-auth.tsx"),
+  route("api/otp/*", "routes/api/otp.tsx"),
 ] satisfies RouteConfig;

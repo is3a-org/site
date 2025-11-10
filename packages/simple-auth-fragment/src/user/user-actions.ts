@@ -10,10 +10,6 @@ export interface UserConfig {
   sendEmail?: (params: { to: string; subject: string; body: string }) => Promise<void>;
 }
 
-type UserDeps = {
-  orm: AbstractQuery<typeof authSchema>;
-};
-
 export function createUserServices(orm: AbstractQuery<typeof authSchema>) {
   return {
     createUser: async (email: string, password: string) => {
@@ -42,9 +38,9 @@ export function createUserServices(orm: AbstractQuery<typeof authSchema>) {
   };
 }
 
-export const userRoutesFactory = defineRoutes<
+export const userActionsRoutesFactory = defineRoutes<
   UserConfig,
-  UserDeps,
+  {},
   ReturnType<typeof createUserServices> & {
     createSession: (userId: string) => Promise<{ id: string; userId: string; expiresAt: Date }>;
   }

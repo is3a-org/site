@@ -14,13 +14,8 @@ export default function DashboardHome({
   ...props
 }: React.ComponentProps<"div"> & Route.ComponentProps) {
   // Get user data from parent route loader
-  const parentData = matches[1]?.data as
-    | {
-        user?: { name: string; email: string; avatar?: string };
-        organizations?: Array<{ id: string; name: string; plan: string }>;
-        activeOrganizationId?: string;
-      }
-    | undefined;
+  const parentData = matches[1].loaderData;
+
   const user = parentData?.user || {
     name: "John Doe",
     email: "john@example.com",
