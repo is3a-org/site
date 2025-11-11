@@ -14,8 +14,12 @@ export default [
   ...prefix("dashboard", [
     layout("routes/dashboard/dashboard-layout.tsx", [
       index("routes/dashboard/dashboard-home.tsx"),
-      route("locations", "routes/dashboard/locations.tsx"),
-      route("users", "routes/dashboard/users.tsx"),
+      ...prefix("admin", [
+        layout("routes/dashboard/admin-layout.tsx", [
+          route("locations", "routes/dashboard/locations.tsx"),
+          route("users", "routes/dashboard/users.tsx"),
+        ]),
+      ]),
     ]),
   ]),
   route("api/simple-auth/*", "routes/api/simple-auth.tsx"),

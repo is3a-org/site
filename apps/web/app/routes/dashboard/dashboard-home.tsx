@@ -1,6 +1,7 @@
 import { cn } from "~/lib/utils";
 import type { Route } from "./+types/dashboard-home";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
+import { Badge } from "~/components/ui/badge";
 import { BreadcrumbItem, BreadcrumbPage } from "~/components/ui/breadcrumb";
 import { DashboardBreadcrumb } from "~/components/dashboard-breadcrumb";
 
@@ -20,6 +21,7 @@ export default function DashboardHome({
     name: "John Doe",
     email: "john@example.com",
     avatar: undefined,
+    role: "Member",
   };
   const organizations = parentData?.organizations || [];
   const activeOrganizationId = parentData?.activeOrganizationId || "org_1";
@@ -42,10 +44,13 @@ export default function DashboardHome({
             <AvatarFallback>{user.name?.[0]?.toUpperCase()}</AvatarFallback>
           </Avatar>
           <div>
-            <h1 className="text-2xl font-bold">Welcome, {user.name}</h1>
+            <div className="flex items-center gap-2">
+              <h1 className="text-2xl font-bold">Welcome, {user.name}</h1>
+            </div>
             <p className="text-muted-foreground">
               {activeOrg?.name || "Your Organization"} • {user.email}
             </p>
+            {user.isAdmin && <Badge>Admin</Badge>}
           </div>
         </div>
       </div>
