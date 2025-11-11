@@ -22,6 +22,7 @@ export default [
           route("users", "routes/dashboard/users.tsx"),
           route("members", "routes/dashboard/members.tsx"),
           route("stripe", "routes/dashboard/stripe.tsx"),
+          route("stripe/bulk-import", "routes/dashboard/stripe/bulk-import.tsx"),
         ]),
       ]),
     ]),
