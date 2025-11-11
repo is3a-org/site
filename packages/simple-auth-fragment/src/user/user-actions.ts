@@ -3,11 +3,12 @@ import type { AbstractQuery } from "@fragno-dev/db/query";
 import { authSchema } from "../schema";
 import { z } from "zod";
 import { hashPassword, verifyPassword } from "./password";
-import { buildSetCookieHeader, extractSessionId } from "../utils/cookie";
+import { buildSetCookieHeader, extractSessionId, type CookieOptions } from "../utils/cookie";
 import { FragnoApiValidationError } from "@fragno-dev/core/api";
 
 export interface UserConfig {
   sendEmail?: (params: { to: string; subject: string; body: string }) => Promise<void>;
+  cookieOptions?: CookieOptions;
 }
 
 export function createUserServices(orm: AbstractQuery<typeof authSchema>) {
@@ -60,7 +61,7 @@ export const userActionsRoutesFactory = defineRoutes<
       };
     } | null>;
   }
->().create(({ services }) => {
+>().create(({ services, config }) => {
   return [
     defineRoute({
       method: "PATCH",
@@ -126,7 +127,7 @@ export const userActionsRoutesFactory = defineRoutes<
         const session = await services.createSession(user.id);
 
         // Build response with Set-Cookie header
-        const setCookieHeader = buildSetCookieHeader(session.id);
+        const setCookieHeader = buildSetCookieHeader(session.id, config.cookieOptions);
 
         return json(
           {
@@ -187,7 +188,7 @@ export const userActionsRoutesFactory = defineRoutes<
         const session = await services.createSession(user.id);
 
         // Build response with Set-Cookie header
-        const setCookieHeader = buildSetCookieHeader(session.id);
+        const setCookieHeader = buildSetCookieHeader(session.id, config.cookieOptions);
 
         return json(
           {

@@ -19,9 +19,11 @@ import {
   type SortField,
   type SortOrder,
 } from "./user/user-overview";
+import type { CookieOptions } from "./utils/cookie";
 
 export interface AuthConfig {
   sendEmail?: (params: { to: string; subject: string; body: string }) => Promise<void>;
+  cookieOptions?: CookieOptions;
 }
 
 export const authFragmentDefinition = defineFragmentWithDatabase<AuthConfig>("simple-auth")
