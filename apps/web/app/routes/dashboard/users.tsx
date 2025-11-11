@@ -18,10 +18,17 @@ import {
   TableHeader,
   TableRow,
 } from "~/components/ui/table";
-import { Badge } from "~/components/ui/badge";
 import { Search, ChevronLeft, ChevronRight, ArrowUpDown } from "lucide-react";
 import { simpleAuthClient } from "~/lib/simple-auth-client";
 import { Skeleton } from "~/components/ui/skeleton";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "~/components/ui/select";
+import type { Role } from "@is3a/simple-auth-fragment";
 
 export async function loader({ context: _context, request: _request }: Route.LoaderArgs) {
   return {};
@@ -33,9 +40,10 @@ export default function UsersPage() {
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const [cursor, setCursor] = useState<string | undefined>(undefined);
   const [cursorHistory, setCursorHistory] = useState<(string | undefined)[]>([]);
+  const [refreshUser, setRefreshUser] = useState(0);
   const pageSize = 10;
 
-  // Use the hook from the simple-auth fragment
+  // Use the hooks from the simple-auth fragment
   const { data, loading, error } = simpleAuthClient.useUsers({
     query: {
       search: search || undefined,
@@ -43,8 +51,19 @@ export default function UsersPage() {
       sortOrder,
       pageSize: pageSize.toString(),
       cursor,
+      refresh: refreshUser.toString(),
     },
   });
+
+  const { mutate: updateRole, loading: updateRoleLoading } = simpleAuthClient.useUpdateUserRole();
+
+  const handleRoleChange = async (userId: string, newRole: Role) => {
+    await updateRole({
+      path: { userId },
+      body: { role: newRole },
+    });
+    setRefreshUser(refreshUser + 1);
+  };
 
   const handleSearch = (value: string) => {
     setSearch(value);
@@ -181,7 +200,7 @@ export default function UsersPage() {
                             <ArrowUpDown className="ml-2 h-4 w-4" />
                           </Button>
                         </TableHead>
-                        <TableHead>Status</TableHead>
+                        <TableHead>Role</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -205,7 +224,21 @@ export default function UsersPage() {
                               })}
                             </TableCell>
                             <TableCell>
-                              <Badge variant="secondary">Active</Badge>
+                              <Select
+                                value={user.role}
+                                onValueChange={(newRole) =>
+                                  handleRoleChange(user.id, newRole as Role)
+                                }
+                                disabled={updateRoleLoading}
+                              >
+                                <SelectTrigger className="h-8 w-[110px]">
+                                  <SelectValue placeholder="Change role" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="user">User</SelectItem>
+                                  <SelectItem value="admin">Admin</SelectItem>
+                                </SelectContent>
+                              </Select>
                             </TableCell>
                           </TableRow>
                         ))

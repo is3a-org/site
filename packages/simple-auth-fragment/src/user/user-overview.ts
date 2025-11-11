@@ -18,13 +18,20 @@ export interface GetUsersParams {
 export interface UserResult {
   id: string;
   email: string;
+  role: "user" | "admin";
   createdAt: Date;
 }
 
 export function createUserOverviewServices(db: AbstractQuery<typeof authSchema>) {
-  const mapUser = (user: { id: unknown; email: string; createdAt: Date }): UserResult => ({
+  const mapUser = (user: {
+    id: unknown;
+    email: string;
+    role: string;
+    createdAt: Date;
+  }): UserResult => ({
     id: String(user.id),
     email: user.email,
+    role: user.role as "user" | "admin",
     createdAt: user.createdAt,
   });
 
@@ -112,6 +119,7 @@ export const userOverviewRoutesFactory = defineRoutes<
           z.object({
             id: z.string(),
             email: z.string(),
+            role: z.enum(["user", "admin"]),
             createdAt: z.string(),
           }),
         ),
@@ -133,6 +141,7 @@ export const userOverviewRoutesFactory = defineRoutes<
           users: result.users.map((user) => ({
             id: user.id,
             email: user.email,
+            role: user.role,
             createdAt: user.createdAt.toISOString(),
           })),
           cursor: result.cursor?.encode(),

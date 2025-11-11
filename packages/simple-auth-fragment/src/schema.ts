@@ -7,6 +7,7 @@ export const authSchema = schema((s) => {
         .addColumn("id", idColumn())
         .addColumn("email", column("string"))
         .addColumn("passwordHash", column("string"))
+        .addColumn("role", column("string").defaultTo("user"))
         .addColumn(
           "createdAt",
           column("timestamp").defaultTo((b) => b.now()),

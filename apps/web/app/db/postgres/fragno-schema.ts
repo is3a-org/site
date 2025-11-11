@@ -45,6 +45,7 @@ export const user_simple_auth_db = pgTable(
       .$defaultFn(() => createId()),
     email: text("email").notNull(),
     passwordHash: text("passwordHash").notNull(),
+    role: text("role").notNull().default("user"),
     createdAt: timestamp("createdAt").notNull().defaultNow(),
     _internalId: bigserial("_internalId", { mode: "number" }).primaryKey().notNull(),
     _version: integer("_version").notNull().default(0),

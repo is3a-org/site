@@ -75,6 +75,7 @@ export function createAuthFragmentClients(fragnoConfig?: FragnoPublicClientConfi
   const useMe = b.createHook("/me");
   const useSignOut = b.createMutator("POST", "/sign-out");
   const useUsers = b.createHook("/users");
+  const useUpdateUserRole = b.createMutator("PATCH", "/users/:userId/role");
 
   return {
     // Reactive hooks - Auth
@@ -83,6 +84,7 @@ export function createAuthFragmentClients(fragnoConfig?: FragnoPublicClientConfi
     useSignOut,
     useMe,
     useUsers,
+    useUpdateUserRole,
 
     // Non-reactive methods
     signIn: {
@@ -111,6 +113,7 @@ export function createAuthFragmentClients(fragnoConfig?: FragnoPublicClientConfi
           sessionId: string;
           userId: string;
           email: string;
+          role: Role;
         }>;
       },
     },
@@ -132,6 +135,7 @@ export function createAuthFragmentClients(fragnoConfig?: FragnoPublicClientConfi
           sessionId: string;
           userId: string;
           email: string;
+          role: Role;
         }>;
       },
     },
@@ -155,3 +159,5 @@ export function createAuthFragmentClients(fragnoConfig?: FragnoPublicClientConfi
 
 export type { FragnoRouteConfig } from "@fragno-dev/core/api";
 export type { GetUsersParams, UserResult, SortField, SortOrder };
+
+export type Role = "user" | "admin";
