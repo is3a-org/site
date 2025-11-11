@@ -20,6 +20,9 @@ export default function LandingLayout() {
               <Link to="/join" className="text-gray-700 transition-colors hover:text-red-800">
                 Join
               </Link>
+              <Link to="/login" className="text-gray-700 transition-colors hover:text-red-800">
+                Login
+              </Link>
               <Link to="/team" className="text-gray-700 transition-colors hover:text-red-800">
                 Team
               </Link>

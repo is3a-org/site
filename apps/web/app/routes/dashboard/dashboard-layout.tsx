@@ -23,15 +23,9 @@ export async function loader({ context, request }: Route.LoaderArgs) {
   const mockOrganizations = [
     {
       id: "org_1",
-      name: "Acme Corp",
-      slug: "acme",
-      plan: "pro" as const,
-    },
-    {
-      id: "org_2",
-      name: "Beta Inc",
-      slug: "beta",
-      plan: "free" as const,
+      name: "IS3A",
+      slug: "is3a",
+      plan: "FULL" as const,
     },
   ];
 
@@ -45,15 +39,16 @@ export async function loader({ context, request }: Route.LoaderArgs) {
   });
 
   if (response.type === "json") {
-    const { email } = response.data;
+    const { email, role } = response.data;
 
     return {
       user: {
         name: email,
         email,
         avatar: undefined,
-        isAdmin: false,
+        isAdmin: role == "admin",
         impersonatedBy: null,
+        role: role,
       },
       organizations: mockOrganizations,
       activeOrganization: mockOrganizations[0],

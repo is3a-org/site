@@ -1,11 +1,6 @@
 import { useState } from "react";
 import type { Route } from "./+types/users";
-import {
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "~/components/ui/breadcrumb";
+import { BreadcrumbItem, BreadcrumbPage } from "~/components/ui/breadcrumb";
 import { DashboardBreadcrumb } from "~/components/dashboard-breadcrumb";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
@@ -108,10 +103,6 @@ export default function UsersPage() {
   return (
     <>
       <DashboardBreadcrumb>
-        <BreadcrumbItem>
-          <BreadcrumbLink href="/dashboard">Dashboard</BreadcrumbLink>
-        </BreadcrumbItem>
-        <BreadcrumbSeparator />
         <BreadcrumbItem>
           <BreadcrumbPage>Users</BreadcrumbPage>
         </BreadcrumbItem>
