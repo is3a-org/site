@@ -66,7 +66,6 @@ export function createUserOverviewServices(db: AbstractQuery<typeof authSchema>)
       return {
         users: result.items.map(mapUser),
         cursor: result.cursor,
-        hasNextPage: result.hasNextPage,
       };
     },
   };
@@ -116,7 +115,6 @@ export const userOverviewRoutesFactory = defineRoutes<
           }),
         ),
         cursor: z.string().optional(),
-        hasNextPage: z.boolean(),
         sortBy: sortBySchema,
       }),
       errorCodes: ["invalid_input"],
@@ -136,7 +134,6 @@ export const userOverviewRoutesFactory = defineRoutes<
             createdAt: user.createdAt.toISOString(),
           })),
           cursor: result.cursor?.encode(),
-          hasNextPage: result.hasNextPage,
           sortBy: params.sortBy, // Return the actual sortBy used (may differ from requested)
         });
       },

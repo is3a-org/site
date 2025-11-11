@@ -84,7 +84,7 @@ export default function UsersPage() {
 
   const currentPage = cursorHistory.length + 1;
   const hasPreviousPage = cursorHistory.length > 0;
-  const hasNextPage = data?.hasNextPage ?? false;
+  const hasNextPage = data?.cursor !== undefined;
 
   return (
     <>
