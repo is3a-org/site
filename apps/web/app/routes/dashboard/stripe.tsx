@@ -6,6 +6,9 @@ import { StripeCustomersTable } from "~/components/stripe-customers-table";
 import { UserRepo } from "~/db/repo/user";
 import { createStripeServer } from "~/fragno/stripe-server";
 import { createSimpleAuthServer } from "~/fragno/simple-auth-server";
+import { Button } from "~/components/ui/button";
+import { Link } from "react-router";
+import { Upload } from "lucide-react";
 
 export async function loader({ context }: Route.LoaderArgs) {
   const userRepo = new UserRepo(context.db);
@@ -123,7 +126,15 @@ export default function DashboardStripe({
       </DashboardBreadcrumb>
 
       <div className={cn("flex flex-1 flex-col gap-6 p-4", className)} {...props}>
-        <h2 className="text-2xl font-bold">Stripe Customers</h2>
+        <div className="flex items-center justify-between">
+          <h2 className="text-2xl font-bold">Stripe Customers</h2>
+          <Button asChild>
+            <Link to="/dashboard/admin/stripe/bulk-import">
+              <Upload className="mr-2 h-4 w-4" />
+              Bulk Import
+            </Link>
+          </Button>
+        </div>
         <StripeCustomersTable users={loaderData.users} />
       </div>
     </>
