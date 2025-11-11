@@ -3,6 +3,7 @@ import type { AbstractQuery } from "@fragno-dev/db/query";
 import { authSchema } from "../schema";
 import { z } from "zod";
 import { buildClearCookieHeader, extractSessionId } from "../utils/cookie";
+import type { Role } from "..";
 
 export interface SessionConfig {
   sendEmail?: (params: { to: string; subject: string; body: string }) => Promise<void>;
@@ -33,7 +34,7 @@ export function createSessionServices(orm: AbstractQuery<typeof authSchema>) {
       const session = await orm.findFirst("session", (b) =>
         b
           .whereIndex("primary", (eb) => eb("id", "=", sessionId))
-          .join((j) => j.sessionOwner((b) => b.select(["id", "email"]))),
+          .join((j) => j.sessionOwner((b) => b.select(["id", "email", "role"]))),
       );
 
       if (!session) {
@@ -56,6 +57,7 @@ export function createSessionServices(orm: AbstractQuery<typeof authSchema>) {
         user: {
           id: session.sessionOwner.id.valueOf(),
           email: session.sessionOwner.email,
+          role: session.sessionOwner.role,
         },
       };
     },
@@ -137,6 +139,7 @@ export const sessionRoutesFactory = defineRoutes<
       outputSchema: z.object({
         userId: z.string(),
         email: z.string(),
+        role: z.enum(["user", "admin"]),
       }),
       errorCodes: ["session_invalid"],
       handler: async ({ query, headers }, { json, error }) => {
@@ -156,6 +159,7 @@ export const sessionRoutesFactory = defineRoutes<
         return json({
           userId: session.user.id,
           email: session.user.email,
+          role: session.user.role as Role,
         });
       },
     }),
