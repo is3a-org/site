@@ -13,6 +13,189 @@ import { getMembershipByPriceId } from "~/lib/memberships";
 import { createSimpleAuthServer } from "~/fragno/simple-auth-server";
 import { createStripeServer } from "~/fragno/stripe-server";
 
+type StatusMeta = {
+  label: string;
+  badgeColor: string;
+  textColor: string;
+  isHealthy: boolean;
+  showPaymentWarning: boolean;
+};
+
+const STATUS_CONFIG: Record<string, StatusMeta> = {
+  active: {
+    label: "Active",
+    badgeColor: "bg-green-600",
+    textColor: "text-green-800",
+    isHealthy: true,
+    showPaymentWarning: false,
+  },
+  trialing: {
+    label: "Trial",
+    badgeColor: "bg-green-600",
+    textColor: "text-green-800",
+    isHealthy: true,
+    showPaymentWarning: false,
+  },
+  past_due: {
+    label: "Past Due",
+    badgeColor: "bg-red-600",
+    textColor: "text-red-800",
+    isHealthy: false,
+    showPaymentWarning: true,
+  },
+  unpaid: {
+    label: "Unpaid",
+    badgeColor: "bg-red-600",
+    textColor: "text-red-800",
+    isHealthy: false,
+    showPaymentWarning: true,
+  },
+  incomplete: {
+    label: "Incomplete",
+    badgeColor: "bg-yellow-500",
+    textColor: "text-yellow-800",
+    isHealthy: false,
+    showPaymentWarning: true,
+  },
+  incomplete_expired: {
+    label: "Expired",
+    badgeColor: "bg-gray-400",
+    textColor: "text-gray-800",
+    isHealthy: false,
+    showPaymentWarning: false,
+  },
+  canceled: {
+    label: "Canceled",
+    badgeColor: "bg-gray-400",
+    textColor: "text-gray-800",
+    isHealthy: false,
+    showPaymentWarning: false,
+  },
+};
+
+const DISPLAY_DATE_FORMAT: Intl.DateTimeFormatOptions = {
+  month: "long",
+  day: "numeric",
+  year: "numeric",
+};
+
+const getStatusMeta = (status?: string, isScheduledToCancel?: boolean): StatusMeta => {
+  if (isScheduledToCancel) {
+    return {
+      label: "Canceling",
+      badgeColor: "bg-orange-300",
+      textColor: "text-orange-800",
+      isHealthy: false,
+      showPaymentWarning: false,
+    };
+  }
+
+  if (status && STATUS_CONFIG[status]) {
+    return STATUS_CONFIG[status];
+  }
+
+  return {
+    label: status || "Unknown",
+    badgeColor: "bg-gray-400",
+    textColor: "text-gray-800",
+    isHealthy: false,
+    showPaymentWarning: false,
+  };
+};
+
+const formatDate = (date?: string | number | Date | null) => {
+  if (!date) {
+    return null;
+  }
+  const parsedDate = new Date(date);
+  if (Number.isNaN(parsedDate.getTime())) {
+    return null;
+  }
+  return parsedDate.toLocaleDateString("en-US", DISPLAY_DATE_FORMAT);
+};
+
+const describeStatus = ({
+  status,
+  isScheduledToCancel,
+  cancelDate,
+  renewalDate,
+  trialEndDate,
+}: {
+  status?: string;
+  isScheduledToCancel: boolean;
+  cancelDate?: string | number | Date | null;
+  renewalDate?: string | number | Date | null;
+  trialEndDate?: string | number | Date | null;
+}) => {
+  if (isScheduledToCancel) {
+    return `Your membership is scheduled to cancel on ${
+      formatDate(cancelDate) ?? "the end of your billing period"
+    }`;
+  }
+
+  switch (status) {
+    case "trialing":
+      return trialEndDate ? `Trial ends on ${formatDate(trialEndDate)}` : "Your trial is active";
+    case "past_due":
+      return "Payment failed. Please update your payment method to continue your membership.";
+    case "unpaid":
+      return "Your subscription is unpaid and has been canceled. Please update your payment method.";
+    case "incomplete":
+      return "Your subscription setup is incomplete. Please complete the payment process.";
+    case "incomplete_expired":
+      return "Your subscription setup has expired. Please start a new subscription.";
+    case "active":
+      return renewalDate
+        ? `Renews automatically on ${formatDate(renewalDate)}`
+        : "Your subscription is active";
+    case "canceled":
+      return "Your membership has been canceled and will not renew";
+    default:
+      return "Check your subscription status";
+  }
+};
+
+const getPaymentWarningConfig = (status?: string) => {
+  switch (status) {
+    case "past_due":
+      return {
+        title: "⚠️ Payment Failed",
+        message:
+          "We couldn't process your payment. Please update your payment method to avoid losing access to your membership benefits.",
+        variant: "destructive" as const,
+      };
+    case "unpaid":
+      return {
+        title: "❌ Subscription Unpaid",
+        message:
+          "Your subscription payment has failed permanently. Please update your payment method and restart your subscription.",
+        variant: "destructive" as const,
+      };
+    case "incomplete":
+      return {
+        title: "⏳ Payment Incomplete",
+        message:
+          "Your subscription setup wasn't completed. Please finish the payment process to activate your membership.",
+        variant: "default" as const,
+      };
+    default:
+      return null;
+  }
+};
+
+const redirectToStripe = (response?: { redirect?: boolean; url?: string }) => {
+  if (response?.redirect && response.url) {
+    window.location.href = response.url;
+  }
+};
+
+const ErrorAlert = ({ message }: { message: string }) => (
+  <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-red-800">
+    <p className="font-semibold">Error</p>
+    <p className="text-sm">{message}</p>
+  </div>
+);
+
 export async function loader({ context, request }: Route.LoaderArgs) {
   const auth = createSimpleAuthServer(context.db);
   const session = await auth.services.getSession(request.headers);
@@ -52,13 +235,33 @@ export default function DashboardSubscribe({
     error: createPortalError,
   } = stripeFragmentClient.useBillingPortal();
 
-  const hasActiveSubscription = subscription?.status === "active";
+  const status = subscription?.status;
+  const hasSubscription = !!subscription;
   const membership = getMembershipByPriceId(subscription?.stripePriceId);
-  const isActive = subscription?.status === "active";
-  const isCanceled = subscription?.status === "canceled";
   const isScheduledToCancel = subscription?.cancelAtPeriodEnd || subscription?.cancelAt !== null;
   const renewalDate = subscription?.periodEnd;
   const cancelDate = subscription?.cancelAt;
+  const trialEndDate = subscription?.trialEnd;
+  const statusMeta = getStatusMeta(status, isScheduledToCancel);
+  const statusDescription = describeStatus({
+    status,
+    isScheduledToCancel,
+    cancelDate,
+    renewalDate,
+    trialEndDate,
+  });
+  const paymentWarning = getPaymentWarningConfig(status);
+  const nextBillingLabel = isScheduledToCancel
+    ? "Cancels On"
+    : status === "trialing"
+      ? "Trial Ends"
+      : "Renews On";
+  const nextBillingDate =
+    (isScheduledToCancel ? formatDate(cancelDate) : null) ||
+    (status === "trialing" ? formatDate(trialEndDate) : null) ||
+    formatDate(renewalDate) ||
+    "N/A";
+  const errors = [cancelError, error, createPortalError].filter((err) => err != null);
 
   const handleUncancel = async () => {
     if (!subscription?.stripePriceId) {
@@ -73,9 +276,7 @@ export default function DashboardSubscribe({
         cancelUrl: `${window.location.origin}/dashboard/subscribe`,
       },
     });
-    if (response?.redirect) {
-      window.location.href = response.url;
-    }
+    redirectToStripe(response);
   };
 
   const handleCancel = async () => {
@@ -84,9 +285,7 @@ export default function DashboardSubscribe({
         returnUrl: `${window.location.origin}/dashboard/subscribe-confirm?sad=true`,
       },
     });
-    if (resp?.redirect) {
-      window.location.href = resp.url;
-    }
+    redirectToStripe(resp);
   };
 
   const handleUpdateBilling = async () => {
@@ -95,9 +294,7 @@ export default function DashboardSubscribe({
         returnUrl: `${window.location.origin}/dashboard/subscribe-confirm`,
       },
     });
-    if (resp?.redirect) {
-      window.location.href = resp.url;
-    }
+    redirectToStripe(resp);
   };
 
   return (
@@ -112,7 +309,7 @@ export default function DashboardSubscribe({
         {/* Header Section */}
         <div className="space-y-4">
           <h2 className="text-3xl font-bold tracking-tight">
-            {hasActiveSubscription ? "Your Membership" : "Membership Plans"}
+            {hasSubscription ? "Your Membership" : "Membership Plans"}
           </h2>
           {import.meta.env.PROD && (
             <div className="rounded-lg border border-amber-300 bg-amber-50 p-4">
@@ -123,7 +320,7 @@ export default function DashboardSubscribe({
             </div>
           )}
 
-          {!hasActiveSubscription && (
+          {!hasSubscription && (
             <p className="text-muted-foreground max-w-3xl text-lg">
               We organize networking events at least once every three months. To cover the costs for
               this plus peripheral matters, we charge an annual membership fee. Feel free to join
@@ -132,29 +329,12 @@ export default function DashboardSubscribe({
           )}
         </div>
 
-        {cancelError && (
-          <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-red-800">
-            <p className="font-semibold">Error</p>
-            <p className="text-sm">{cancelError.message}</p>
-          </div>
-        )}
-
-        {error && (
-          <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-red-800">
-            <p className="font-semibold">Error</p>
-            <p className="text-sm">{error.message}</p>
-          </div>
-        )}
-
-        {createPortalError && (
-          <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-red-800">
-            <p className="font-semibold">Error</p>
-            <p className="text-sm">{createPortalError.message}</p>
-          </div>
-        )}
+        {errors.map((err, idx) => (
+          <ErrorAlert key={`${err.message}-${idx}`} message={err.message} />
+        ))}
 
         {/* Conditional Rendering: Subscription Status or Membership Plans */}
-        {hasActiveSubscription && subscription ? (
+        {hasSubscription ? (
           <div className="space-y-8">
             {/* Status Overview */}
             <Card>
@@ -166,45 +346,57 @@ export default function DashboardSubscribe({
                         {membership?.name || "Unknown"} Membership
                       </CardTitle>
                       <Badge
-                        variant={isActive && !isScheduledToCancel ? "default" : "secondary"}
-                        className={
-                          isActive && !isScheduledToCancel
-                            ? "bg-green-600"
-                            : isScheduledToCancel
-                              ? "bg-orange-300"
-                              : "bg-yellow-300"
-                        }
+                        variant={statusMeta.isHealthy ? "default" : "secondary"}
+                        className={statusMeta.badgeColor}
                       >
-                        {isScheduledToCancel
-                          ? "Canceling"
-                          : isActive
-                            ? "Active"
-                            : isCanceled
-                              ? "Canceled"
-                              : subscription.status}
+                        {statusMeta.label}
                       </Badge>
                     </div>
-                    <CardDescription
-                      className={
-                        isActive && !isScheduledToCancel
-                          ? "text-green-800"
-                          : isScheduledToCancel
-                            ? "text-orange-800"
-                            : "text-yellow-800"
-                      }
-                    >
-                      {isScheduledToCancel
-                        ? `Your membership is scheduled to cancel on ${cancelDate ? new Date(cancelDate).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }) : "the end of your billing period"}`
-                        : isActive && renewalDate
-                          ? `Renews automatically on ${new Date(renewalDate).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}`
-                          : isCanceled
-                            ? "Your membership has been canceled and will not renew"
-                            : "Check your subscription status"}
+                    <CardDescription className={statusMeta.textColor}>
+                      {statusDescription}
                     </CardDescription>
                   </div>
                 </div>
               </CardHeader>
               <CardContent className="space-y-6">
+                {/* Payment Issue Warning */}
+                {statusMeta.showPaymentWarning && paymentWarning && (
+                  <div
+                    className={`rounded-lg border p-4 ${
+                      paymentWarning.variant === "destructive"
+                        ? "border-red-300 bg-red-50"
+                        : "border-yellow-300 bg-yellow-50"
+                    }`}
+                  >
+                    <p
+                      className={`mb-2 font-semibold ${
+                        paymentWarning.variant === "destructive"
+                          ? "text-red-900"
+                          : "text-yellow-900"
+                      }`}
+                    >
+                      {paymentWarning.title}
+                    </p>
+                    <p
+                      className={`text-sm ${
+                        paymentWarning.variant === "destructive"
+                          ? "text-red-800"
+                          : "text-yellow-800"
+                      }`}
+                    >
+                      {paymentWarning.message}
+                    </p>
+                    <Button
+                      onClick={handleUpdateBilling}
+                      disabled={createPortalLoading}
+                      className="mt-3"
+                      variant={paymentWarning.variant}
+                    >
+                      {createPortalLoading ? "Redirecting..." : "Update Payment Method"}
+                    </Button>
+                  </div>
+                )}
+
                 {/* Membership Details */}
                 <div className="grid gap-4 md:grid-cols-2">
                   <div className="flex items-start gap-3">
@@ -223,24 +415,8 @@ export default function DashboardSubscribe({
                       <Calendar className="text-primary h-4 w-4" />
                     </div>
                     <div>
-                      <p className="text-sm font-medium">
-                        {isScheduledToCancel ? "Cancels On" : "Renews On"}
-                      </p>
-                      <p className="text-muted-foreground text-sm">
-                        {isScheduledToCancel && cancelDate
-                          ? new Date(cancelDate).toLocaleDateString("en-US", {
-                              month: "long",
-                              day: "numeric",
-                              year: "numeric",
-                            })
-                          : renewalDate
-                            ? new Date(renewalDate).toLocaleDateString("en-US", {
-                                month: "long",
-                                day: "numeric",
-                                year: "numeric",
-                              })
-                            : "N/A"}
-                      </p>
+                      <p className="text-sm font-medium">{nextBillingLabel}</p>
+                      <p className="text-muted-foreground text-sm">{nextBillingDate}</p>
                     </div>
                   </div>
                 </div>
@@ -269,8 +445,7 @@ export default function DashboardSubscribe({
                 </div>
 
                 {/* Actions */}
-
-                {isActive && !isScheduledToCancel && (
+                {statusMeta.isHealthy && !isScheduledToCancel && (
                   <div className="flex gap-2 border-t pt-4">
                     <Button onClick={handleUpdateBilling} disabled={createPortalLoading}>
                       {createPortalLoading ? "Redirecting..." : "Update Billing Info"}
@@ -278,6 +453,17 @@ export default function DashboardSubscribe({
                     <Button variant="destructive" onClick={handleCancel} disabled={cancelLoading}>
                       {cancelLoading ? "Cancelling..." : "Cancel Membership"}
                     </Button>
+                  </div>
+                )}
+
+                {/* Expired or Incomplete - Show restart option */}
+                {(status === "incomplete_expired" || status === "canceled") && (
+                  <div className="border-t pt-4">
+                    <p className="text-muted-foreground mb-3 text-sm">
+                      {status === "incomplete_expired"
+                        ? "Your subscription setup has expired. You can start a new subscription below."
+                        : "Your subscription has ended. You can subscribe again below."}
+                    </p>
                   </div>
                 )}
               </CardContent>
@@ -302,6 +488,23 @@ export default function DashboardSubscribe({
                     {loading ? "Renewing..." : "Renew Membership"}
                   </Button>
                 </div>
+              </>
+            )}
+
+            {/* Show membership plans for expired, incomplete, or unpaid subscriptions */}
+            {(status === "incomplete_expired" || status === "unpaid") && (
+              <>
+                <div className="space-y-4">
+                  <h3 className="text-2xl font-bold tracking-tight">
+                    {status === "unpaid" ? "Restart Your Membership" : "Choose a Plan"}
+                  </h3>
+                  <p className="text-muted-foreground max-w-3xl">
+                    {status === "unpaid"
+                      ? "Your previous subscription could not be processed. Please select a plan below to restart your membership."
+                      : "Select a membership plan to get started."}
+                  </p>
+                </div>
+                <MembershipPlans />
               </>
             )}
           </div>
