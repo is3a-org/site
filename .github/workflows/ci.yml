@@ -84,6 +84,8 @@ jobs:
     env:
       TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
       TURBO_TEAM: ${{ vars.TURBO_TEAM }}
+      VITE_STRIPE_PRICE_ID_FULL: price_1PP5qhJ3Pt748JzgIsCiWawn
+      VITE_STRIPE_PRICE_ID_FLEX: price_1PP5q9J3Pt748Jzg2wLlJ0jB
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4

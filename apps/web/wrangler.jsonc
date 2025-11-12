@@ -9,8 +9,7 @@
   "compatibility_flags": ["nodejs_compat"],
   "main": "./workers/app.ts",
   "vars": {
-    "VITE_STRIPE_PRICE_ID_FULL": "price_1PP5qhJ3Pt748JzgIsCiWawn",
-    "VITE_STRIPE_PRICE_ID_FLEX": "price_1PP5q9J3Pt748Jzg2wLlJ0jB",
+    "HELLO": "WORLD",
   },
   "observability": {
     "logs": {
