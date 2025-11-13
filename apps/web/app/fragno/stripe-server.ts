@@ -64,7 +64,6 @@ export function createStripeServer(db: DrizzleDatabase | (() => DrizzleDatabase)
           referenceId: user.id,
           customerEmail: session.email,
           stripeCustomerId: user.stripeCustomerId ?? undefined,
-          subscriptionId: user.subscriptionId ?? undefined,
           stripeMetadata: {},
         };
       },

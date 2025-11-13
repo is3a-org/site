@@ -201,7 +201,9 @@ export async function loader({ context, request }: Route.LoaderArgs) {
   const session = await auth.services.getSession(request.headers);
   if (session) {
     const frag = createStripeServer(context.db);
-    const subscription = await frag.services.getSubscriptionByReferenceId(session.userId);
+    const subscriptions = await frag.services.getSubscriptionsByReferenceId(session.userId);
+    // Get the first subscription (most apps only have one per customer)
+    const subscription = subscriptions[0] || null;
     return { subscription };
   }
   return { subscription: null };
