@@ -124,7 +124,7 @@ export async function action({ request, context }: Route.ActionArgs) {
         await userRepo.setStripeCustomerId(targetUserId, customerId);
 
         // Sync subscription from Stripe
-        await stripe.services.syncStripeSubscription(targetUserId, customerId);
+        await stripe.services.syncStripeSubscriptions(targetUserId, customerId);
 
         results.push({
           customerId,

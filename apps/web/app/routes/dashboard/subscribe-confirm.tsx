@@ -29,7 +29,7 @@ export async function loader({ context, request }: Route.LoaderArgs) {
   }
 
   const stripe = createStripeServer(context.db);
-  await stripe.services.syncStripeSubscription(user.id, user.stripeCustomerId);
+  await stripe.services.syncStripeSubscriptions(user.id, user.stripeCustomerId);
   return { status: "success", message: "Subscription status up-to-date" };
 }
 

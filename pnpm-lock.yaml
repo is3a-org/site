@@ -33,11 +33,11 @@ importers:
   apps/web:
     dependencies:
       '@fragno-dev/db':
-        specifier: 0.0.0-canary-19299220623-1-20251112133501
-        version: 0.0.0-canary-19299220623-1-20251112133501(drizzle-orm@0.44.7(@electric-sql/pglite@0.3.11)(@types/pg@8.15.6)(kysely@0.28.8)(pg@8.16.3))
+        specifier: 0.0.0-canary-19329471870-1-20251113110938
+        version: 0.0.0-canary-19329471870-1-20251113110938(drizzle-orm@0.44.7(@electric-sql/pglite@0.3.11)(@types/pg@8.15.6)(kysely@0.28.8)(pg@8.16.3))
       '@fragno-dev/stripe':
-        specifier: 0.0.0-canary-19299220623-1-20251112133501
-        version: 0.0.0-canary-19299220623-1-20251112133501(@fragno-dev/db@0.0.0-canary-19299220623-1-20251112133501(drizzle-orm@0.44.7(@electric-sql/pglite@0.3.11)(@types/pg@8.15.6)(kysely@0.28.8)(pg@8.16.3)))(@types/node@22.19.0)(react@19.2.0)(solid-js@1.9.9)(svelte@5.42.2)(typescript@5.9.3)(vue@3.5.22(typescript@5.9.3))
+        specifier: 0.0.0-canary-19329471870-1-20251113110938
+        version: 0.0.0-canary-19329471870-1-20251113110938(@fragno-dev/db@0.0.0-canary-19329471870-1-20251113110938(drizzle-orm@0.44.7(@electric-sql/pglite@0.3.11)(@types/pg@8.15.6)(kysely@0.28.8)(pg@8.16.3)))(@types/node@22.19.0)(react@19.2.0)(solid-js@1.9.9)(svelte@5.42.2)(typescript@5.9.3)(vue@3.5.22(typescript@5.9.3))
       '@is3a/one-time-password-fragment':
         specifier: workspace:*
         version: link:../../packages/one-time-password-fragment
@@ -124,8 +124,8 @@ importers:
         specifier: ^1.13.18
         version: 1.13.19(vite@7.1.12(@types/node@22.19.0)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.16.9)(yaml@2.8.1))(workerd@1.20251011.0)(wrangler@4.45.4)
       '@fragno-dev/cli':
-        specifier: 0.0.0-canary-19299220623-1-20251112133501
-        version: 0.0.0-canary-19299220623-1-20251112133501(drizzle-orm@0.44.7(@electric-sql/pglite@0.3.11)(@types/pg@8.15.6)(kysely@0.28.8)(pg@8.16.3))(react@19.2.0)(solid-js@1.9.9)(svelte@5.42.2)(vue@3.5.22(typescript@5.9.3))
+        specifier: 0.0.0-canary-19329471870-1-20251113110938
+        version: 0.0.0-canary-19329471870-1-20251113110938(drizzle-orm@0.44.7(@electric-sql/pglite@0.3.11)(@types/pg@8.15.6)(kysely@0.28.8)(pg@8.16.3))(react@19.2.0)(solid-js@1.9.9)(svelte@5.42.2)(vue@3.5.22(typescript@5.9.3))
       '@react-router/dev':
         specifier: ^7.9.5
         version: 7.9.5(@types/node@22.19.0)(jiti@2.6.1)(lightningcss@1.30.2)(react-router@7.9.5(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(terser@5.16.9)(typescript@5.9.3)(vite@7.1.12(@types/node@22.19.0)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.16.9)(yaml@2.8.1))(wrangler@4.45.4)(yaml@2.8.1)
@@ -169,11 +169,11 @@ importers:
   packages/one-time-password-fragment:
     dependencies:
       '@fragno-dev/core':
-        specifier: 0.0.0-canary-19299220623-1-20251112133501
-        version: 0.0.0-canary-19299220623-1-20251112133501(react@19.2.0)(solid-js@1.9.9)(svelte@5.42.2)(vue@3.5.22(typescript@5.9.3))
+        specifier: 0.0.0-canary-19329471870-1-20251113110938
+        version: 0.0.0-canary-19329471870-1-20251113110938(react@19.2.0)(solid-js@1.9.9)(svelte@5.42.2)(vue@3.5.22(typescript@5.9.3))
       '@fragno-dev/db':
-        specifier: 0.0.0-canary-19299220623-1-20251112133501
-        version: 0.0.0-canary-19299220623-1-20251112133501(drizzle-orm@0.44.7(@electric-sql/pglite@0.3.11)(@types/pg@8.15.6)(kysely@0.28.8)(pg@8.16.3))
+        specifier: 0.0.0-canary-19329471870-1-20251113110938
+        version: 0.0.0-canary-19329471870-1-20251113110938(drizzle-orm@0.44.7(@electric-sql/pglite@0.3.11)(@types/pg@8.15.6)(kysely@0.28.8)(pg@8.16.3))
       react:
         specifier: '>=18.0.0'
         version: 19.2.0
@@ -194,14 +194,14 @@ importers:
         version: 4.1.12
     devDependencies:
       '@fragno-dev/cli':
-        specifier: 0.0.0-canary-19299220623-1-20251112133501
-        version: 0.0.0-canary-19299220623-1-20251112133501(drizzle-orm@0.44.7(@electric-sql/pglite@0.3.11)(@types/pg@8.15.6)(kysely@0.28.8)(pg@8.16.3))(react@19.2.0)(solid-js@1.9.9)(svelte@5.42.2)(vue@3.5.22(typescript@5.9.3))
+        specifier: 0.0.0-canary-19329471870-1-20251113110938
+        version: 0.0.0-canary-19329471870-1-20251113110938(drizzle-orm@0.44.7(@electric-sql/pglite@0.3.11)(@types/pg@8.15.6)(kysely@0.28.8)(pg@8.16.3))(react@19.2.0)(solid-js@1.9.9)(svelte@5.42.2)(vue@3.5.22(typescript@5.9.3))
       '@fragno-dev/test':
-        specifier: 0.0.0-canary-19299220623-1-20251112133501
-        version: 0.0.0-canary-19299220623-1-20251112133501(@electric-sql/pglite@0.3.11)(@fragno-dev/core@0.0.0-canary-19299220623-1-20251112133501(react@19.2.0)(solid-js@1.9.9)(svelte@5.42.2)(vue@3.5.22(typescript@5.9.3)))(@fragno-dev/db@0.0.0-canary-19299220623-1-20251112133501(drizzle-orm@0.44.7(@electric-sql/pglite@0.3.11)(@types/pg@8.15.6)(kysely@0.28.8)(pg@8.16.3)))(drizzle-orm@0.44.7(@electric-sql/pglite@0.3.11)(@types/pg@8.15.6)(kysely@0.28.8)(pg@8.16.3))(kysely-pglite@0.6.1(@electric-sql/pglite@0.3.11)(kysely@0.28.8)(pg@8.16.3))
+        specifier: 0.0.0-canary-19329471870-1-20251113110938
+        version: 0.0.0-canary-19329471870-1-20251113110938(@electric-sql/pglite@0.3.11)(@fragno-dev/core@0.0.0-canary-19329471870-1-20251113110938(react@19.2.0)(solid-js@1.9.9)(svelte@5.42.2)(vue@3.5.22(typescript@5.9.3)))(@fragno-dev/db@0.0.0-canary-19329471870-1-20251113110938(drizzle-orm@0.44.7(@electric-sql/pglite@0.3.11)(@types/pg@8.15.6)(kysely@0.28.8)(pg@8.16.3)))(drizzle-orm@0.44.7(@electric-sql/pglite@0.3.11)(@types/pg@8.15.6)(kysely@0.28.8)(pg@8.16.3))(kysely-pglite@0.6.1(@electric-sql/pglite@0.3.11)(kysely@0.28.8)(pg@8.16.3))
       '@fragno-dev/unplugin-fragno':
-        specifier: 0.0.0-canary-19299220623-1-20251112133501
-        version: 0.0.0-canary-19299220623-1-20251112133501(esbuild@0.25.4)(vite@5.4.21(@types/node@22.19.0)(lightningcss@1.30.2)(terser@5.16.9))
+        specifier: 0.0.0-canary-19329471870-1-20251113110938
+        version: 0.0.0-canary-19329471870-1-20251113110938(esbuild@0.25.4)(vite@5.4.21(@types/node@22.19.0)(lightningcss@1.30.2)(terser@5.16.9))
       '@types/node':
         specifier: ^22
         version: 22.19.0
@@ -215,11 +215,11 @@ importers:
   packages/simple-auth-fragment:
     dependencies:
       '@fragno-dev/core':
-        specifier: 0.0.0-canary-19299220623-1-20251112133501
-        version: 0.0.0-canary-19299220623-1-20251112133501(react@19.2.0)(solid-js@1.9.9)(svelte@5.42.2)(vue@3.5.22(typescript@5.9.3))
+        specifier: 0.0.0-canary-19329471870-1-20251113110938
+        version: 0.0.0-canary-19329471870-1-20251113110938(react@19.2.0)(solid-js@1.9.9)(svelte@5.42.2)(vue@3.5.22(typescript@5.9.3))
       '@fragno-dev/db':
-        specifier: 0.0.0-canary-19299220623-1-20251112133501
-        version: 0.0.0-canary-19299220623-1-20251112133501(drizzle-orm@0.44.7(@electric-sql/pglite@0.3.11)(@types/pg@8.15.6)(kysely@0.28.8)(pg@8.16.3))
+        specifier: 0.0.0-canary-19329471870-1-20251113110938
+        version: 0.0.0-canary-19329471870-1-20251113110938(drizzle-orm@0.44.7(@electric-sql/pglite@0.3.11)(@types/pg@8.15.6)(kysely@0.28.8)(pg@8.16.3))
       react:
         specifier: '>=18.0.0'
         version: 19.2.0
@@ -243,14 +243,14 @@ importers:
         specifier: ^0.3.11
         version: 0.3.11
       '@fragno-dev/cli':
-        specifier: 0.0.0-canary-19299220623-1-20251112133501
-        version: 0.0.0-canary-19299220623-1-20251112133501(drizzle-orm@0.44.7(@electric-sql/pglite@0.3.11)(@types/pg@8.15.6)(kysely@0.28.8)(pg@8.16.3))(react@19.2.0)(solid-js@1.9.9)(svelte@5.42.2)(vue@3.5.22(typescript@5.9.3))
+        specifier: 0.0.0-canary-19329471870-1-20251113110938
+        version: 0.0.0-canary-19329471870-1-20251113110938(drizzle-orm@0.44.7(@electric-sql/pglite@0.3.11)(@types/pg@8.15.6)(kysely@0.28.8)(pg@8.16.3))(react@19.2.0)(solid-js@1.9.9)(svelte@5.42.2)(vue@3.5.22(typescript@5.9.3))
       '@fragno-dev/test':
-        specifier: 0.0.0-canary-19299220623-1-20251112133501
-        version: 0.0.0-canary-19299220623-1-20251112133501(@electric-sql/pglite@0.3.11)(@fragno-dev/core@0.0.0-canary-19299220623-1-20251112133501(react@19.2.0)(solid-js@1.9.9)(svelte@5.42.2)(vue@3.5.22(typescript@5.9.3)))(@fragno-dev/db@0.0.0-canary-19299220623-1-20251112133501(drizzle-orm@0.44.7(@electric-sql/pglite@0.3.11)(@types/pg@8.15.6)(kysely@0.28.8)(pg@8.16.3)))(drizzle-orm@0.44.7(@electric-sql/pglite@0.3.11)(@types/pg@8.15.6)(kysely@0.28.8)(pg@8.16.3))(kysely-pglite@0.6.1(@electric-sql/pglite@0.3.11)(kysely@0.28.8)(pg@8.16.3))
+        specifier: 0.0.0-canary-19329471870-1-20251113110938
+        version: 0.0.0-canary-19329471870-1-20251113110938(@electric-sql/pglite@0.3.11)(@fragno-dev/core@0.0.0-canary-19329471870-1-20251113110938(react@19.2.0)(solid-js@1.9.9)(svelte@5.42.2)(vue@3.5.22(typescript@5.9.3)))(@fragno-dev/db@0.0.0-canary-19329471870-1-20251113110938(drizzle-orm@0.44.7(@electric-sql/pglite@0.3.11)(@types/pg@8.15.6)(kysely@0.28.8)(pg@8.16.3)))(drizzle-orm@0.44.7(@electric-sql/pglite@0.3.11)(@types/pg@8.15.6)(kysely@0.28.8)(pg@8.16.3))(kysely-pglite@0.6.1(@electric-sql/pglite@0.3.11)(kysely@0.28.8)(pg@8.16.3))
       '@fragno-dev/unplugin-fragno':
-        specifier: 0.0.0-canary-19299220623-1-20251112133501
-        version: 0.0.0-canary-19299220623-1-20251112133501(esbuild@0.25.4)(vite@7.1.12(@types/node@22.19.0)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.16.9)(yaml@2.8.1))
+        specifier: 0.0.0-canary-19329471870-1-20251113110938
+        version: 0.0.0-canary-19329471870-1-20251113110938(esbuild@0.25.4)(vite@7.1.12(@types/node@22.19.0)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.16.9)(yaml@2.8.1))
       '@types/node':
         specifier: ^22.18.13
         version: 22.19.0
@@ -924,13 +924,13 @@ packages:
   '@floating-ui/utils@0.2.10':
     resolution: {integrity: sha512-aGTxbpbg8/b5JfU1HXSrbH3wXZuLPJcNEcZQFMxLs3oSzgtVu6nFPkbbGGUvBcUjKV2YyB9Wxxabo+HEH9tcRQ==}
 
-  '@fragno-dev/cli@0.0.0-canary-19299220623-1-20251112133501':
-    resolution: {integrity: sha512-xGW1kf4VWShSqYWttamfUfLtYjhuA3E1UYt5LZSw7yBoQOy15fow3GrYreNiZyzNJCzWeeItSLeGgRzL5zbdrg==}
+  '@fragno-dev/cli@0.0.0-canary-19329471870-1-20251113110938':
+    resolution: {integrity: sha512-kKML6fES2z+fDR7poZLf9eJLfCav2jIdEnDvkCEVkIYIphUGLVHGgghXcvXeWse8xuznPoYxEHZWMVsz3woDBw==}
     engines: {node: '>=22'}
     hasBin: true
 
-  '@fragno-dev/core@0.0.0-canary-19299220623-1-20251112133501':
-    resolution: {integrity: sha512-iNPnfwdXjd4owahtsSGRvM7sm2wjNkgOOGtOr91hE9efzie+6ncdRNd6nQt3z2RfJq5BDi/9i4UW9//zdNLw5g==}
+  '@fragno-dev/core@0.0.0-canary-19329471870-1-20251113110938':
+    resolution: {integrity: sha512-trQ2iKL5MjkBaDgwJ0BY6vXTGq0ZJTM6QGayFlng8b67g/cwocPNguRasN6HRKJcfbQO49V25mAJrI0XzQ4jHg==}
     peerDependencies:
       react: ^19.0.0
       solid-js: ^1.0.0
@@ -949,30 +949,30 @@ packages:
   '@fragno-dev/corpus@0.0.5':
     resolution: {integrity: sha512-2F/G3z/gEaE/KVXBaeMz5g03JUe3lQn6dhSYyhxsEHRYSIp1JI2LkczlNAnMENcp+bwmjJKiZUHUBk9gCzqnkg==}
 
-  '@fragno-dev/db@0.0.0-canary-19299220623-1-20251112133501':
-    resolution: {integrity: sha512-nqh2f3aFkrVmgJvQLCUWiVzCu+0Vhj8vcj0I9Jbd9C+Bt65nOAzyT7EdJfyuEs+uPFBbyUs4biHnMsYe+/IfoQ==}
+  '@fragno-dev/db@0.0.0-canary-19329471870-1-20251113110938':
+    resolution: {integrity: sha512-TcHiRLPwTl3W0RPw8ZepO1G1Mn2PBiVGgM1jH7TMcfDkAgTX+XXACnDYyJjPcf5O7oZsIcI8o++p2HC7LOauTw==}
     peerDependencies:
       drizzle-orm: ^0.44.6
     peerDependenciesMeta:
       drizzle-orm:
         optional: true
 
-  '@fragno-dev/stripe@0.0.0-canary-19299220623-1-20251112133501':
-    resolution: {integrity: sha512-xpem4IoKYv92zWSOrmk8d5Z9D5UAsfDc7FLu3P8BNLDKj/mkh3FPxA6eo0y7sGP8tGeYY/pjfqgrUmWkLOodgw==}
+  '@fragno-dev/stripe@0.0.0-canary-19329471870-1-20251113110938':
+    resolution: {integrity: sha512-0uCqAE5TRfzypjjj3G5IMdEX1tiZPZ+SuEUqqwCYWiqXRm2F9NkrvqSv6QCnDyn78srfLx4riC8O1gQ81UVeJg==}
     peerDependencies:
-      '@fragno-dev/db': 0.0.0-canary-19299220623-1-20251112133501
+      '@fragno-dev/db': 0.0.0-canary-19329471870-1-20251113110938
       react: '>=18.0.0'
       solid-js: '>=1.0.0'
       svelte: '>=4.0.0'
       typescript: ^5
       vue: '>=3.0.0'
 
-  '@fragno-dev/test@0.0.0-canary-19299220623-1-20251112133501':
-    resolution: {integrity: sha512-YfEnJw+lJnRE2AerdZW3T9IQbwBMuSa103GZYIeWL8BNXk/Zarz4BzggF7G0mOkpxofLVxlBi0OwTBcNcRqVHw==}
+  '@fragno-dev/test@0.0.0-canary-19329471870-1-20251113110938':
+    resolution: {integrity: sha512-s4H6VfQpIGBVtwqtuqRYjLi3oUQNdAgKw9h6dgH0Oz5oQBpoc8vG40TpTGYt+EZfSaCq+NAHMwAhf/WNe/ZfiQ==}
     peerDependencies:
       '@electric-sql/pglite': ^0.3.11
-      '@fragno-dev/core': 0.0.0-canary-19299220623-1-20251112133501
-      '@fragno-dev/db': 0.0.0-canary-19299220623-1-20251112133501
+      '@fragno-dev/core': 0.0.0-canary-19329471870-1-20251113110938
+      '@fragno-dev/db': 0.0.0-canary-19329471870-1-20251113110938
       drizzle-kit: ^0.30.3
       drizzle-orm: ^0.44.7
       kysely-pglite: ^0.6.1
@@ -986,8 +986,8 @@ packages:
       kysely-pglite:
         optional: true
 
-  '@fragno-dev/unplugin-fragno@0.0.0-canary-19299220623-1-20251112133501':
-    resolution: {integrity: sha512-OMDxycV1wX6yl+wtZ38E3S/ARP60RF1YmM2H2vDQz8WcX4Gl/AsObc3IDY1fSwJmfGfhOromr4NQj5DwRu2Gug==}
+  '@fragno-dev/unplugin-fragno@0.0.0-canary-19329471870-1-20251113110938':
+    resolution: {integrity: sha512-lWZizU8y+Hdj0LyGnAGrds76yXIad1WnebgKPYTetQXbk9qDZVmXEgRqFL1D2ydjAVJPYaWgkC13d2pglm9vwA==}
     peerDependencies:
       '@farmfe/core': '>=1'
       '@nuxt/kit': ^3 || ^4
@@ -3739,8 +3739,8 @@ packages:
     resolution: {integrity: sha512-gmBGslpoQJtgnMAvOVqGZpEz9dyoKTCzy2nfz/n8aIFhN/jCE/rCmcxabB6jOOHV+0WNnylOxaxBQPSvcWklhA==}
     engines: {node: '>=12'}
 
-  stripe@19.3.0:
-    resolution: {integrity: sha512-3MbqRkw5LXb4LWP1LgIEYxUAYhYDDU5pcHZj4Xha6VWPnN1wrUmQ7Htsgm8wR584s0hn1aQg1lYD0Hi+F37E5g==}
+  stripe@19.3.1:
+    resolution: {integrity: sha512-5NXhLxTZ+4uO1wnsmNysILVuyeZ1Xia7niz/8ykBkGJkCcrY2WyQZwcfYuWZmZEJtWr2+0j49JXwNC6y9CHL7Q==}
     engines: {node: '>=16'}
     peerDependencies:
       '@types/node': '>=16'
@@ -4777,12 +4777,12 @@ snapshots:
 
   '@floating-ui/utils@0.2.10': {}
 
-  '@fragno-dev/cli@0.0.0-canary-19299220623-1-20251112133501(drizzle-orm@0.44.7(@electric-sql/pglite@0.3.11)(@types/pg@8.15.6)(kysely@0.28.8)(pg@8.16.3))(react@19.2.0)(solid-js@1.9.9)(svelte@5.42.2)(vue@3.5.22(typescript@5.9.3))':
+  '@fragno-dev/cli@0.0.0-canary-19329471870-1-20251113110938(drizzle-orm@0.44.7(@electric-sql/pglite@0.3.11)(@types/pg@8.15.6)(kysely@0.28.8)(pg@8.16.3))(react@19.2.0)(solid-js@1.9.9)(svelte@5.42.2)(vue@3.5.22(typescript@5.9.3))':
     dependencies:
       '@clack/prompts': 0.11.0
-      '@fragno-dev/core': 0.0.0-canary-19299220623-1-20251112133501(react@19.2.0)(solid-js@1.9.9)(svelte@5.42.2)(vue@3.5.22(typescript@5.9.3))
+      '@fragno-dev/core': 0.0.0-canary-19329471870-1-20251113110938(react@19.2.0)(solid-js@1.9.9)(svelte@5.42.2)(vue@3.5.22(typescript@5.9.3))
       '@fragno-dev/corpus': 0.0.5
-      '@fragno-dev/db': 0.0.0-canary-19299220623-1-20251112133501(drizzle-orm@0.44.7(@electric-sql/pglite@0.3.11)(@types/pg@8.15.6)(kysely@0.28.8)(pg@8.16.3))
+      '@fragno-dev/db': 0.0.0-canary-19329471870-1-20251113110938(drizzle-orm@0.44.7(@electric-sql/pglite@0.3.11)(@types/pg@8.15.6)(kysely@0.28.8)(pg@8.16.3))
       c12: 3.3.2
       gunshi: 0.26.3
       marked: 15.0.12
@@ -4795,7 +4795,7 @@ snapshots:
       - svelte
       - vue
 
-  '@fragno-dev/core@0.0.0-canary-19299220623-1-20251112133501(react@19.2.0)(solid-js@1.9.9)(svelte@5.42.2)(vue@3.5.22(typescript@5.9.3))':
+  '@fragno-dev/core@0.0.0-canary-19329471870-1-20251113110938(react@19.2.0)(solid-js@1.9.9)(svelte@5.42.2)(vue@3.5.22(typescript@5.9.3))':
     dependencies:
       '@nanostores/query': 0.3.4(nanostores@1.0.1)
       '@nanostores/solid': 1.1.1(nanostores@1.0.1)(solid-js@1.9.9)
@@ -4810,20 +4810,20 @@ snapshots:
 
   '@fragno-dev/corpus@0.0.5': {}
 
-  '@fragno-dev/db@0.0.0-canary-19299220623-1-20251112133501(drizzle-orm@0.44.7(@electric-sql/pglite@0.3.11)(@types/pg@8.15.6)(kysely@0.28.8)(pg@8.16.3))':
+  '@fragno-dev/db@0.0.0-canary-19329471870-1-20251113110938(drizzle-orm@0.44.7(@electric-sql/pglite@0.3.11)(@types/pg@8.15.6)(kysely@0.28.8)(pg@8.16.3))':
     dependencies:
       '@paralleldrive/cuid2': 2.3.1
       kysely: 0.28.8
     optionalDependencies:
       drizzle-orm: 0.44.7(@electric-sql/pglite@0.3.11)(@types/pg@8.15.6)(kysely@0.28.8)(pg@8.16.3)
 
-  '@fragno-dev/stripe@0.0.0-canary-19299220623-1-20251112133501(@fragno-dev/db@0.0.0-canary-19299220623-1-20251112133501(drizzle-orm@0.44.7(@electric-sql/pglite@0.3.11)(@types/pg@8.15.6)(kysely@0.28.8)(pg@8.16.3)))(@types/node@22.19.0)(react@19.2.0)(solid-js@1.9.9)(svelte@5.42.2)(typescript@5.9.3)(vue@3.5.22(typescript@5.9.3))':
+  '@fragno-dev/stripe@0.0.0-canary-19329471870-1-20251113110938(@fragno-dev/db@0.0.0-canary-19329471870-1-20251113110938(drizzle-orm@0.44.7(@electric-sql/pglite@0.3.11)(@types/pg@8.15.6)(kysely@0.28.8)(pg@8.16.3)))(@types/node@22.19.0)(react@19.2.0)(solid-js@1.9.9)(svelte@5.42.2)(typescript@5.9.3)(vue@3.5.22(typescript@5.9.3))':
     dependencies:
-      '@fragno-dev/core': 0.0.0-canary-19299220623-1-20251112133501(react@19.2.0)(solid-js@1.9.9)(svelte@5.42.2)(vue@3.5.22(typescript@5.9.3))
-      '@fragno-dev/db': 0.0.0-canary-19299220623-1-20251112133501(drizzle-orm@0.44.7(@electric-sql/pglite@0.3.11)(@types/pg@8.15.6)(kysely@0.28.8)(pg@8.16.3))
+      '@fragno-dev/core': 0.0.0-canary-19329471870-1-20251113110938(react@19.2.0)(solid-js@1.9.9)(svelte@5.42.2)(vue@3.5.22(typescript@5.9.3))
+      '@fragno-dev/db': 0.0.0-canary-19329471870-1-20251113110938(drizzle-orm@0.44.7(@electric-sql/pglite@0.3.11)(@types/pg@8.15.6)(kysely@0.28.8)(pg@8.16.3))
       react: 19.2.0
       solid-js: 1.9.9
-      stripe: 19.3.0(@types/node@22.19.0)
+      stripe: 19.3.1(@types/node@22.19.0)
       svelte: 5.42.2
       typescript: 5.9.3
       vue: 3.5.22(typescript@5.9.3)
@@ -4831,10 +4831,10 @@ snapshots:
     transitivePeerDependencies:
       - '@types/node'
 
-  '@fragno-dev/test@0.0.0-canary-19299220623-1-20251112133501(@electric-sql/pglite@0.3.11)(@fragno-dev/core@0.0.0-canary-19299220623-1-20251112133501(react@19.2.0)(solid-js@1.9.9)(svelte@5.42.2)(vue@3.5.22(typescript@5.9.3)))(@fragno-dev/db@0.0.0-canary-19299220623-1-20251112133501(drizzle-orm@0.44.7(@electric-sql/pglite@0.3.11)(@types/pg@8.15.6)(kysely@0.28.8)(pg@8.16.3)))(drizzle-orm@0.44.7(@electric-sql/pglite@0.3.11)(@types/pg@8.15.6)(kysely@0.28.8)(pg@8.16.3))(kysely-pglite@0.6.1(@electric-sql/pglite@0.3.11)(kysely@0.28.8)(pg@8.16.3))':
+  '@fragno-dev/test@0.0.0-canary-19329471870-1-20251113110938(@electric-sql/pglite@0.3.11)(@fragno-dev/core@0.0.0-canary-19329471870-1-20251113110938(react@19.2.0)(solid-js@1.9.9)(svelte@5.42.2)(vue@3.5.22(typescript@5.9.3)))(@fragno-dev/db@0.0.0-canary-19329471870-1-20251113110938(drizzle-orm@0.44.7(@electric-sql/pglite@0.3.11)(@types/pg@8.15.6)(kysely@0.28.8)(pg@8.16.3)))(drizzle-orm@0.44.7(@electric-sql/pglite@0.3.11)(@types/pg@8.15.6)(kysely@0.28.8)(pg@8.16.3))(kysely-pglite@0.6.1(@electric-sql/pglite@0.3.11)(kysely@0.28.8)(pg@8.16.3))':
     dependencies:
-      '@fragno-dev/core': 0.0.0-canary-19299220623-1-20251112133501(react@19.2.0)(solid-js@1.9.9)(svelte@5.42.2)(vue@3.5.22(typescript@5.9.3))
-      '@fragno-dev/db': 0.0.0-canary-19299220623-1-20251112133501(drizzle-orm@0.44.7(@electric-sql/pglite@0.3.11)(@types/pg@8.15.6)(kysely@0.28.8)(pg@8.16.3))
+      '@fragno-dev/core': 0.0.0-canary-19329471870-1-20251113110938(react@19.2.0)(solid-js@1.9.9)(svelte@5.42.2)(vue@3.5.22(typescript@5.9.3))
+      '@fragno-dev/db': 0.0.0-canary-19329471870-1-20251113110938(drizzle-orm@0.44.7(@electric-sql/pglite@0.3.11)(@types/pg@8.15.6)(kysely@0.28.8)(pg@8.16.3))
       '@standard-schema/spec': 1.0.0
       kysely: 0.28.8
       sqlocal: 0.15.2(drizzle-orm@0.44.7(@electric-sql/pglite@0.3.11)(@types/pg@8.15.6)(kysely@0.28.8)(pg@8.16.3))(kysely@0.28.8)
@@ -4846,7 +4846,7 @@ snapshots:
       - bufferutil
       - utf-8-validate
 
-  '@fragno-dev/unplugin-fragno@0.0.0-canary-19299220623-1-20251112133501(esbuild@0.25.4)(vite@5.4.21(@types/node@22.19.0)(lightningcss@1.30.2)(terser@5.16.9))':
+  '@fragno-dev/unplugin-fragno@0.0.0-canary-19329471870-1-20251113110938(esbuild@0.25.4)(vite@5.4.21(@types/node@22.19.0)(lightningcss@1.30.2)(terser@5.16.9))':
     dependencies:
       '@babel/core': 7.28.5
       '@babel/generator': 7.28.5
@@ -4861,7 +4861,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@fragno-dev/unplugin-fragno@0.0.0-canary-19299220623-1-20251112133501(esbuild@0.25.4)(vite@7.1.12(@types/node@22.19.0)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.16.9)(yaml@2.8.1))':
+  '@fragno-dev/unplugin-fragno@0.0.0-canary-19329471870-1-20251113110938(esbuild@0.25.4)(vite@7.1.12(@types/node@22.19.0)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.16.9)(yaml@2.8.1))':
     dependencies:
       '@babel/core': 7.28.5
       '@babel/generator': 7.28.5
@@ -7392,7 +7392,7 @@ snapshots:
     dependencies:
       ansi-regex: 6.2.2
 
-  stripe@19.3.0(@types/node@22.19.0):
+  stripe@19.3.1(@types/node@22.19.0):
     dependencies:
       qs: 6.14.0
     optionalDependencies:
