@@ -48,6 +48,7 @@
   },
   "devDependencies": {
     "@cloudflare/vite-plugin": "^1.13.18",
+    "@cloudflare/vitest-pool-workers": "^0.10.7",
     "@fragno-dev/cli": "0.0.0-canary-19329471870-1-20251113110938",
     "@react-router/dev": "^7.9.5",
     "@tailwindcss/vite": "^4.1.16",
@@ -61,6 +62,7 @@
     "vite": "^7.1.12",
     "vite-plugin-devtools-json": "^1.0.0",
     "vite-tsconfig-paths": "^5.1.4",
+    "vitest": "~3.2.0",
     "wrangler": "^4.45.3"
   }
 }
