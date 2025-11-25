@@ -2,18 +2,19 @@ import { afterAll, assert, describe, expect, it } from "vitest";
 import { otpFragmentDefinition } from "..";
 import { ottRoutesFactory } from "../ott/ott";
 import { totpRoutesFactory } from "./totp";
-import { createDatabaseFragmentForTest } from "@fragno-dev/test";
+import { buildDatabaseFragmentsTest } from "@fragno-dev/test";
+import { instantiate } from "@fragno-dev/core";
 
 describe("TOTP (Time-based One-Time Password)", async () => {
-  const { fragment, test } = await createDatabaseFragmentForTest(
-    {
-      definition: otpFragmentDefinition,
-      routes: [ottRoutesFactory, totpRoutesFactory],
-    },
-    {
-      adapter: { type: "drizzle-pglite" },
-    },
-  );
+  const { fragments, test } = await buildDatabaseFragmentsTest()
+    .withTestAdapter({ type: "drizzle-pglite" })
+    .withFragment(
+      "otp",
+      instantiate(otpFragmentDefinition).withRoutes([ottRoutesFactory, totpRoutesFactory]),
+    )
+    .build();
+
+  const fragment = fragments.otp;
 
   afterAll(async () => {
     await test.cleanup();

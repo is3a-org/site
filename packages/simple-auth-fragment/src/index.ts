@@ -1,13 +1,6 @@
-import {
-  createFragment,
-  instantiateFragment,
-  type FragnoPublicClientConfig,
-} from "@fragno-dev/core";
-import { createClientBuilder } from "@fragno-dev/core/client";
-import {
-  defineFragmentWithDatabase,
-  type FragnoPublicConfigWithDatabase,
-} from "@fragno-dev/db/fragment";
+import { defineFragment, instantiate } from "@fragno-dev/core";
+import { createClientBuilder, type FragnoPublicClientConfig } from "@fragno-dev/core/client";
+import { withDatabase, type FragnoPublicConfigWithDatabase } from "@fragno-dev/db";
 import { authSchema } from "./schema";
 import { createUserServices, userActionsRoutesFactory } from "./user/user-actions";
 import { createSessionServices, sessionRoutesFactory } from "./session/session";
@@ -26,19 +19,20 @@ export interface AuthConfig {
   cookieOptions?: CookieOptions;
 }
 
-export const authFragmentDefinition = defineFragmentWithDatabase<AuthConfig>("simple-auth")
-  .withDatabase(authSchema)
-  .providesService(({ db }) => {
-    const userServices = createUserServices(db);
-    const sessionServices = createSessionServices(db);
-    const userOverviewServices = createUserOverviewServices(db);
+export const authFragmentDefinition = defineFragment<AuthConfig>("simple-auth")
+  .extend(withDatabase(authSchema, "simple-auth-db"))
+  .providesBaseService(({ deps }) => {
+    const userServices = createUserServices(deps.db);
+    const sessionServices = createSessionServices(deps.db);
+    const userOverviewServices = createUserOverviewServices(deps.db);
 
     return {
       ...userServices,
       ...sessionServices,
       ...userOverviewServices,
     };
-  });
+  })
+  .build();
 
 export type AuthFragment = typeof authFragmentDefinition;
 
@@ -46,13 +40,11 @@ export function createAuthFragment(
   config: AuthConfig = {},
   fragnoConfig: FragnoPublicConfigWithDatabase,
 ) {
-  console.log({ instantiateFragment });
-  return createFragment(
-    authFragmentDefinition,
-    config,
-    [userActionsRoutesFactory, sessionRoutesFactory, userOverviewRoutesFactory],
-    fragnoConfig,
-  );
+  return instantiate(authFragmentDefinition)
+    .withConfig(config)
+    .withOptions(fragnoConfig)
+    .withRoutes([userActionsRoutesFactory, sessionRoutesFactory, userOverviewRoutesFactory])
+    .build();
 }
 
 export function createAuthFragmentClients(fragnoConfig?: FragnoPublicClientConfig) {
@@ -143,7 +135,7 @@ export function createAuthFragmentClients(fragnoConfig?: FragnoPublicClientConfi
     },
 
     signOut: () => {
-      return useSignOut.mutateQuery({ body: {} });
+      return useSignOut.mutateQuery({ body: undefined });
     },
 
     me: async () => {

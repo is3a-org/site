@@ -1,20 +1,17 @@
 import { afterAll, describe, expect, it } from "vitest";
 import { otpFragmentDefinition } from "..";
-import { createDatabaseFragmentForTest } from "@fragno-dev/test";
+import { buildDatabaseFragmentsTest } from "@fragno-dev/test";
+import { instantiate } from "@fragno-dev/core";
 
 const testUserId = "test-user-id";
 
 describe("OTT Services", async () => {
-  const { fragment, test } = await createDatabaseFragmentForTest(
-    {
-      definition: otpFragmentDefinition,
-      routes: [],
-    },
-    {
-      adapter: { type: "drizzle-pglite" },
-    },
-  );
-  const services = fragment.services;
+  const { fragments, test } = await buildDatabaseFragmentsTest()
+    .withTestAdapter({ type: "drizzle-pglite" })
+    .withFragment("ott", instantiate(otpFragmentDefinition))
+    .build();
+
+  const services = fragments.ott.services;
 
   afterAll(async () => {
     await test.cleanup();

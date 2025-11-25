@@ -20,7 +20,8 @@
     "types": ["./worker-configuration.d.ts"],
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./app/*"]
+      "@/*": ["./app/*"],
+      "~/*": ["./app/*"]
     },
     "allowImportingTsExtensions": true
   }

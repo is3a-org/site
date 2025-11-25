@@ -2,15 +2,11 @@ import { defineRoute, defineRoutes } from "@fragno-dev/core";
 import type { AbstractQuery } from "@fragno-dev/db/query";
 import { otpSchema } from "../schema";
 import { z } from "zod";
+import type { otpFragmentDefinition } from "..";
 
 export interface TotpConfig {
   issuer?: string;
 }
-
-type TotpDeps = {
-  orm: AbstractQuery<typeof otpSchema>;
-  config: TotpConfig;
-};
 
 // Base32 encoding/decoding utilities
 const BASE32_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
@@ -311,128 +307,126 @@ export function createTotpServices(orm: AbstractQuery<typeof otpSchema>, config:
   };
 }
 
-export const totpRoutesFactory = defineRoutes<
-  TotpConfig,
-  TotpDeps,
-  ReturnType<typeof createTotpServices>
->().create(({ services }) => {
-  return [
-    defineRoute({
-      method: "POST",
-      path: "/totp/enable",
-      inputSchema: z.object({
-        userId: z.string(),
-      }),
-      outputSchema: z.object({
-        secret: z.string(),
-        qrCodeUrl: z.string(),
-        backupCodes: z.array(z.string()),
-      }),
-      errorCodes: ["totp_already_enabled"],
-      handler: async ({ input }, { json, error }) => {
-        const { userId } = await input.valid();
+export const totpRoutesFactory = defineRoutes<typeof otpFragmentDefinition>().create(
+  ({ services }) => {
+    return [
+      defineRoute({
+        method: "POST",
+        path: "/totp/enable",
+        inputSchema: z.object({
+          userId: z.string(),
+        }),
+        outputSchema: z.object({
+          secret: z.string(),
+          qrCodeUrl: z.string(),
+          backupCodes: z.array(z.string()),
+        }),
+        errorCodes: ["totp_already_enabled"],
+        handler: async ({ input }, { json, error }) => {
+          const { userId } = await input.valid();
 
-        try {
-          const result = await services.enableTotp(userId);
-          return json(result);
-        } catch (err) {
-          if (err instanceof Error && err.message.includes("already enabled")) {
-            return error({ message: "TOTP already enabled", code: "totp_already_enabled" }, 400);
+          try {
+            const result = await services.enableTotp(userId);
+            return json(result);
+          } catch (err) {
+            if (err instanceof Error && err.message.includes("already enabled")) {
+              return error({ message: "TOTP already enabled", code: "totp_already_enabled" }, 400);
+            }
+            throw err;
           }
-          throw err;
-        }
-      },
-    }),
-
-    defineRoute({
-      method: "POST",
-      path: "/totp/verify",
-      inputSchema: z.object({
-        userId: z.string(),
-        code: z.string().length(6),
+        },
       }),
-      outputSchema: z.object({
-        valid: z.boolean(),
+
+      defineRoute({
+        method: "POST",
+        path: "/totp/verify",
+        inputSchema: z.object({
+          userId: z.string(),
+          code: z.string().length(6),
+        }),
+        outputSchema: z.object({
+          valid: z.boolean(),
+        }),
+        errorCodes: ["totp_not_enabled", "totp_invalid_code"],
+        handler: async ({ input }, { json, error }) => {
+          const { userId, code } = await input.valid();
+
+          const result = await services.verifyTotp(userId, code);
+
+          if (!result.valid) {
+            return error({ message: "Invalid TOTP code", code: "totp_invalid_code" }, 401);
+          }
+
+          return json(result);
+        },
       }),
-      errorCodes: ["totp_not_enabled", "totp_invalid_code"],
-      handler: async ({ input }, { json, error }) => {
-        const { userId, code } = await input.valid();
 
-        const result = await services.verifyTotp(userId, code);
+      defineRoute({
+        method: "POST",
+        path: "/totp/verify-backup",
+        inputSchema: z.object({
+          userId: z.string(),
+          code: z.string().length(8),
+        }),
+        outputSchema: z.object({
+          valid: z.boolean(),
+        }),
+        errorCodes: ["totp_not_enabled", "backup_code_invalid"],
+        handler: async ({ input }, { json, error }) => {
+          const { userId, code } = await input.valid();
 
-        if (!result.valid) {
-          return error({ message: "Invalid TOTP code", code: "totp_invalid_code" }, 401);
-        }
+          const result = await services.verifyBackupCode(userId, code);
 
-        return json(result);
-      },
-    }),
+          if (!result.valid) {
+            return error({ message: "Invalid backup code", code: "backup_code_invalid" }, 401);
+          }
 
-    defineRoute({
-      method: "POST",
-      path: "/totp/verify-backup",
-      inputSchema: z.object({
-        userId: z.string(),
-        code: z.string().length(8),
+          return json(result);
+        },
       }),
-      outputSchema: z.object({
-        valid: z.boolean(),
+
+      defineRoute({
+        method: "POST",
+        path: "/totp/disable",
+        inputSchema: z.object({
+          userId: z.string(),
+        }),
+        outputSchema: z.object({
+          success: z.boolean(),
+        }),
+        errorCodes: ["totp_not_enabled"],
+        handler: async ({ input }, { json, error }) => {
+          const { userId } = await input.valid();
+
+          const success = await services.disableTotp(userId);
+
+          if (!success) {
+            return error({ message: "TOTP not enabled", code: "totp_not_enabled" }, 400);
+          }
+
+          return json({ success });
+        },
       }),
-      errorCodes: ["totp_not_enabled", "backup_code_invalid"],
-      handler: async ({ input }, { json, error }) => {
-        const { userId, code } = await input.valid();
 
-        const result = await services.verifyBackupCode(userId, code);
+      defineRoute({
+        method: "GET",
+        path: "/totp/status",
+        queryParameters: ["userId"],
+        outputSchema: z.object({
+          enabled: z.boolean(),
+        }),
+        errorCodes: [],
+        handler: async ({ query }, { json }) => {
+          const userId = query.get("userId");
 
-        if (!result.valid) {
-          return error({ message: "Invalid backup code", code: "backup_code_invalid" }, 401);
-        }
+          if (!userId) {
+            return json({ enabled: false });
+          }
 
-        return json(result);
-      },
-    }),
-
-    defineRoute({
-      method: "POST",
-      path: "/totp/disable",
-      inputSchema: z.object({
-        userId: z.string(),
+          const result = await services.getTotpStatus(userId);
+          return json(result);
+        },
       }),
-      outputSchema: z.object({
-        success: z.boolean(),
-      }),
-      errorCodes: ["totp_not_enabled"],
-      handler: async ({ input }, { json, error }) => {
-        const { userId } = await input.valid();
-
-        const success = await services.disableTotp(userId);
-
-        if (!success) {
-          return error({ message: "TOTP not enabled", code: "totp_not_enabled" }, 400);
-        }
-
-        return json({ success });
-      },
-    }),
-
-    defineRoute({
-      method: "GET",
-      path: "/totp/status",
-      queryParameters: ["userId"],
-      outputSchema: z.object({
-        enabled: z.boolean(),
-      }),
-      errorCodes: [],
-      handler: async ({ query }, { json }) => {
-        const userId = query.get("userId");
-
-        if (!userId) {
-          return json({ enabled: false });
-        }
-
-        const result = await services.getTotpStatus(userId);
-        return json(result);
-      },
-    }),
-  ];
-});
+    ];
+  },
+);

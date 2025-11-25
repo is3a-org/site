@@ -9,15 +9,15 @@
     "preview": "pnpm run build && vite preview",
     "types:check": "pnpm run types:generate && react-router typegen && tsc -b",
     "types:generate": "wrangler types --env-interface CloudflareEnv",
-    "db:fragno:generate": "./node_modules/@fragno-dev/cli/dist/cli.js db generate app/fragno/simple-auth-server.ts app/fragno/otp-server.ts app/fragno/stripe-server.ts -o app/db/postgres/fragno-schema.ts",
+    "db:fragno:generate": "fragno-cli db generate app/fragno/simple-auth-server.ts app/fragno/otp-server.ts app/fragno/stripe-server.ts -o app/db/postgres/fragno-schema.ts",
     "db:postgres:push": "drizzle-kit push --config postgres.drizzle.config.ts",
     "db:postgres:generate": "drizzle-kit generate --config postgres.drizzle.config.ts",
     "db:postgres:migrate": "drizzle-kit migrate --config postgres.drizzle.config.ts",
     "stripe:webhook": "stripe listen --forward-to localhost:5173/api/stripe/webhook"
   },
   "dependencies": {
-    "@fragno-dev/db": "0.0.0-canary-19329471870-1-20251113110938",
-    "@fragno-dev/stripe": "0.0.0-canary-19329471870-1-20251113110938",
+    "@fragno-dev/db": "0.0.0-canary-19665913034-1-20251125101331",
+    "@fragno-dev/stripe": "0.0.0-canary-19665913034-1-20251125101331",
     "@is3a/one-time-password-fragment": "workspace:*",
     "@is3a/simple-auth-fragment": "workspace:*",
     "@paralleldrive/cuid2": "^3.1.0",
@@ -48,7 +48,7 @@
   },
   "devDependencies": {
     "@cloudflare/vite-plugin": "^1.13.18",
-    "@fragno-dev/cli": "0.0.0-canary-19329471870-1-20251113110938",
+    "@fragno-dev/cli": "0.0.0-canary-19665913034-1-20251125101331",
     "@react-router/dev": "^7.9.5",
     "@tailwindcss/vite": "^4.1.16",
     "@types/node": "^22.18.13",

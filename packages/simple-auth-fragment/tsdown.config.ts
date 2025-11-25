@@ -20,7 +20,7 @@ export default defineConfig([
     outDir: "./dist/browser",
     plugins: [unpluginFragno({ platform: "browser" })],
     external: [/^@fragno-dev\/db\//],
-    noExternal: [/^@fragno-dev\/core\//],
+    // noExternal: [/^@fragno-dev\/core\//],
   },
   {
     ignoreWatch: ["./dist/node/**", "./turbo/**"],

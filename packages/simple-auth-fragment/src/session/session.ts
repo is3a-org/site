@@ -3,15 +3,7 @@ import type { AbstractQuery } from "@fragno-dev/db/query";
 import { authSchema } from "../schema";
 import { z } from "zod";
 import { buildClearCookieHeader, extractSessionId } from "../utils/cookie";
-import type { Role } from "..";
-
-export interface SessionConfig {
-  sendEmail?: (params: { to: string; subject: string; body: string }) => Promise<void>;
-}
-
-type SessionDeps = {
-  orm: AbstractQuery<typeof authSchema>;
-};
+import type { Role, authFragmentDefinition } from "..";
 
 export function createSessionServices(orm: AbstractQuery<typeof authSchema>) {
   const services = {
@@ -97,92 +89,90 @@ export function createSessionServices(orm: AbstractQuery<typeof authSchema>) {
   return services;
 }
 
-export const sessionRoutesFactory = defineRoutes<
-  SessionConfig,
-  SessionDeps,
-  ReturnType<typeof createSessionServices>
->().create(({ services }) => {
-  return [
-    defineRoute({
-      method: "POST",
-      path: "/sign-out",
-      inputSchema: z
-        .object({
-          sessionId: z.string().optional(),
-        })
-        .optional(),
-      outputSchema: z.object({
-        success: z.boolean(),
-      }),
-      errorCodes: ["session_not_found"],
-      handler: async ({ input, headers }, { json, error }) => {
-        const body = await input.valid();
+export const sessionRoutesFactory = defineRoutes<typeof authFragmentDefinition>().create(
+  ({ services }) => {
+    return [
+      defineRoute({
+        method: "POST",
+        path: "/sign-out",
+        inputSchema: z
+          .object({
+            sessionId: z.string().optional(),
+          })
+          .optional(),
+        outputSchema: z.object({
+          success: z.boolean(),
+        }),
+        errorCodes: ["session_not_found"],
+        handler: async ({ input, headers }, { json, error }) => {
+          const body = await input.valid();
 
-        // Extract session ID from cookies first, then body
-        const sessionId = extractSessionId(headers, null, body?.sessionId);
+          // Extract session ID from cookies first, then body
+          const sessionId = extractSessionId(headers, null, body?.sessionId);
 
-        if (!sessionId) {
-          return error({ message: "Session ID required", code: "session_not_found" }, 400);
-        }
+          if (!sessionId) {
+            return error({ message: "Session ID required", code: "session_not_found" }, 400);
+          }
 
-        const success = await services.invalidateSession(sessionId);
+          const success = await services.invalidateSession(sessionId);
 
-        // Build response with clear cookie header
-        const clearCookieHeader = buildClearCookieHeader();
+          // Build response with clear cookie header
+          const clearCookieHeader = buildClearCookieHeader();
 
-        if (!success) {
-          // Still clear the cookie even if session not found in DB
+          if (!success) {
+            // Still clear the cookie even if session not found in DB
+            return json(
+              { success: false },
+              {
+                headers: {
+                  "Set-Cookie": clearCookieHeader,
+                },
+              },
+            );
+          }
+
           return json(
-            { success: false },
+            { success: true },
             {
               headers: {
                 "Set-Cookie": clearCookieHeader,
               },
             },
           );
-        }
-
-        return json(
-          { success: true },
-          {
-            headers: {
-              "Set-Cookie": clearCookieHeader,
-            },
-          },
-        );
-      },
-    }),
-
-    defineRoute({
-      method: "GET",
-      path: "/me",
-      queryParameters: ["sessionId"],
-      outputSchema: z.object({
-        userId: z.string(),
-        email: z.string(),
-        role: z.enum(["user", "admin"]),
+        },
       }),
-      errorCodes: ["session_invalid"],
-      handler: async ({ query, headers }, { json, error }) => {
-        // Extract session ID from cookies first, then query params
-        const sessionId = extractSessionId(headers, query.get("sessionId"));
 
-        if (!sessionId) {
-          return error({ message: "Session ID required", code: "session_invalid" }, 400);
-        }
+      defineRoute({
+        method: "GET",
+        path: "/me",
+        queryParameters: ["sessionId"],
+        outputSchema: z.object({
+          userId: z.string(),
+          email: z.string(),
+          role: z.enum(["user", "admin"]),
+        }),
+        errorCodes: ["session_invalid"],
+        handler: async ({ query, headers }, { json, error }) => {
+          // Extract session ID from cookies first, then query params
+          const sessionId = extractSessionId(headers, query.get("sessionId"));
 
-        const session = await services.validateSession(sessionId);
+          if (!sessionId) {
+            return error({ message: "Session ID required", code: "session_invalid" }, 400);
+          }
 
-        if (!session) {
-          return error({ message: "Invalid session", code: "session_invalid" }, 401);
-        }
+          const session = await services.validateSession(sessionId);
 
-        return json({
-          userId: session.user.id,
-          email: session.user.email,
-          role: session.user.role as Role,
-        });
-      },
-    }),
-  ];
-});
+          if (!session) {
+            return error({ message: "Invalid session", code: "session_invalid" }, 401);
+          }
+
+          return json({
+            userId: session.user.id,
+            email: session.user.email,
+            role: session.user.role as Role,
+          });
+        },
+      }),
+    ];
+  },
+);
