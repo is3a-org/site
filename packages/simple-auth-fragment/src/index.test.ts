@@ -2,18 +2,22 @@ import { afterAll, assert, describe, expect, it } from "vitest";
 import { authFragmentDefinition } from ".";
 import { userActionsRoutesFactory } from "./user/user-actions";
 import { sessionRoutesFactory } from "./session/session";
-import { createDatabaseFragmentForTest } from "@fragno-dev/test";
+import { buildDatabaseFragmentsTest } from "@fragno-dev/test";
+import { instantiate } from "@fragno-dev/core";
 
 describe("simple-auth-fragment", async () => {
-  const { fragment, test } = await createDatabaseFragmentForTest(
-    {
-      definition: authFragmentDefinition,
-      routes: [userActionsRoutesFactory, sessionRoutesFactory] as const,
-    },
-    {
-      adapter: { type: "drizzle-pglite" },
-    },
-  );
+  const { fragments, test } = await buildDatabaseFragmentsTest()
+    .withTestAdapter({ type: "drizzle-pglite" })
+    .withFragment(
+      "auth",
+      instantiate(authFragmentDefinition).withRoutes([
+        userActionsRoutesFactory,
+        sessionRoutesFactory,
+      ]),
+    )
+    .build();
+
+  const fragment = fragments.auth;
 
   afterAll(async () => {
     await test.cleanup();

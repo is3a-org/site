@@ -2,14 +2,11 @@ import { defineRoute, defineRoutes } from "@fragno-dev/core";
 import type { AbstractQuery } from "@fragno-dev/db/query";
 import { otpSchema } from "../schema";
 import { z } from "zod";
+import type { otpFragmentDefinition } from "..";
 
 export interface OttConfig {
   sendEmail?: (params: { to: string; subject: string; body: string }) => Promise<void>;
 }
-
-type OttDeps = {
-  orm: AbstractQuery<typeof otpSchema>;
-};
 
 // Token type enum
 export const OttType = z.enum(["email_verification", "password_reset", "passwordless_login"]);
@@ -135,104 +132,102 @@ export function createOttServices(orm: AbstractQuery<typeof otpSchema>) {
   };
 }
 
-export const ottRoutesFactory = defineRoutes<
-  OttConfig,
-  OttDeps,
-  ReturnType<typeof createOttServices>
->().create(({ services }) => {
-  return [
-    defineRoute({
-      method: "POST",
-      path: "/ott/generate",
-      inputSchema: z.object({
-        userId: z.string(),
-        type: OttType,
-        durationMinutes: z.number().int().positive().optional().default(15),
+export const ottRoutesFactory = defineRoutes<typeof otpFragmentDefinition>().create(
+  ({ services }) => {
+    return [
+      defineRoute({
+        method: "POST",
+        path: "/ott/generate",
+        inputSchema: z.object({
+          userId: z.string(),
+          type: OttType,
+          durationMinutes: z.number().int().positive().optional().default(15),
+        }),
+        outputSchema: z.object({
+          token: z.string(),
+        }),
+        errorCodes: [],
+        handler: async ({ input }, { json }) => {
+          const { userId, type, durationMinutes } = await input.valid();
+
+          const result = await services.generateToken(userId, type, durationMinutes);
+          return json(result);
+        },
       }),
-      outputSchema: z.object({
-        token: z.string(),
+
+      defineRoute({
+        method: "POST",
+        path: "/ott/validate",
+        inputSchema: z.object({
+          userId: z.string(),
+          token: z.string().length(8),
+          type: OttType,
+        }),
+        outputSchema: z.object({
+          valid: z.boolean(),
+        }),
+        errorCodes: ["token_expired", "token_invalid"],
+        handler: async ({ input }, { json, error }) => {
+          const { userId, token, type } = await input.valid();
+
+          const result = await services.validateToken(userId, token, type);
+
+          if (!result.valid && result.error) {
+            const errorMessages = {
+              token_expired: "Token has expired",
+              token_invalid: "Invalid token",
+            } as const;
+
+            const statusCodes = {
+              token_expired: 410,
+              token_invalid: 401,
+            } as const;
+
+            return error(
+              {
+                message: errorMessages[result.error],
+                code: result.error,
+              },
+              statusCodes[result.error],
+            );
+          }
+
+          return json({ valid: true });
+        },
       }),
-      errorCodes: [],
-      handler: async ({ input }, { json }) => {
-        const { userId, type, durationMinutes } = await input.valid();
 
-        const result = await services.generateToken(userId, type, durationMinutes);
-        return json(result);
-      },
-    }),
-
-    defineRoute({
-      method: "POST",
-      path: "/ott/validate",
-      inputSchema: z.object({
-        userId: z.string(),
-        token: z.string().length(8),
-        type: OttType,
+      defineRoute({
+        method: "POST",
+        path: "/ott/cleanup",
+        inputSchema: z.object({}).optional(),
+        outputSchema: z.object({
+          deletedCount: z.number(),
+        }),
+        errorCodes: [],
+        handler: async (_, { json }) => {
+          const result = await services.cleanupExpiredTokens();
+          return json(result);
+        },
       }),
-      outputSchema: z.object({
-        valid: z.boolean(),
+
+      defineRoute({
+        method: "POST",
+        path: "/ott/invalidate",
+        inputSchema: z.object({
+          userId: z.string(),
+          type: OttType,
+        }),
+        outputSchema: z.object({
+          deletedCount: z.number(),
+        }),
+        errorCodes: [],
+        handler: async ({ input }, { json }) => {
+          const { userId, type } = await input.valid();
+
+          const result = await services.invalidateTokens(userId, type);
+          return json(result);
+        },
       }),
-      errorCodes: ["token_expired", "token_invalid"],
-      handler: async ({ input }, { json, error }) => {
-        const { userId, token, type } = await input.valid();
-
-        const result = await services.validateToken(userId, token, type);
-
-        if (!result.valid && result.error) {
-          const errorMessages = {
-            token_expired: "Token has expired",
-            token_invalid: "Invalid token",
-          } as const;
-
-          const statusCodes = {
-            token_expired: 410,
-            token_invalid: 401,
-          } as const;
-
-          return error(
-            {
-              message: errorMessages[result.error],
-              code: result.error,
-            },
-            statusCodes[result.error],
-          );
-        }
-
-        return json({ valid: true });
-      },
-    }),
-
-    defineRoute({
-      method: "POST",
-      path: "/ott/cleanup",
-      inputSchema: z.object({}).optional(),
-      outputSchema: z.object({
-        deletedCount: z.number(),
-      }),
-      errorCodes: [],
-      handler: async (_, { json }) => {
-        const result = await services.cleanupExpiredTokens();
-        return json(result);
-      },
-    }),
-
-    defineRoute({
-      method: "POST",
-      path: "/ott/invalidate",
-      inputSchema: z.object({
-        userId: z.string(),
-        type: OttType,
-      }),
-      outputSchema: z.object({
-        deletedCount: z.number(),
-      }),
-      errorCodes: [],
-      handler: async ({ input }, { json }) => {
-        const { userId, type } = await input.valid();
-
-        const result = await services.invalidateTokens(userId, type);
-        return json(result);
-      },
-    }),
-  ];
-});
+    ];
+  },
+);

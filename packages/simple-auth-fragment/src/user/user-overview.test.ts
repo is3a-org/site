@@ -1,18 +1,19 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { authFragmentDefinition } from "..";
-import { createDatabaseFragmentForTest } from "@fragno-dev/test";
+import { buildDatabaseFragmentsTest } from "@fragno-dev/test";
+import { instantiate } from "@fragno-dev/core";
 import { userOverviewRoutesFactory } from "./user-overview";
 
 describe("User Overview Services", async () => {
-  const { fragment, test } = await createDatabaseFragmentForTest(
-    {
-      definition: authFragmentDefinition,
-      routes: [userOverviewRoutesFactory],
-    },
-    {
-      adapter: { type: "drizzle-pglite" },
-    },
-  );
+  const { fragments, test } = await buildDatabaseFragmentsTest()
+    .withTestAdapter({ type: "drizzle-pglite" })
+    .withFragment(
+      "auth",
+      instantiate(authFragmentDefinition).withRoutes([userOverviewRoutesFactory]),
+    )
+    .build();
+
+  const fragment = fragments.auth;
   const services = fragment.services;
 
   // Test data setup
@@ -389,7 +390,8 @@ describe("User Overview Services", async () => {
 
     it("should handle pagination through all results", async () => {
       let cursor;
-      let allUsers: Array<{ id: string; email: string; createdAt: Date }> = [];
+      let allUsers: Array<{ id: string; email: string; createdAt: Date; role: "user" | "admin" }> =
+        [];
       let iterations = 0;
       const maxIterations = 10; // Prevent infinite loops
 

@@ -15,7 +15,7 @@ import { createId } from "@fragno-dev/db/id";
 import { relations } from "drizzle-orm";
 
 // ============================================================================
-// Settings Table (shared across all fragments)
+// Fragment:
 // ============================================================================
 
 export const fragno_db_settings = pgTable(
@@ -31,8 +31,6 @@ export const fragno_db_settings = pgTable(
   },
   (table) => [uniqueIndex("unique_key").on(table.key)],
 );
-
-export const fragnoDbSettingSchemaVersion = 1;
 
 // ============================================================================
 // Fragment: simple-auth-db

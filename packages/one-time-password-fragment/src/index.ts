@@ -1,9 +1,6 @@
-import { createFragment, type FragnoPublicClientConfig } from "@fragno-dev/core";
-import { createClientBuilder } from "@fragno-dev/core/client";
-import {
-  defineFragmentWithDatabase,
-  type FragnoPublicConfigWithDatabase,
-} from "@fragno-dev/db/fragment";
+import { defineFragment, instantiate } from "@fragno-dev/core";
+import { createClientBuilder, type FragnoPublicClientConfig } from "@fragno-dev/core/client";
+import { withDatabase, type FragnoPublicConfigWithDatabase } from "@fragno-dev/db";
 import { otpSchema } from "./schema";
 import { createOttServices, ottRoutesFactory, type OttConfig } from "./ott/ott";
 import { createTotpServices, totpRoutesFactory, type TotpConfig } from "./totp/totp";
@@ -12,27 +9,25 @@ export interface OtpFragmentConfig extends OttConfig, TotpConfig {
   issuer?: string;
 }
 
-export const otpFragmentDefinition = defineFragmentWithDatabase<OtpFragmentConfig>(
-  "one-time-password",
-)
-  .withDatabase(otpSchema)
-  .providesService(({ db, config }) => {
+export const otpFragmentDefinition = defineFragment<OtpFragmentConfig>("one-time-password")
+  .extend(withDatabase(otpSchema, "one-time-password-db"))
+  .providesBaseService(({ deps, config }) => {
     return {
-      ...createOttServices(db),
-      ...createTotpServices(db, config),
+      ...createOttServices(deps.db),
+      ...createTotpServices(deps.db, config),
     };
-  });
+  })
+  .build();
 
 export function createOtpFragment(
   config: OtpFragmentConfig = {},
   fragnoConfig: FragnoPublicConfigWithDatabase,
 ) {
-  return createFragment(
-    otpFragmentDefinition,
-    config,
-    [ottRoutesFactory, totpRoutesFactory],
-    fragnoConfig,
-  );
+  return instantiate(otpFragmentDefinition)
+    .withConfig(config)
+    .withOptions(fragnoConfig)
+    .withRoutes([ottRoutesFactory, totpRoutesFactory])
+    .build();
 }
 
 export function createOtpFragmentClients(fragnoConfig: FragnoPublicClientConfig) {

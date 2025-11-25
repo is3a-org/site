@@ -3,6 +3,7 @@ import type { AbstractQuery } from "@fragno-dev/db/query";
 import { type Cursor, decodeCursor } from "@fragno-dev/db/cursor";
 import { authSchema } from "../schema";
 import { z } from "zod";
+import type { authFragmentDefinition } from "..";
 
 export type SortField = "email" | "createdAt";
 export type SortOrder = "asc" | "desc";
@@ -81,74 +82,72 @@ export function createUserOverviewServices(db: AbstractQuery<typeof authSchema>)
 
 const sortBySchema = z.enum(["email", "createdAt"]);
 
-export const userOverviewRoutesFactory = defineRoutes<
-  {},
-  {},
-  ReturnType<typeof createUserOverviewServices>
->().create(({ services }) => {
-  const parseQueryParams = (query: URLSearchParams) => {
-    const search = query.get("search") || undefined;
-    const requestedSortBy = (query.get("sortBy") || "createdAt") as SortField;
-    const sortOrder = (query.get("sortOrder") || "desc") as SortOrder;
-    const pageSize = Math.min(Math.max(Number(query.get("pageSize")) || 20, 1), 100);
+export const userOverviewRoutesFactory = defineRoutes<typeof authFragmentDefinition>().create(
+  ({ services }) => {
+    const parseQueryParams = (query: URLSearchParams) => {
+      const search = query.get("search") || undefined;
+      const requestedSortBy = (query.get("sortBy") || "createdAt") as SortField;
+      const sortOrder = (query.get("sortOrder") || "desc") as SortOrder;
+      const pageSize = Math.min(Math.max(Number(query.get("pageSize")) || 20, 1), 100);
 
-    // When searching, enforce email sorting for efficient queries
-    const sortBy: SortField = search ? "email" : requestedSortBy;
+      // When searching, enforce email sorting for efficient queries
+      const sortBy: SortField = search ? "email" : requestedSortBy;
 
-    return { search, sortBy, sortOrder, pageSize };
-  };
+      return { search, sortBy, sortOrder, pageSize };
+    };
 
-  const parseCursor = (cursorParam: string | null): Cursor | undefined => {
-    if (!cursorParam) {
-      return undefined;
-    }
-    try {
-      return decodeCursor(cursorParam);
-    } catch {
-      return undefined;
-    }
-  };
+    const parseCursor = (cursorParam: string | null): Cursor | undefined => {
+      if (!cursorParam) {
+        return undefined;
+      }
+      try {
+        return decodeCursor(cursorParam);
+      } catch {
+        return undefined;
+      }
+    };
 
-  return [
-    defineRoute({
-      method: "GET",
-      path: "/users",
-      queryParameters: ["search", "sortBy", "sortOrder", "pageSize", "cursor"],
-      outputSchema: z.object({
-        users: z.array(
-          z.object({
-            id: z.string(),
-            email: z.string(),
-            role: z.enum(["user", "admin"]),
-            createdAt: z.string(),
-          }),
-        ),
-        cursor: z.string().optional(),
-        hasNextPage: z.boolean(),
-        sortBy: sortBySchema,
+    return [
+      defineRoute({
+        method: "GET",
+        path: "/users",
+        queryParameters: ["search", "sortBy", "sortOrder", "pageSize", "cursor"],
+        outputSchema: z.object({
+          users: z.array(
+            z.object({
+              id: z.string(),
+              email: z.string(),
+              role: z.enum(["user", "admin"]),
+              createdAt: z.string(),
+            }),
+          ),
+          cursor: z.string().optional(),
+          hasNextPage: z.boolean(),
+          sortBy: sortBySchema,
+        }),
+        errorCodes: ["invalid_input"],
+        handler: async ({ query }, { json }) => {
+          const params = parseQueryParams(query);
+          const cursor = parseCursor(query.get("cursor"));
+
+          const result = await services.getUsersWithCursor({
+            ...params,
+            cursor,
+          });
+
+          return json({
+            users: result.users.map((user) => ({
+              id: user.id,
+              email: user.email,
+              role: user.role,
+              createdAt: user.createdAt.toISOString(),
+            })),
+            cursor: result.cursor?.encode(),
+            hasNextPage: result.hasNextPage,
+            sortBy: params.sortBy, // Return the actual sortBy used (may differ from requested)
+          });
+        },
       }),
-      errorCodes: ["invalid_input"],
-      handler: async ({ query }, { json }) => {
-        const params = parseQueryParams(query);
-        const cursor = parseCursor(query.get("cursor"));
-
-        const result = await services.getUsersWithCursor({
-          ...params,
-          cursor,
-        });
-
-        return json({
-          users: result.users.map((user) => ({
-            id: user.id,
-            email: user.email,
-            role: user.role,
-            createdAt: user.createdAt.toISOString(),
-          })),
-          cursor: result.cursor?.encode(),
-          hasNextPage: result.hasNextPage,
-          sortBy: params.sortBy, // Return the actual sortBy used (may differ from requested)
-        });
-      },
-    }),
-  ];
-});
+    ];
+  },
+);
