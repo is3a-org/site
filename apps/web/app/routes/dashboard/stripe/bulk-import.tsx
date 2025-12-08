@@ -13,7 +13,7 @@ import { createSimpleAuthServer } from "~/fragno/simple-auth-server";
 
 export async function loader({ context }: Route.LoaderArgs) {
   const userRepo = new UserRepo(context.db);
-  const stripe = createStripeServer(context.db);
+  const stripe = createStripeServer(context.pool);
 
   // Fetch existing users for matching
   const users = await userRepo.getAllUsers();
@@ -37,8 +37,8 @@ export async function action({ request, context }: Route.ActionArgs) {
     const customerIds = JSON.parse(customerIdsJson) as string[];
 
     const userRepo = new UserRepo(context.db);
-    const auth = createSimpleAuthServer(context.db);
-    const stripe = createStripeServer(context.db);
+    const auth = createSimpleAuthServer(context.pool);
+    const stripe = createStripeServer(context.pool);
     const stripeClient = stripe.services.getStripeClient();
 
     const results: Array<{

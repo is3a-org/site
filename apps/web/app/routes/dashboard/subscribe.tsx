@@ -197,10 +197,10 @@ const ErrorAlert = ({ message }: { message: string }) => (
 );
 
 export async function loader({ context, request }: Route.LoaderArgs) {
-  const auth = createSimpleAuthServer(context.db);
+  const auth = createSimpleAuthServer(context.pool);
   const session = await auth.services.getSession(request.headers);
   if (session) {
-    const frag = createStripeServer(context.db);
+    const frag = createStripeServer(context.pool);
     const subscriptions = await frag.services.getSubscriptionsByReferenceId(session.userId);
     // Get the first subscription (most apps only have one per customer)
     const subscription = subscriptions[0] || null;

@@ -1,12 +1,8 @@
 import { createOtpFragment } from "@is3a/one-time-password-fragment";
 import { createAdapter } from "./database-adapter.ts";
-import {
-  createPostgresClient,
-  type DrizzleDatabase,
-  createDrizzleDatabase,
-} from "../db/postgres/is3a-postgres.ts";
+import { createPostgresPool, type PostgresPool } from "../db/postgres/is3a-postgres.ts";
 
-export function createOtpServer(db: DrizzleDatabase | (() => DrizzleDatabase)) {
+export function createOtpServer(pool: PostgresPool | (() => PostgresPool)) {
   return createOtpFragment(
     {
       sendEmail: async ({ to, subject, body }) => {
@@ -15,12 +11,11 @@ export function createOtpServer(db: DrizzleDatabase | (() => DrizzleDatabase)) {
       issuer: "IS3A",
     },
     {
-      databaseAdapter: createAdapter(db),
+      databaseAdapter: createAdapter(pool),
     },
   );
 }
 
 export const fragment = createOtpServer(() => {
-  const client = createPostgresClient();
-  return createDrizzleDatabase(client);
+  return createPostgresPool();
 });

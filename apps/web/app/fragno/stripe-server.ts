@@ -1,16 +1,16 @@
 import { createStripeFragment } from "@fragno-dev/stripe";
 import { createAdapter } from "./database-adapter.ts";
 import {
-  createPostgresClient,
-  type DrizzleDatabase,
+  createPostgresPool,
   createDrizzleDatabase,
+  type PostgresPool,
 } from "../db/postgres/is3a-postgres.ts";
 import { createSimpleAuthServer } from "./simple-auth-server.ts";
 import { UserRepo } from "~/db/repo/user.ts";
 
 type StripeFragment = ReturnType<typeof createStripeFragment>;
 
-export function createStripeServer(db: DrizzleDatabase | (() => DrizzleDatabase)): StripeFragment {
+export function createStripeServer(pool: PostgresPool | (() => PostgresPool)): StripeFragment {
   const stripeSecret = process.env.STRIPE_SECRET_KEY;
   if (!stripeSecret) {
     console.warn("STRIPE_SECRET_KEY is not set");
@@ -21,9 +21,11 @@ export function createStripeServer(db: DrizzleDatabase | (() => DrizzleDatabase)
     console.warn("STRIPE_WEBHOOK_SECRET is not set");
   }
 
-  const auth = createSimpleAuthServer(db);
+  const resolvedPool = typeof pool === "function" ? pool() : pool;
+  const auth = createSimpleAuthServer(resolvedPool);
 
-  const userRepo = typeof db === "function" ? new UserRepo(db()) : new UserRepo(db);
+  const db = createDrizzleDatabase(resolvedPool);
+  const userRepo = new UserRepo(db);
 
   const getSession = async (headers: Headers) => {
     const response = await auth.callRoute("GET", "/me", { headers });
@@ -70,7 +72,7 @@ export function createStripeServer(db: DrizzleDatabase | (() => DrizzleDatabase)
       enableAdminRoutes: true,
     },
     {
-      databaseAdapter: createAdapter(db),
+      databaseAdapter: createAdapter(resolvedPool),
     },
   ).withMiddleware(async ({ path, headers }, { error }) => {
     const user = await getSession(headers);
@@ -84,6 +86,5 @@ export function createStripeServer(db: DrizzleDatabase | (() => DrizzleDatabase)
 }
 
 export const fragment: StripeFragment = createStripeServer(() => {
-  const client = createPostgresClient();
-  return createDrizzleDatabase(client);
+  return createPostgresPool();
 });
