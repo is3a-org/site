@@ -70,13 +70,13 @@
   "type": "module",
   "private": true,
   "dependencies": {
-    "@fragno-dev/core": "0.0.0-canary-19665913034-1-20251125101331",
-    "@fragno-dev/db": "0.0.0-canary-19665913034-1-20251125101331",
+    "@fragno-dev/core": "0.0.0-canary-20025860636-1-20251208110251",
+    "@fragno-dev/db": "0.0.0-canary-20025860636-1-20251208110251",
     "zod": "^4.0.5"
   },
   "devDependencies": {
-    "@fragno-dev/cli": "0.0.0-canary-19665913034-1-20251125101331",
-    "@fragno-dev/test": "0.0.0-canary-19665913034-1-20251125101331",
+    "@fragno-dev/cli": "0.0.0-canary-20025860636-1-20251208110251",
+    "@fragno-dev/test": "0.0.0-canary-20025860636-1-20251208110251",
     "@fragno-dev/unplugin-fragno": "0.0.0-canary-19640490796-1-20251124155428",
     "@types/node": "^22",
     "tsdown": "^0.11.9",

@@ -16,8 +16,8 @@
     "stripe:webhook": "stripe listen --forward-to localhost:5173/api/stripe/webhook"
   },
   "dependencies": {
-    "@fragno-dev/db": "0.0.0-canary-19665913034-1-20251125101331",
-    "@fragno-dev/stripe": "0.0.0-canary-19665913034-1-20251125101331",
+    "@fragno-dev/db": "0.0.0-canary-20025860636-1-20251208110251",
+    "@fragno-dev/stripe": "0.0.0-canary-20025860636-1-20251208110251",
     "@is3a/one-time-password-fragment": "workspace:*",
     "@is3a/simple-auth-fragment": "workspace:*",
     "@paralleldrive/cuid2": "^3.1.0",
@@ -48,7 +48,7 @@
   },
   "devDependencies": {
     "@cloudflare/vite-plugin": "^1.13.18",
-    "@fragno-dev/cli": "0.0.0-canary-19665913034-1-20251125101331",
+    "@fragno-dev/cli": "0.0.0-canary-20025860636-1-20251208110251",
     "@react-router/dev": "^7.9.5",
     "@tailwindcss/vite": "^4.1.16",
     "@types/node": "^22.18.13",
