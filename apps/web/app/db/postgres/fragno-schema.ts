@@ -37,7 +37,7 @@ export const fragno_db_settings = pgTable(
 // ============================================================================
 
 export const user_simple_auth_db = pgTable(
-  "user_simple_auth_db",
+  "user_simple-auth-db",
   {
     id: varchar("id", { length: 30 })
       .notNull()
@@ -57,7 +57,7 @@ export const user_simple_auth_db = pgTable(
 );
 
 export const session_simple_auth_db = pgTable(
-  "session_simple_auth_db",
+  "session_simple-auth-db",
   {
     id: varchar("id", { length: 30 })
       .notNull()
@@ -72,7 +72,7 @@ export const session_simple_auth_db = pgTable(
     foreignKey({
       columns: [table.userId],
       foreignColumns: [user_simple_auth_db._internalId],
-      name: "fk_session_user_sessionOwner_simple_auth_db",
+      name: "fk_session_user_sessionOwner_simple-auth-db",
     }),
     index("idx_session_user_simple-auth-db").on(table.userId),
   ],
@@ -109,7 +109,7 @@ export const simple_auth_db_schema = {
 // ============================================================================
 
 export const totp_secret_one_time_password_db = pgTable(
-  "totp_secret_one_time_password_db",
+  "totp_secret_one-time-password-db",
   {
     id: varchar("id", { length: 30 })
       .notNull()
@@ -125,7 +125,7 @@ export const totp_secret_one_time_password_db = pgTable(
 );
 
 export const one_time_token_one_time_password_db = pgTable(
-  "one_time_token_one_time_password_db",
+  "one_time_token_one-time-password-db",
   {
     id: varchar("id", { length: 30 })
       .notNull()
