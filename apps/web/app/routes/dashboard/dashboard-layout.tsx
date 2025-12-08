@@ -31,7 +31,7 @@ export async function loader({ context, request }: Route.LoaderArgs) {
 
   const activeOrganizationId = "org_1";
 
-  const auth = createSimpleAuthServer(context.db);
+  const auth = createSimpleAuthServer(context.pool);
 
   const response = await auth.callRoute("GET", "/me", {
     query: { sessionId: request.url.split("?")[1] },

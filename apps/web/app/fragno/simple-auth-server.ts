@@ -1,12 +1,8 @@
 import { createAuthFragment } from "@is3a/simple-auth-fragment";
 import { createAdapter } from "./database-adapter.ts";
-import {
-  createPostgresClient,
-  type DrizzleDatabase,
-  createDrizzleDatabase,
-} from "../db/postgres/is3a-postgres.ts";
+import { createPostgresPool, type PostgresPool } from "../db/postgres/is3a-postgres.ts";
 
-export function createSimpleAuthServer(db: DrizzleDatabase | (() => DrizzleDatabase)) {
+export function createSimpleAuthServer(pool: PostgresPool | (() => PostgresPool)) {
   return createAuthFragment(
     {
       sendEmail: async ({ to, subject, body }) => {
@@ -17,12 +13,11 @@ export function createSimpleAuthServer(db: DrizzleDatabase | (() => DrizzleDatab
       },
     },
     {
-      databaseAdapter: createAdapter(db),
+      databaseAdapter: createAdapter(pool),
     },
   );
 }
 
 export const fragment = createSimpleAuthServer(() => {
-  const client = createPostgresClient();
-  return createDrizzleDatabase(client);
+  return createPostgresPool();
 });

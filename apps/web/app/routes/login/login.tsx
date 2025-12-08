@@ -14,7 +14,7 @@ export function meta(_: Route.MetaArgs) {
 }
 
 export async function loader({ request, context }: Route.LoaderArgs) {
-  const auth = createSimpleAuthServer(context.db);
+  const auth = createSimpleAuthServer(context.pool);
 
   const response = await auth.callRoute("GET", "/me", {
     query: { sessionId: request.url.split("?")[1] },
@@ -27,7 +27,7 @@ export async function loader({ request, context }: Route.LoaderArgs) {
 }
 
 export async function action({ request, context }: Route.ActionArgs) {
-  const auth = createSimpleAuthServer(context.db);
+  const auth = createSimpleAuthServer(context.pool);
 
   const formData = await request.formData();
   const email = formData.get("email") as string;

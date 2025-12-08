@@ -18,7 +18,7 @@ export async function loader(_: Route.LoaderArgs) {
 }
 
 export async function action({ request, context }: Route.ActionArgs) {
-  const auth = createSimpleAuthServer(context.db);
+  const auth = createSimpleAuthServer(context.pool);
 
   const formData = await request.formData();
   const email = formData.get("email") as string;

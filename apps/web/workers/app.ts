@@ -1,8 +1,9 @@
 import { createRequestHandler } from "react-router";
+import type { Pool } from "pg";
 
 import {
   createDrizzleDatabase,
-  createPostgresClient,
+  createPostgresPool,
   type DrizzleDatabase,
 } from "~/db/postgres/is3a-postgres";
 
@@ -12,6 +13,7 @@ declare module "react-router" {
       env: CloudflareEnv;
       ctx: ExecutionContext;
     };
+    pool: Pool;
     db: DrizzleDatabase;
   }
 }
@@ -23,20 +25,18 @@ const requestHandler = createRequestHandler(
 
 export default {
   async fetch(request, env, ctx) {
-    const client = createPostgresClient();
+    const pool = createPostgresPool();
     try {
-      await client.connect();
-      const db = createDrizzleDatabase(client);
+      const db = createDrizzleDatabase(pool);
 
       return await requestHandler(request, {
         cloudflare: { env, ctx },
+        pool,
         db,
       });
     } catch (error) {
       console.error("Error fetching request", error);
       return new Response("Internal Server Error", { status: 500 });
-    } finally {
-      await client.end();
     }
   },
 } satisfies ExportedHandler<CloudflareEnv>;

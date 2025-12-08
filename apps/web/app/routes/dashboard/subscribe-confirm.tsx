@@ -13,7 +13,7 @@ import { useNavigate } from "react-router";
 import { useEffect } from "react";
 
 export async function loader({ context, request }: Route.LoaderArgs) {
-  const auth = createSimpleAuthServer(context.db);
+  const auth = createSimpleAuthServer(context.pool);
   const session = await auth.services.getSession(request.headers);
 
   if (!session) {
@@ -28,7 +28,7 @@ export async function loader({ context, request }: Route.LoaderArgs) {
     return { status: "error", message: "Could not retrieve data for user" };
   }
 
-  const stripe = createStripeServer(context.db);
+  const stripe = createStripeServer(context.pool);
   await stripe.services.syncStripeSubscriptions(user.id, user.stripeCustomerId);
   return { status: "success", message: "Subscription status up-to-date" };
 }

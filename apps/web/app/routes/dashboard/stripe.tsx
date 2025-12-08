@@ -27,8 +27,8 @@ export async function action({ request, context }: Route.ActionArgs) {
     const newUserEmail = formData.get("newUserEmail") as string | null;
 
     const userRepo = new UserRepo(context.db);
-    const auth = createSimpleAuthServer(context.db);
-    const stripe = createStripeServer(context.db);
+    const auth = createSimpleAuthServer(context.pool);
+    const stripe = createStripeServer(context.pool);
 
     try {
       let targetUserId: string;
