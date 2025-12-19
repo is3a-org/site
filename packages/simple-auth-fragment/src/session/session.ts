@@ -1,11 +1,11 @@
 import { defineRoute, defineRoutes } from "@fragno-dev/core";
-import type { AbstractQuery } from "@fragno-dev/db/query";
+import type { SimpleQueryInterface } from "@fragno-dev/db/query";
 import { authSchema } from "../schema";
 import { z } from "zod";
 import { buildClearCookieHeader, extractSessionId } from "../utils/cookie";
 import type { Role, authFragmentDefinition } from "..";
 
-export function createSessionServices(orm: AbstractQuery<typeof authSchema>) {
+export function createSessionServices(orm: SimpleQueryInterface<typeof authSchema>) {
   const services = {
     createSession: async (userId: string) => {
       const expiresAt = new Date();

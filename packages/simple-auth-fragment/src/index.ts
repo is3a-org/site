@@ -135,8 +135,25 @@ export function createAuthFragmentClients(fragnoConfig?: FragnoPublicClientConfi
     },
 
     signOut: () => {
-      return useSignOut.mutateQuery({ body: undefined });
+      return useSignOut.mutateQuery({ body: {} });
     },
+
+    // signOut: async () => {
+    //   const response = await fetcher("/sign-out", {
+    //     ...defaultOptions,
+    //     method: "POST",
+    //     body: JSON.stringify({}),
+    //   });
+
+    //   if (!response.ok) {
+    //     const error = await response.json();
+    //     throw new Error(error.message || "Sign out failed");
+    //   }
+
+    //   return response.json() as Promise<{
+    //     success: boolean;
+    //   }>;
+    // },
 
     me: async () => {
       const response = await fetcher("/me", {

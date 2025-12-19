@@ -47,6 +47,13 @@ describe("TOTP (Time-based One-Time Password)", async () => {
       });
       expect(response.data.backupCodes).toHaveLength(10);
 
+      // Check in the db it actually got created
+      const secret = await fragment.deps.db.findFirst("totp_secret", (b) =>
+        b.whereIndex("primary", () => true),
+      );
+
+      expect(secret?.secret).toBe(response.data.secret);
+
       backupCodes = response.data.backupCodes;
     });
 

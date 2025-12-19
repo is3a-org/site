@@ -1,5 +1,5 @@
 import { defineRoute, defineRoutes } from "@fragno-dev/core";
-import type { AbstractQuery } from "@fragno-dev/db/query";
+import type { SimpleQueryInterface } from "@fragno-dev/db/query";
 import { type Cursor, decodeCursor } from "@fragno-dev/db/cursor";
 import { authSchema } from "../schema";
 import { z } from "zod";
@@ -23,7 +23,7 @@ export interface UserResult {
   createdAt: Date;
 }
 
-export function createUserOverviewServices(db: AbstractQuery<typeof authSchema>) {
+export function createUserOverviewServices(db: SimpleQueryInterface<typeof authSchema>) {
   const mapUser = (user: {
     id: unknown;
     email: string;

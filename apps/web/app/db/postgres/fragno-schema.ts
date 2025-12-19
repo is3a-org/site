@@ -5,6 +5,7 @@ import {
   bigserial,
   integer,
   uniqueIndex,
+  json,
   timestamp,
   index,
   bigint,
@@ -30,6 +31,32 @@ export const fragno_db_settings = pgTable(
     _version: integer("_version").notNull().default(0),
   },
   (table) => [uniqueIndex("unique_key").on(table.key)],
+);
+
+export const fragno_hooks = pgTable(
+  "fragno_hooks",
+  {
+    id: varchar("id", { length: 30 })
+      .notNull()
+      .$defaultFn(() => createId()),
+    namespace: text("namespace").notNull(),
+    hookName: text("hookName").notNull(),
+    payload: json("payload").notNull(),
+    status: text("status").notNull(),
+    attempts: integer("attempts").notNull().default(0),
+    maxAttempts: integer("maxAttempts").notNull().default(5),
+    lastAttemptAt: timestamp("lastAttemptAt"),
+    nextRetryAt: timestamp("nextRetryAt"),
+    error: text("error"),
+    createdAt: timestamp("createdAt").notNull().defaultNow(),
+    nonce: text("nonce").notNull(),
+    _internalId: bigserial("_internalId", { mode: "number" }).primaryKey().notNull(),
+    _version: integer("_version").notNull().default(0),
+  },
+  (table) => [
+    index("idx_namespace_status_retry").on(table.namespace, table.status, table.nextRetryAt),
+    index("idx_nonce").on(table.nonce),
+  ],
 );
 
 // ============================================================================

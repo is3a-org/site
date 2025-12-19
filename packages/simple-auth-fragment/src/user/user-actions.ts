@@ -1,5 +1,5 @@
 import { defineRoute, defineRoutes } from "@fragno-dev/core";
-import type { AbstractQuery } from "@fragno-dev/db/query";
+import type { SimpleQueryInterface } from "@fragno-dev/db/query";
 import { authSchema } from "../schema";
 import { z } from "zod";
 import { hashPassword, verifyPassword } from "./password";
@@ -7,7 +7,7 @@ import { buildSetCookieHeader, extractSessionId } from "../utils/cookie";
 import { FragnoApiValidationError } from "@fragno-dev/core/api";
 import type { authFragmentDefinition } from "..";
 
-export function createUserServices(orm: AbstractQuery<typeof authSchema>) {
+export function createUserServices(orm: SimpleQueryInterface<typeof authSchema>) {
   return {
     createUser: async (email: string, password: string, role: "user" | "admin" = "user") => {
       const passwordHash = await hashPassword(password);
