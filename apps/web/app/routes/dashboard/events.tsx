@@ -25,6 +25,8 @@ import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import { Textarea } from "~/components/ui/textarea";
 import { DateInput } from "~/components/ui/date-input";
+import { Checkbox } from "~/components/ui/checkbox";
+import { Badge } from "~/components/ui/badge";
 import {
   Select,
   SelectContent,
@@ -52,6 +54,7 @@ export async function action({ request, context }: Route.ActionArgs) {
     const data = Object.fromEntries(formData.entries());
     const rawData = {
       name: data.name,
+      slug: data.slug === "" ? null : data.slug,
       date: new Date(data.date as string),
       locationId:
         !data.locationId || data.locationId === "none" ? null : parseInt(data.locationId as string),
@@ -59,6 +62,7 @@ export async function action({ request, context }: Route.ActionArgs) {
       speaker: data.speaker === "" ? null : data.speaker,
       speakerAbstract: data.speakerAbstract === "" ? null : data.speakerAbstract,
       speakerSummary: data.speakerSummary === "" ? null : data.speakerSummary,
+      published: data.published === "on",
     };
 
     const result = NewEventSchema.safeParse(rawData);
@@ -81,6 +85,7 @@ export async function action({ request, context }: Route.ActionArgs) {
 
     const rawData = {
       name: data.name,
+      slug: data.slug === "" ? null : data.slug,
       date: new Date(data.date as string),
       locationId:
         !data.locationId || data.locationId === "none" ? null : parseInt(data.locationId as string),
@@ -88,6 +93,7 @@ export async function action({ request, context }: Route.ActionArgs) {
       speaker: data.speaker === "" ? null : data.speaker,
       speakerAbstract: data.speakerAbstract === "" ? null : data.speakerAbstract,
       speakerSummary: data.speakerSummary === "" ? null : data.speakerSummary,
+      published: data.published === "on",
     };
 
     const result = NewEventSchema.safeParse(rawData);
@@ -193,6 +199,7 @@ export default function EventsPage({ loaderData }: Route.ComponentProps) {
                     <TableHead>Date</TableHead>
                     <TableHead>Location</TableHead>
                     <TableHead>Speaker</TableHead>
+                    <TableHead>Status</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -224,6 +231,15 @@ export default function EventsPage({ loaderData }: Route.ComponentProps) {
                           </div>
                         ) : (
                           <span className="text-muted-foreground text-sm">—</span>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {evt.published ? (
+                          <Badge variant="default" className="bg-green-600">
+                            Published
+                          </Badge>
+                        ) : (
+                          <Badge variant="secondary">Draft</Badge>
                         )}
                       </TableCell>
                       <TableCell className="text-right">
@@ -371,6 +387,20 @@ function EventFormDialog({
             </div>
 
             <div className="space-y-2">
+              <Label htmlFor="slug">URL Slug</Label>
+              <Input
+                id="slug"
+                name="slug"
+                placeholder="winter-drinks-2024"
+                defaultValue={event?.slug || ""}
+              />
+              <p className="text-muted-foreground text-xs">
+                Optional. Use lowercase letters, numbers, and hyphens only (e.g.,
+                winter-drinks-2024)
+              </p>
+            </div>
+
+            <div className="space-y-2">
               <Label htmlFor="date">
                 Date <span className="text-red-600">*</span>
               </Label>
@@ -440,6 +470,17 @@ function EventFormDialog({
                 defaultValue={event?.speakerSummary || ""}
                 rows={3}
               />
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Checkbox
+                id="published"
+                name="published"
+                defaultChecked={event?.published || false}
+              />
+              <Label htmlFor="published" className="cursor-pointer font-normal">
+                Published (visible on website)
+              </Label>
             </div>
           </div>
 

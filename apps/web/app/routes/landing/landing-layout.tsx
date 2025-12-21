@@ -1,6 +1,14 @@
 import { Link, Outlet } from "react-router";
+import type { Route } from "./+types/landing-layout";
+import { EventRepo, type Event } from "~/db/repo/events";
 
-export default function LandingLayout() {
+export async function loader({ context }: Route.LoaderArgs) {
+  const events = await new EventRepo(context.db).getPublishedUpcomingEvents();
+  return { events };
+}
+
+export default function LandingLayout({ loaderData }: Route.ComponentProps) {
+  const { events } = loaderData;
   return (
     <div className="flex min-h-screen flex-col">
       {/* Header */}
@@ -20,6 +28,15 @@ export default function LandingLayout() {
               <Link to="/join" className="text-gray-700 transition-colors hover:text-red-800">
                 Join
               </Link>
+              {events.map((event: Event) => (
+                <Link
+                  key={event.id}
+                  to={event.slug ? `/${event.slug}` : `/event/${event.id}`}
+                  className="text-gray-700 transition-colors hover:text-red-800"
+                >
+                  {event.name}
+                </Link>
+              ))}
               <Link to="/login" className="text-gray-700 transition-colors hover:text-red-800">
                 Login
               </Link>

@@ -85,6 +85,13 @@
       "when": 1766322436905,
       "tag": "0011_speaker_abstract_and_summary",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1766333524307,
+      "tag": "0012_add_published_and_slug_to_event",
+      "breakpoints": true
     }
   ]
 }

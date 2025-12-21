@@ -5,11 +5,13 @@ export default [
     index("routes/home.tsx"),
     route("join", "routes/join.tsx"),
     route("team", "routes/team.tsx"),
+    route("event/:id", "routes/event.id.tsx"),
     ...prefix("login", [
       route("", "routes/login/login.tsx"),
       route("error", "routes/login/login-error.tsx"),
     ]),
     route("sign-up", "routes/sign-up.tsx"),
+    route(":slug", "routes/event.slug.tsx"),
   ]),
   ...prefix("dashboard", [
     layout("routes/dashboard/dashboard-layout.tsx", [

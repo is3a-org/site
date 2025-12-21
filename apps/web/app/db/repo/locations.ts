@@ -31,6 +31,11 @@ export class LocationRepo {
     return await this.#db.select().from(location).orderBy(location.name);
   }
 
+  async getLocationById(id: number): Promise<Location | null> {
+    const results = await this.#db.select().from(location).where(eq(location.id, id)).limit(1);
+    return results[0] ?? null;
+  }
+
   async createLocation(newLocation: NewLocation) {
     return await this.#db.insert(location).values(newLocation).returning();
   }

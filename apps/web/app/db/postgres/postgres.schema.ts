@@ -38,12 +38,14 @@ export const location = pgTable("location", {
 export const event = pgTable("event", {
   id: serial().primaryKey(),
   name: text().notNull(),
+  slug: text().unique(),
   date: timestamp({ mode: "date" }).notNull(),
   locationId: integer().references(() => location.id, foreignKeyActions),
   description: text(),
   speaker: text(),
   speakerAbstract: text(),
   speakerSummary: text(),
+  published: boolean().notNull().default(false),
 });
 
 export const emailTemplate = pgTable("email_template", {
