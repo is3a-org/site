@@ -1,4 +1,4 @@
-import { Home, MapPin, Users, HandCoins, Sparkles, type LucideIcon } from "lucide-react";
+import { Home, MapPin, Calendar, Users, HandCoins, Sparkles, type LucideIcon } from "lucide-react";
 import { StripeIcon } from "~/components/icons/stripe";
 
 import { NavMain } from "~/components/nav-main";
@@ -29,6 +29,12 @@ const navItems = [
     title: "Locations",
     url: "/dashboard/admin/locations",
     icon: MapPin,
+    adminOnly: true,
+  },
+  {
+    title: "Events",
+    url: "/dashboard/admin/events",
+    icon: Calendar,
     adminOnly: true,
   },
   {

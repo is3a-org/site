@@ -78,6 +78,13 @@
       "when": 1766148238115,
       "tag": "0010_redundant_umar",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1766322436905,
+      "tag": "0011_speaker_abstract_and_summary",
+      "breakpoints": true
     }
   ]
 }
