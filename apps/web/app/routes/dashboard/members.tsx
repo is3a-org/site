@@ -15,6 +15,7 @@ import {
 
 import { UserRepo } from "~/db/repo/user";
 import { getMembershipByPriceId } from "~/lib/memberships";
+import { formatDateTime } from "~/lib/date-utils";
 
 export async function loader({ context }: Route.LoaderArgs) {
   const userRepo = new UserRepo(context.db);
@@ -67,7 +68,7 @@ export default function DashboardMembers({
                 <TableCell>{member.stripeCustomerId || "-"}</TableCell>
                 <TableCell>{member.subscriptionStatus || "-"}</TableCell>
                 <TableCell>{toMembershipType(member.subscriptionStripePriceId)}</TableCell>
-                <TableCell>{new Date(member.createdAt).toLocaleDateString()}</TableCell>
+                <TableCell>{formatDateTime(member.createdAt)}</TableCell>
               </TableRow>
             ))}
           </TableBody>

@@ -12,6 +12,7 @@ import { getMembershipByPriceId } from "~/lib/memberships";
 
 import { createSimpleAuthServer } from "~/fragno/simple-auth-server";
 import { createStripeServer } from "~/fragno/stripe-server";
+import { formatDate } from "~/lib/date-utils";
 
 type StatusMeta = {
   label: string;
@@ -73,12 +74,6 @@ const STATUS_CONFIG: Record<string, StatusMeta> = {
   },
 };
 
-const DISPLAY_DATE_FORMAT: Intl.DateTimeFormatOptions = {
-  month: "long",
-  day: "numeric",
-  year: "numeric",
-};
-
 const getStatusMeta = (status?: string, isScheduledToCancel?: boolean): StatusMeta => {
   if (isScheduledToCancel) {
     return {
@@ -103,7 +98,7 @@ const getStatusMeta = (status?: string, isScheduledToCancel?: boolean): StatusMe
   };
 };
 
-const formatDate = (date?: string | number | Date | null) => {
+const formatDateIfPresent = (date?: string | number | Date | null) => {
   if (!date) {
     return null;
   }
@@ -111,7 +106,7 @@ const formatDate = (date?: string | number | Date | null) => {
   if (Number.isNaN(parsedDate.getTime())) {
     return null;
   }
-  return parsedDate.toLocaleDateString("en-US", DISPLAY_DATE_FORMAT);
+  return formatDate(parsedDate);
 };
 
 const describeStatus = ({
@@ -129,13 +124,15 @@ const describeStatus = ({
 }) => {
   if (isScheduledToCancel) {
     return `Your membership is scheduled to cancel on ${
-      formatDate(cancelDate) ?? "the end of your billing period"
+      formatDateIfPresent(cancelDate) ?? "the end of your billing period"
     }`;
   }
 
   switch (status) {
     case "trialing":
-      return trialEndDate ? `Trial ends on ${formatDate(trialEndDate)}` : "Your trial is active";
+      return trialEndDate
+        ? `Trial ends on ${formatDateIfPresent(trialEndDate)}`
+        : "Your trial is active";
     case "past_due":
       return "Payment failed. Please update your payment method to continue your membership.";
     case "unpaid":
@@ -146,7 +143,7 @@ const describeStatus = ({
       return "Your subscription setup has expired. Please start a new subscription.";
     case "active":
       return renewalDate
-        ? `Renews automatically on ${formatDate(renewalDate)}`
+        ? `Renews automatically on ${formatDateIfPresent(renewalDate)}`
         : "Your subscription is active";
     case "canceled":
       return "Your membership has been canceled and will not renew";
@@ -259,9 +256,9 @@ export default function DashboardSubscribe({
       ? "Trial Ends"
       : "Renews On";
   const nextBillingDate =
-    (isScheduledToCancel ? formatDate(cancelDate) : null) ||
-    (status === "trialing" ? formatDate(trialEndDate) : null) ||
-    formatDate(renewalDate) ||
+    (isScheduledToCancel ? formatDateIfPresent(cancelDate) : null) ||
+    (status === "trialing" ? formatDateIfPresent(trialEndDate) : null) ||
+    formatDateIfPresent(renewalDate) ||
     "N/A";
   const errors = [cancelError, error, createPortalError].filter((err) => err != null);
 
@@ -478,13 +475,7 @@ export default function DashboardSubscribe({
                   <h3 className="text-2xl font-bold tracking-tight">Renew Your Membership</h3>
                   <p className="text-muted-foreground max-w-3xl">
                     Your membership is scheduled to cancel. You can renew your current plan or
-                    choose a new plan after{" "}
-                    {new Date(cancelDate!).toLocaleDateString("en-US", {
-                      month: "long",
-                      day: "numeric",
-                      year: "numeric",
-                    })}
-                    .
+                    choose a new plan after {formatDate(cancelDate!)}.
                   </p>
                   <Button variant="default" onClick={handleUncancel} disabled={loading}>
                     {loading ? "Renewing..." : "Renew Membership"}

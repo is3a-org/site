@@ -24,6 +24,7 @@ import {
   SelectValue,
 } from "~/components/ui/select";
 import type { Role } from "@is3a/simple-auth-fragment";
+import { formatDateTime } from "~/lib/date-utils";
 
 export async function loader({ context: _context, request: _request }: Route.LoaderArgs) {
   return {};
@@ -206,13 +207,7 @@ export default function UsersPage() {
                           <TableRow key={user.id}>
                             <TableCell className="font-medium">{user.email}</TableCell>
                             <TableCell className="text-muted-foreground">
-                              {new Date(user.createdAt).toLocaleDateString("en-US", {
-                                year: "numeric",
-                                month: "short",
-                                day: "numeric",
-                                hour: "2-digit",
-                                minute: "2-digit",
-                              })}
+                              {formatDateTime(user.createdAt)}
                             </TableCell>
                             <TableCell>
                               <Select

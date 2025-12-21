@@ -18,6 +18,7 @@ import {
 import { createStripeFragmentClient } from "@fragno-dev/stripe/react";
 import { SyncSubscriptionDialog } from "~/components/sync-subscription-dialog";
 import { MoreHorizontal, RefreshCw } from "lucide-react";
+import { formatDateTime } from "~/lib/date-utils";
 
 const PAGE_LIMIT = 40;
 const { useCustomers } = createStripeFragmentClient();
@@ -110,7 +111,7 @@ export function StripeCustomersTable({ users }: StripeCustomersTableProps) {
               <TableCell>{customer.name ?? "—"}</TableCell>
               <TableCell>{customer.email ?? "—"}</TableCell>
               <TableCell className="font-mono text-sm">{customer.id}</TableCell>
-              <TableCell>{new Date(customer.created * 1000).toLocaleDateString()}</TableCell>
+              <TableCell>{formatDateTime(new Date(customer.created * 1000))}</TableCell>
               <TableCell>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
