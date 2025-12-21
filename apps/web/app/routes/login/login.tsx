@@ -8,6 +8,8 @@ import { redirect } from "react-router";
 import { createSimpleAuthServer } from "~/fragno/simple-auth-server";
 import { createOtpServer } from "~/fragno/otp-server";
 import { magicLinkTemplate, sendEmail } from "~/lib/email";
+import { Turnstile } from "@marsidev/react-turnstile";
+import { verifyTurnstile } from "~/lib/turnstile";
 export function meta(_: Route.MetaArgs) {
   return [
     { title: "Login - IS3A" },
@@ -37,6 +39,19 @@ export async function action({ request, context }: Route.ActionArgs) {
   const formData = await request.formData();
   const intent = (formData.get("intent") as ActionIntent) || "password";
   const email = formData.get("email") as string;
+
+  // Verify Turnstile token
+  const turnstileToken = formData.get("cf-turnstile-response") as string | null;
+  const clientIp = request.headers.get("CF-Connecting-IP");
+  const turnstileResult = await verifyTurnstile(turnstileToken, clientIp);
+
+  if (!turnstileResult.success) {
+    return {
+      error: turnstileResult.error || "Verification failed. Please try again.",
+      email,
+      intent,
+    };
+  }
 
   if (intent === "magic-link") {
     // Magic link login flow
@@ -112,6 +127,8 @@ export async function action({ request, context }: Route.ActionArgs) {
 export default function Login({ actionData }: Route.ComponentProps) {
   const [showMagicLinkForm, setShowMagicLinkForm] = useState(actionData?.intent === "magic-link");
   const [email, setEmail] = useState(actionData?.email || "");
+  const [turnstileToken, setTurnstileToken] = useState("");
+  const [turnstileError, setTurnstileError] = useState<string | null>(null);
 
   // Show success message after magic link is sent
   if (actionData?.success && actionData?.intent === "magic-link") {
@@ -149,6 +166,9 @@ export default function Login({ actionData }: Route.ComponentProps) {
           <CardHeader className="text-center">
             <CardTitle className="text-3xl">Member Login</CardTitle>
             <CardDescription>Sign in to your IS3A member account</CardDescription>
+            {turnstileError && (
+              <div className="rounded-md bg-red-50 p-3 text-sm text-red-800">{turnstileError}</div>
+            )}
           </CardHeader>
           <CardContent>
             {showMagicLinkForm ? (
@@ -156,6 +176,7 @@ export default function Login({ actionData }: Route.ComponentProps) {
                 {/* Magic Link Form */}
                 <form method="post" className="space-y-4">
                   <input type="hidden" name="intent" value="magic-link" />
+                  <input type="hidden" name="cf-turnstile-response" value={turnstileToken} />
 
                   {actionData?.error && actionData?.intent === "magic-link" && (
                     <div className="rounded-md bg-red-50 p-3 text-sm text-red-800">
@@ -176,7 +197,7 @@ export default function Login({ actionData }: Route.ComponentProps) {
                     />
                   </div>
 
-                  <Button type="submit" className="w-full">
+                  <Button type="submit" className="w-full" disabled={turnstileError !== null}>
                     Send Sign-in Link
                   </Button>
                 </form>
@@ -205,6 +226,7 @@ export default function Login({ actionData }: Route.ComponentProps) {
                 {/* Password Form - Primary */}
                 <form method="post" className="space-y-6">
                   <input type="hidden" name="intent" value="password" />
+                  <input type="hidden" name="cf-turnstile-response" value={turnstileToken} />
 
                   {actionData?.error && actionData?.intent === "password" && (
                     <div className="rounded-md bg-red-50 p-3 text-sm text-red-800">
@@ -236,7 +258,7 @@ export default function Login({ actionData }: Route.ComponentProps) {
                     />
                   </div>
 
-                  <Button type="submit" className="w-full">
+                  <Button type="submit" className="w-full" disabled={turnstileError !== null}>
                     Sign In
                   </Button>
                 </form>
@@ -268,6 +290,16 @@ export default function Login({ actionData }: Route.ComponentProps) {
                 Join IS3A
               </a>
             </p>
+
+            <Turnstile
+              siteKey={import.meta.env.VITE_CF_TURNSTILE_SITE_KEY}
+              onSuccess={(token) => {
+                setTurnstileToken(token);
+                setTurnstileError(null);
+              }}
+              onError={() => setTurnstileError("Could not verify you as human!")}
+              options={{ size: "invisible" }}
+            />
           </CardContent>
         </Card>
       </div>

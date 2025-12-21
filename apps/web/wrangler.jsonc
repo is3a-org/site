@@ -9,7 +9,7 @@
   "compatibility_flags": ["nodejs_compat"],
   "main": "./workers/app.ts",
   "vars": {
-    "HELLO": "WORLD",
+    "VITE_CF_TURNSTILE_SITE_KEY": "0x4AAAAAACH5P-GjR3rNGHEa",
   },
   "observability": {
     "logs": {
