@@ -7,6 +7,7 @@ export default [
     route("team", "routes/team.tsx"),
     ...prefix("login", [
       route("", "routes/login/login.tsx"),
+      route("verify", "routes/login/verify.tsx"),
       route("error", "routes/login/login-error.tsx"),
     ]),
     route("sign-up", "routes/sign-up.tsx"),
@@ -30,4 +31,5 @@ export default [
   route("api/simple-auth/*", "routes/api/simple-auth.tsx"),
   route("api/otp/*", "routes/api/otp.tsx"),
   route("api/stripe/*", "routes/api/stripe.tsx"),
+  route("_dev/email-preview", "routes/dev/email-preview.tsx"),
 ] satisfies RouteConfig;

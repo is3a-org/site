@@ -2,11 +2,22 @@ import { defineRoute, defineRoutes } from "@fragno-dev/core";
 import type { SimpleQueryInterface } from "@fragno-dev/db/query";
 import { authSchema } from "../schema";
 import { z } from "zod";
-import { buildClearCookieHeader, extractSessionId } from "../utils/cookie";
+import {
+  buildClearCookieHeader,
+  buildSetCookieHeader,
+  extractSessionId,
+  type CookieOptions,
+} from "../utils/cookie";
 import type { Role, authFragmentDefinition } from "..";
 
-export function createSessionServices(orm: SimpleQueryInterface<typeof authSchema>) {
+export function createSessionServices(
+  orm: SimpleQueryInterface<typeof authSchema>,
+  cookieOptions?: CookieOptions,
+) {
   const services = {
+    buildSessionCookie: (sessionId: string): string => {
+      return buildSetCookieHeader(sessionId, cookieOptions);
+    },
     createSession: async (userId: string) => {
       const expiresAt = new Date();
       expiresAt.setDate(expiresAt.getDate() + 30); // 30 days from now

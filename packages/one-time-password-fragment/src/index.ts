@@ -39,12 +39,13 @@ export const otpFragmentDefinition = defineFragment<OtpFragmentConfig>("one-time
         // Generate new token (stored in uppercase for case-insensitive lookups)
         const token = generateToken();
         const now = Date.now();
-        const expiresAt = new Date(now + durationMinutes * 60 * 1000);
+        const expiresAt = new Date(now + durationMinutes * 60 * 1000).toISOString();
 
         uow.create("one_time_token", {
           userId,
           token: token.toUpperCase(),
           type,
+          // @ts-expect-error TS2322
           expiresAt,
         });
 

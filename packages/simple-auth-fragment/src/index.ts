@@ -21,9 +21,9 @@ export interface AuthConfig {
 
 export const authFragmentDefinition = defineFragment<AuthConfig>("simple-auth")
   .extend(withDatabase(authSchema, "simple-auth-db"))
-  .providesBaseService(({ deps }) => {
+  .providesBaseService(({ deps, config }) => {
     const userServices = createUserServices(deps.db);
-    const sessionServices = createSessionServices(deps.db);
+    const sessionServices = createSessionServices(deps.db, config.cookieOptions);
     const userOverviewServices = createUserOverviewServices(deps.db);
 
     return {
@@ -135,7 +135,7 @@ export function createAuthFragmentClients(fragnoConfig?: FragnoPublicClientConfi
     },
 
     signOut: () => {
-      return useSignOut.mutateQuery({ body: {} });
+      return useSignOut.mutateQuery({ body: { sessionId: undefined } });
     },
 
     // signOut: async () => {
