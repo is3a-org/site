@@ -19,6 +19,7 @@ export default [
       ...prefix("admin", [
         layout("routes/dashboard/admin-layout.tsx", [
           route("locations", "routes/dashboard/locations.tsx"),
+          route("events", "routes/dashboard/events.tsx"),
           route("users", "routes/dashboard/users.tsx"),
           route("members", "routes/dashboard/members.tsx"),
           route("stripe", "routes/dashboard/stripe.tsx"),
