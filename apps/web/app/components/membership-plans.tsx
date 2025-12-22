@@ -24,7 +24,7 @@ export function MembershipPlans() {
         priceId,
         quantity: 1,
         successUrl: `${window.location.origin}/dashboard/subscribe-confirm`,
-        cancelUrl: `${window.location.origin}/dashboard/subscribe`,
+        cancelUrl: `${window.location.origin}/dashboard/membership`,
       },
     });
     if (!response) {

@@ -1,12 +1,24 @@
+import { useState } from "react";
 import { cn } from "~/lib/utils";
-import type { Route } from "./+types/subscribe";
+import type { Route } from "./+types/membership";
 import { BreadcrumbItem, BreadcrumbPage } from "~/components/ui/breadcrumb";
 import { DashboardBreadcrumb } from "~/components/dashboard-breadcrumb";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
 import { Badge } from "~/components/ui/badge";
+import { Input } from "~/components/ui/input";
+import { Label } from "~/components/ui/label";
 import { stripeFragmentClient } from "~/lib/stripe-client";
-import { Check, Calendar, CalendarHeart, MessageCircle, CreditCard } from "lucide-react";
+import { simpleAuthClient } from "~/lib/simple-auth-client";
+import {
+  Check,
+  Calendar,
+  CalendarHeart,
+  MessageCircle,
+  CreditCard,
+  User,
+  Lock,
+} from "lucide-react";
 import { MembershipPlans } from "~/components/membership-plans";
 import { getMembershipByPriceId } from "~/lib/memberships";
 
@@ -219,6 +231,47 @@ export default function DashboardSubscribe({
 }: React.ComponentProps<"div"> & Route.ComponentProps) {
   const { subscription } = loaderData;
 
+  // User info
+  const { data: userData, loading: userLoading } = simpleAuthClient.useMe();
+
+  // Password change state
+  const [showPasswordForm, setShowPasswordForm] = useState(false);
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [passwordSuccess, setPasswordSuccess] = useState(false);
+  const [passwordError, setPasswordError] = useState<string | null>(null);
+
+  const { mutate: changePassword, loading: changePasswordLoading } =
+    simpleAuthClient.useChangePassword();
+
+  const handleChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setPasswordError(null);
+    setPasswordSuccess(false);
+
+    if (newPassword !== confirmPassword) {
+      setPasswordError("New passwords do not match");
+      return;
+    }
+
+    if (newPassword.length < 8) {
+      setPasswordError("New password must be at least 8 characters");
+      return;
+    }
+
+    try {
+      await changePassword({
+        body: { newPassword },
+      });
+      setPasswordSuccess(true);
+      setNewPassword("");
+      setConfirmPassword("");
+      setShowPasswordForm(false);
+    } catch (err) {
+      setPasswordError(err instanceof Error ? err.message : "Failed to change password");
+    }
+  };
+
   const {
     mutate: cancelSubscription,
     loading: cancelLoading,
@@ -275,7 +328,7 @@ export default function DashboardSubscribe({
         priceId: subscription.stripePriceId,
         quantity: 1,
         successUrl: `${window.location.origin}/dashboard/subscribe-confirm`,
-        cancelUrl: `${window.location.origin}/dashboard/subscribe`,
+        cancelUrl: `${window.location.origin}/dashboard/membership`,
       },
     });
     redirectToStripe(response);
@@ -334,6 +387,101 @@ export default function DashboardSubscribe({
         {errors.map((err, idx) => (
           <ErrorAlert key={`${err.message}-${idx}`} message={err.message} />
         ))}
+
+        {/* Personal Information Section */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <User className="h-5 w-5" />
+              Personal Information
+            </CardTitle>
+            <CardDescription>Your account details</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {userLoading ? (
+              <p className="text-muted-foreground text-sm">Loading...</p>
+            ) : userData ? (
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <p className="text-sm font-medium">Email</p>
+                  <p className="text-muted-foreground text-sm">{userData.email}</p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium">Role</p>
+                  <p className="text-muted-foreground text-sm capitalize">{userData.role}</p>
+                </div>
+              </div>
+            ) : (
+              <p className="text-muted-foreground text-sm">Unable to load user information</p>
+            )}
+
+            {/* Change Password */}
+            <hr />
+
+            {passwordSuccess && (
+              <div className="rounded-md bg-green-50 p-3 text-sm text-green-800">
+                Password changed successfully
+              </div>
+            )}
+
+            {showPasswordForm ? (
+              <form onSubmit={handleChangePassword} className="space-y-4">
+                {passwordError && (
+                  <div className="rounded-md bg-red-50 p-3 text-sm text-red-800">
+                    {passwordError}
+                  </div>
+                )}
+
+                <div className="space-y-2">
+                  <Label htmlFor="newPassword">New Password</Label>
+                  <Input
+                    type="password"
+                    id="newPassword"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    required
+                    minLength={8}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="confirmPassword">Confirm New Password</Label>
+                  <Input
+                    type="password"
+                    id="confirmPassword"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    required
+                    minLength={8}
+                  />
+                </div>
+
+                <div className="flex gap-2">
+                  <Button type="submit" disabled={changePasswordLoading}>
+                    {changePasswordLoading ? "Changing..." : "Save Password"}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      setShowPasswordForm(false);
+                      setNewPassword("");
+                      setConfirmPassword("");
+                      setPasswordError(null);
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </form>
+            ) : (
+              <Button variant="outline" onClick={() => setShowPasswordForm(true)}>
+                <Lock className="mr-2 h-4 w-4" />
+                Change Password
+              </Button>
+            )}
+          </CardContent>
+        </Card>
 
         {/* Conditional Rendering: Subscription Status or Membership Plans */}
         {hasSubscription ? (

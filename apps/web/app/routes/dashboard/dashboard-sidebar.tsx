@@ -21,7 +21,7 @@ const navItems = [
   },
   {
     title: "Membership",
-    url: "/dashboard/subscribe",
+    url: "/dashboard/membership",
     icon: Sparkles,
     adminOnly: false,
   },

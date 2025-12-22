@@ -15,7 +15,7 @@ export default [
   ...prefix("dashboard", [
     layout("routes/dashboard/dashboard-layout.tsx", [
       index("routes/dashboard/dashboard-home.tsx"),
-      route("subscribe", "routes/dashboard/subscribe.tsx"),
+      route("membership", "routes/dashboard/membership.tsx"),
       route("subscribe-confirm", "routes/dashboard/subscribe-confirm.tsx"),
       ...prefix("admin", [
         layout("routes/dashboard/admin-layout.tsx", [

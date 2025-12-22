@@ -39,6 +39,11 @@ export function createUserServices(orm: SimpleQueryInterface<typeof authSchema>)
       await orm.update("user", userId, (b) => b.set({ role }));
       return { success: true };
     },
+    updateUserPassword: async (userId: string, password: string) => {
+      const passwordHash = await hashPassword(password);
+      await orm.update("user", userId, (b) => b.set({ passwordHash }));
+      return { success: true };
+    },
   };
 }
 
@@ -185,6 +190,37 @@ export const userActionsRoutesFactory = defineRoutes<typeof authFragmentDefiniti
               },
             },
           );
+        },
+      }),
+
+      defineRoute({
+        method: "POST",
+        path: "/change-password",
+        inputSchema: z.object({
+          newPassword: z.string().min(8).max(100),
+        }),
+        outputSchema: z.object({
+          success: z.boolean(),
+        }),
+        errorCodes: ["session_invalid"],
+        handler: async ({ input, headers, query }, { json, error }) => {
+          const { newPassword } = await input.valid();
+
+          const sessionId = extractSessionId(headers, query.get("sessionId"));
+
+          if (!sessionId) {
+            return error({ message: "Session ID required", code: "session_invalid" }, 400);
+          }
+
+          const session = await services.validateSession(sessionId);
+
+          if (!session) {
+            return error({ message: "Invalid session", code: "session_invalid" }, 401);
+          }
+
+          await services.updateUserPassword(session.user.id, newPassword);
+
+          return json({ success: true });
         },
       }),
     ];

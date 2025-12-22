@@ -70,6 +70,7 @@ export function createAuthFragmentClients(fragnoConfig?: FragnoPublicClientConfi
   const useSignOut = b.createMutator("POST", "/sign-out");
   const useUsers = b.createHook("/users");
   const useUpdateUserRole = b.createMutator("PATCH", "/users/:userId/role");
+  const useChangePassword = b.createMutator("POST", "/change-password");
 
   return {
     // Reactive hooks - Auth
@@ -79,6 +80,7 @@ export function createAuthFragmentClients(fragnoConfig?: FragnoPublicClientConfi
     useMe,
     useUsers,
     useUpdateUserRole,
+    useChangePassword,
 
     // Non-reactive methods
     signIn: {
