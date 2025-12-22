@@ -1,6 +1,7 @@
 import { Home, MapPin, Users, HandCoins, Sparkles, type LucideIcon } from "lucide-react";
 import { Link } from "react-router";
 import { StripeIcon } from "~/components/icons/stripe";
+import { IS3ALogo } from "~/components/icons/is3a";
 
 import { NavMain } from "~/components/nav-main";
 import { NavUser } from "~/components/nav-user";
@@ -10,6 +11,7 @@ import {
   SidebarFooter,
   SidebarHeader,
   SidebarRail,
+  useSidebar,
 } from "~/components/ui/sidebar";
 
 const navItems = [
