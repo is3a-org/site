@@ -50,7 +50,7 @@ export default function DashboardSubscribeConfirm({
   useEffect(() => {
     if (status === "success") {
       const timer = setTimeout(() => {
-        navigate("/dashboard/subscribe");
+        navigate("/dashboard/membership");
       }, 2000);
       return () => clearTimeout(timer);
     }
@@ -97,7 +97,7 @@ export default function DashboardSubscribeConfirm({
                 <span>Redirecting...</span>
               </div>
             ) : (
-              <Button onClick={() => navigate("/dashboard/subscribe")} className="w-full">
+              <Button onClick={() => navigate("/dashboard/membership")} className="w-full">
                 Back to profile
               </Button>
             )}
