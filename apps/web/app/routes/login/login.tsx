@@ -26,7 +26,7 @@ export async function loader({ request, context }: Route.LoaderArgs) {
   });
 
   if (response.type === "json") {
-    return redirect("/dashboard");
+    return redirect("/dashboard/membership");
   }
 }
 
@@ -111,7 +111,7 @@ export async function action({ request, context }: Route.ActionArgs) {
       };
     }
 
-    return redirect("/dashboard", {
+    return redirect("/dashboard/membership", {
       headers: response.headers,
     });
   } catch (error) {
