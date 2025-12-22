@@ -86,6 +86,7 @@ jobs:
       TURBO_TEAM: ${{ vars.TURBO_TEAM }}
       VITE_STRIPE_PRICE_ID_FULL: price_1PP5qhJ3Pt748JzgIsCiWawn
       VITE_STRIPE_PRICE_ID_FLEX: price_1PP5q9J3Pt748Jzg2wLlJ0jB
+      VITE_CF_TURNSTILE_SITE_KEY: "0x4AAAAAACH5P-GjR3rNGHEa"
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
