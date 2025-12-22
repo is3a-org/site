@@ -10,6 +10,7 @@ import {
   SidebarMenuSub,
   SidebarMenuSubButton,
   SidebarMenuSubItem,
+  useSidebar,
 } from "@/components/ui/sidebar";
 import { Link } from "react-router";
 
@@ -28,6 +29,8 @@ export function NavMain({
     }[];
   }[];
 }) {
+  const { setOpenMobile } = useSidebar();
+
   // Split items into regular and admin sections
   const regularItems = items.filter((item) => !item.adminOnly);
   const adminItems = items.filter((item) => item.adminOnly);
@@ -53,7 +56,7 @@ export function NavMain({
               {item.items?.map((subItem) => (
                 <SidebarMenuSubItem key={subItem.title}>
                   <SidebarMenuSubButton asChild>
-                    <Link to={subItem.url}>
+                    <Link to={subItem.url} onClick={() => setOpenMobile(false)}>
                       <span>{subItem.title}</span>
                     </Link>
                   </SidebarMenuSubButton>
@@ -66,7 +69,7 @@ export function NavMain({
     ) : (
       <SidebarMenuItem key={item.title}>
         <SidebarMenuButton asChild tooltip={item.title}>
-          <Link to={item.url}>
+          <Link to={item.url} onClick={() => setOpenMobile(false)}>
             {item.icon && <item.icon />}
             <span>{item.title}</span>
           </Link>

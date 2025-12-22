@@ -356,7 +356,7 @@ export default function DashboardSubscribe({
     <>
       <DashboardBreadcrumb>
         <BreadcrumbItem>
-          <BreadcrumbPage>Subscribe</BreadcrumbPage>
+          <BreadcrumbPage>Membership</BreadcrumbPage>
         </BreadcrumbItem>
       </DashboardBreadcrumb>
 
