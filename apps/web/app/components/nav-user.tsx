@@ -27,7 +27,7 @@ export function NavUser({
     avatar?: string;
   };
 }) {
-  const { isMobile } = useSidebar();
+  const { isMobile, setOpenMobile } = useSidebar();
   const navigate = useNavigate();
 
   return (
@@ -83,6 +83,7 @@ export function NavUser({
             <DropdownMenuSeparator />
             <DropdownMenuItem
               onClick={async () => {
+                setOpenMobile(false);
                 await simpleAuthClient.signOut();
                 navigate("/");
               }}
