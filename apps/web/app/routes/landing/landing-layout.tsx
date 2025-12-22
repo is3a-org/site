@@ -1,7 +1,11 @@
+import { Menu, X } from "lucide-react";
+import { useState } from "react";
 import { Link, Outlet } from "react-router";
 import { IS3ALogo } from "~/components/icons/is3a";
 
 export default function LandingLayout() {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
   return (
     <div className="flex min-h-screen flex-col">
       {/* Header */}
@@ -30,18 +34,57 @@ export default function LandingLayout() {
             </div>
 
             {/* Mobile Menu Button */}
-            <button className="p-2 text-gray-600 hover:text-gray-900 md:hidden">
-              <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4 6h16M4 12h16M4 18h16"
-                />
-              </svg>
+            <button
+              className="p-2 text-gray-600 hover:text-gray-900 md:hidden"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
+            >
+              {mobileMenuOpen ? <X /> : <Menu />}
             </button>
           </div>
         </nav>
+
+        {/* Mobile Menu */}
+        <div
+          className={`grid transition-all duration-300 ease-in-out md:hidden ${
+            mobileMenuOpen
+              ? "grid-rows-[1fr] border-t border-gray-200 opacity-100"
+              : "grid-rows-[0fr] opacity-0"
+          }`}
+        >
+          <div className="overflow-hidden">
+            <div className="space-y-1 px-4 py-3">
+              <Link
+                to="/"
+                className="block py-2 text-gray-700 transition-colors hover:text-red-800"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Home
+              </Link>
+              <Link
+                to="/join"
+                className="block py-2 text-gray-700 transition-colors hover:text-red-800"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Join
+              </Link>
+              <Link
+                to="/login"
+                className="block py-2 text-gray-700 transition-colors hover:text-red-800"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Login
+              </Link>
+              <Link
+                to="/team"
+                className="block py-2 text-gray-700 transition-colors hover:text-red-800"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Team
+              </Link>
+            </div>
+          </div>
+        </div>
       </header>
 
       {/* Main Content */}
