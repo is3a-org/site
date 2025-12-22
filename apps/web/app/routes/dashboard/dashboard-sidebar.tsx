@@ -1,9 +1,9 @@
 import { Home, MapPin, Users, HandCoins, Sparkles, type LucideIcon } from "lucide-react";
+import { Link } from "react-router";
 import { StripeIcon } from "~/components/icons/stripe";
 
 import { NavMain } from "~/components/nav-main";
 import { NavUser } from "~/components/nav-user";
-import { OrganizationSwitcher } from "~/components/organization-switcher";
 import {
   Sidebar,
   SidebarContent,
@@ -59,30 +59,29 @@ interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
     isAdmin: boolean;
     impersonatedBy: string | null;
   };
-  organizations: {
-    id: string;
-    name: string;
-    plan: string;
-  }[];
-  activeOrganizationId: string;
 }
 
-export function DashboardNavigationSidebar({
-  user,
-  organizations,
-  activeOrganizationId,
-  ...props
-}: AppSidebarProps) {
+function SidebarLogo() {
+  const { state } = useSidebar();
+  const isCollapsed = state === "collapsed";
+
+  return (
+    <Link to="/">
+      <IS3ALogo variant={isCollapsed ? "icon" : "full"} className="h-8" />
+    </Link>
+  );
+}
+
+export function DashboardNavigationSidebar({ user, ...props }: AppSidebarProps) {
   // Filter navigation items based on user role
   const filteredNavItems = navItems.filter((item) => !item.adminOnly || user.isAdmin);
 
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
-        <OrganizationSwitcher
-          organizations={organizations}
-          activeOrganizationId={activeOrganizationId}
-        />
+        <div className="ml-2 w-full overflow-hidden">
+          <SidebarLogo />
+        </div>
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={filteredNavItems} />

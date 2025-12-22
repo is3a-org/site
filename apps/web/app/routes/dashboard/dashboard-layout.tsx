@@ -20,17 +20,6 @@ export function meta(_: Route.MetaArgs) {
 }
 
 export async function loader({ context, request }: Route.LoaderArgs) {
-  const mockOrganizations = [
-    {
-      id: "org_1",
-      name: "IS3A",
-      slug: "is3a",
-      plan: "FULL" as const,
-    },
-  ];
-
-  const activeOrganizationId = "org_1";
-
   const auth = createSimpleAuthServer(context.pool);
 
   const response = await auth.callRoute("GET", "/me", {
@@ -50,9 +39,6 @@ export async function loader({ context, request }: Route.LoaderArgs) {
         impersonatedBy: null,
         role: role,
       },
-      organizations: mockOrganizations,
-      activeOrganization: mockOrganizations[0],
-      activeOrganizationId,
     };
   }
 
@@ -64,7 +50,7 @@ export function ErrorBoundary({ error, loaderData }: Route.ErrorBoundaryProps) {
     return <div>Error</div>;
   }
 
-  const { user, organizations, activeOrganizationId } = loaderData;
+  const { user } = loaderData;
 
   const errorContent = isRouteErrorResponse(error) ? (
     <Card className="mx-4 my-6">
@@ -113,11 +99,7 @@ export function ErrorBoundary({ error, loaderData }: Route.ErrorBoundaryProps) {
 
   return (
     <SidebarProvider>
-      <DashboardNavigationSidebar
-        user={user}
-        organizations={organizations}
-        activeOrganizationId={activeOrganizationId}
-      />
+      <DashboardNavigationSidebar user={user} />
       <SidebarInset>
         <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
           <div className="flex items-center gap-2 px-4">
@@ -143,15 +125,11 @@ export function ErrorBoundary({ error, loaderData }: Route.ErrorBoundaryProps) {
 }
 
 export default function Page({ loaderData }: Route.ComponentProps) {
-  const { user, organizations, activeOrganizationId } = loaderData;
+  const { user } = loaderData;
 
   return (
     <SidebarProvider>
-      <DashboardNavigationSidebar
-        user={user}
-        organizations={organizations}
-        activeOrganizationId={activeOrganizationId}
-      />
+      <DashboardNavigationSidebar user={user} />
       <SidebarInset>
         <Outlet />
       </SidebarInset>
