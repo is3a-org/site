@@ -42,8 +42,6 @@ export class UserRepo {
       });
   }
 
-  // TODO: handle case where there are multiple subscriptions for one userId?
-
   async getUserById(id: string) {
     const user = await this.#db
       .select({
@@ -64,7 +62,7 @@ export class UserRepo {
       .leftJoin(subscription_stripe, eq(subscription_stripe.referenceId, user_simple_auth_db.id))
       .where(eq(user_simple_auth_db.id, id))
       .orderBy(subscription_stripe.status) // 'active' comes first
-      .limit(1);
+      .limit(1); // We've set "1 subscription per customer" setting in Stripe
     return user.length === 1 ? user[0] : null;
   }
 
