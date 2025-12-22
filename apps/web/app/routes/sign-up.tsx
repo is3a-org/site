@@ -63,7 +63,7 @@ export async function action({ request, context }: Route.ActionArgs) {
     });
 
     // Set the session cookie and redirect to dashboard
-    return redirect("/dashboard");
+    return redirect("/dashboard/membership");
   } catch (error) {
     console.error("Sign up error:", error);
     return {

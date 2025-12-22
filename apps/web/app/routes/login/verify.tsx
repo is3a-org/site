@@ -55,7 +55,7 @@ export async function loader({ request, context }: Route.LoaderArgs) {
   const session = await auth.services.createSession(user.id);
 
   // Redirect to dashboard with session cookie
-  return redirect("/dashboard", {
+  return redirect("/dashboard/membership", {
     headers: {
       "Set-Cookie": auth.services.buildSessionCookie(session.id),
     },
