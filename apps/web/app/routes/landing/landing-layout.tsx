@@ -1,4 +1,5 @@
 import { Link, Outlet } from "react-router";
+import { IS3ALogo } from "~/components/icons/is3a";
 
 export default function LandingLayout() {
   return (
@@ -9,7 +10,7 @@ export default function LandingLayout() {
           <div className="flex h-16 items-center justify-between">
             {/* Logo */}
             <Link to="/" className="flex items-center space-x-2">
-              <img src="/is3a.png" alt="IS3A Logo" className="h-8" />
+              <IS3ALogo className="h-8" />
             </Link>
 
             {/* Navigation Links */}
