@@ -4,6 +4,8 @@ import { EventRepo } from "~/db/repo/events";
 import { LocationRepo } from "~/db/repo/locations";
 import { Calendar, MapPin } from "lucide-react";
 import { formatDate } from "~/lib/date-utils";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 export async function loader({ params, context }: Route.LoaderArgs) {
   const eventId = parseInt(params.id);
@@ -77,8 +79,8 @@ export function EventDetailPage({ loaderData }: Route.ComponentProps) {
 
       {/* Event Description */}
       {event.description && (
-        <div className="mb-8">
-          <p className="leading-relaxed whitespace-pre-wrap text-gray-700">{event.description}</p>
+        <div className="prose prose-gray mb-8 max-w-none">
+          <ReactMarkdown remarkPlugins={[remarkGfm]}>{event.description}</ReactMarkdown>
         </div>
       )}
 
@@ -87,9 +89,9 @@ export function EventDetailPage({ loaderData }: Route.ComponentProps) {
         <div className="mb-8">
           <h2 className="mb-3 text-2xl font-semibold text-gray-900">Speaker: {event.speaker}</h2>
           {event.speakerAbstract && (
-            <p className="leading-relaxed whitespace-pre-wrap text-gray-700">
-              {event.speakerAbstract}
-            </p>
+            <div className="prose prose-gray max-w-none">
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>{event.speakerAbstract}</ReactMarkdown>
+            </div>
           )}
         </div>
       )}
