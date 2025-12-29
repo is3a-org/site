@@ -1,4 +1,12 @@
-import { Home, MapPin, Users, HandCoins, Sparkles, type LucideIcon } from "lucide-react";
+import {
+  Home,
+  MapPin,
+  Users,
+  HandCoins,
+  Sparkles,
+  ClipboardList,
+  type LucideIcon,
+} from "lucide-react";
 import { Link } from "react-router";
 import { StripeIcon } from "~/components/icons/stripe";
 import { IS3ALogo } from "~/components/icons/is3a";
@@ -49,6 +57,12 @@ const navItems = [
     title: "Stripe",
     url: "/dashboard/admin/stripe",
     icon: StripeIcon as LucideIcon,
+    adminOnly: true,
+  },
+  {
+    title: "Forms",
+    url: "/dashboard/admin/forms",
+    icon: ClipboardList,
     adminOnly: true,
   },
 ];
