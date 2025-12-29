@@ -46,6 +46,14 @@ pnpm test           # Run tests
 - **Code Quality**: Pre-commit hooks (Lefthook) auto-format and lint staged files
 - **TypeScript**: Strict mode enabled across all packages
 
+### Give your user the admin role
+
+```sql
+UPDATE "user_simple-auth-db"
+ SET role = 'admin'
+ WHERE email = 'your@email.com';
+```
+
 ## Deployment
 
 Deployed to Cloudflare. Configuration in `wrangler.jsonc` files.
