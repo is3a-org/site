@@ -4,6 +4,7 @@ import tailwindcss from "@tailwindcss/vite";
 import { defineConfig } from "vite";
 import tsconfigPaths from "vite-tsconfig-paths";
 import devtoolsJson from "vite-plugin-devtools-json";
+import path from "path";
 
 export default defineConfig({
   plugins: [
@@ -13,4 +14,10 @@ export default defineConfig({
     tsconfigPaths(),
     devtoolsJson(),
   ],
+  resolve: {
+    alias: {
+      "@/components": path.resolve(__dirname, "./app/components"),
+      "@/lib": path.resolve(__dirname, "./app/lib"),
+    },
+  },
 });
