@@ -31,5 +31,6 @@ export default [
   route("api/simple-auth/*", "routes/api/simple-auth.tsx"),
   route("api/otp/*", "routes/api/otp.tsx"),
   route("api/stripe/*", "routes/api/stripe.tsx"),
+  route("api/forms/*", "routes/api/forms.tsx"),
   route("_dev/email-preview", "routes/dev/email-preview.tsx"),
 ] satisfies RouteConfig;

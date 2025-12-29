@@ -219,3 +219,60 @@ export const stripe_schema = {
   subscription: subscription_stripe,
   schemaVersion: 1,
 };
+
+// ============================================================================
+// Fragment: forms
+// ============================================================================
+
+export const form_forms = pgTable(
+  "form_forms",
+  {
+    id: varchar("id", { length: 30 })
+      .notNull()
+      .$defaultFn(() => createId()),
+    title: text("title").notNull(),
+    description: text("description"),
+    slug: text("slug").notNull(),
+    status: text("status").notNull().default("draft"),
+    dataSchema: json("dataSchema").notNull(),
+    uiSchema: json("uiSchema"),
+    version: integer("version").notNull().default(1),
+    createdAt: timestamp("createdAt").notNull().defaultNow(),
+    updatedAt: timestamp("updatedAt").notNull().defaultNow(),
+    _internalId: bigserial("_internalId", { mode: "number" }).primaryKey().notNull(),
+    _version: integer("_version").notNull().default(0),
+  },
+  (table) => [
+    index("idx_form_status_forms").on(table.status),
+    uniqueIndex("idx_form_slug_forms").on(table.slug),
+  ],
+);
+
+export const response_forms = pgTable(
+  "response_forms",
+  {
+    id: varchar("id", { length: 30 })
+      .notNull()
+      .$defaultFn(() => createId()),
+    formId: text("formId").notNull(),
+    formVersion: integer("formVersion").notNull(),
+    data: json("data").notNull(),
+    submittedAt: timestamp("submittedAt").notNull().defaultNow(),
+    userAgent: text("userAgent"),
+    ip: text("ip"),
+    _internalId: bigserial("_internalId", { mode: "number" }).primaryKey().notNull(),
+    _version: integer("_version").notNull().default(0),
+  },
+  (table) => [
+    index("idx_response_form_forms").on(table.formId),
+    index("idx_response_submitted_at_forms").on(table.submittedAt),
+  ],
+);
+
+export const forms_schema = {
+  form_forms: form_forms,
+  form: form_forms,
+  response_forms: response_forms,
+  response: response_forms,
+  schemaVersion: 2,
+};
