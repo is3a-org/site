@@ -5,13 +5,7 @@ import { otpSchema } from "./schema";
 import { ottRoutesFactory, type OttConfig, OttType } from "./ott/ott";
 import { totpRoutesFactory, type TotpConfig } from "./totp/totp";
 import { generateToken } from "./ott/ott";
-import {
-  base32Encode,
-  generateBackupCode,
-  hashBackupCode,
-  verifyBackupCode,
-  verifyTOTP,
-} from "./totp/totp";
+import { base32Encode, verifyBackupCode, verifyTOTP } from "./totp/totp";
 
 export interface OtpFragmentConfig extends OttConfig, TotpConfig {
   issuer?: string;
@@ -22,248 +16,267 @@ export const otpFragmentDefinition = defineFragment<OtpFragmentConfig>("one-time
   .providesBaseService(({ defineService, config }) => {
     return defineService({
       // OTT services
-      generateToken: async function (userId: string, type: OttType, durationMinutes: number = 15) {
-        // First, retrieve existing tokens to delete
-        const uow = this.uow(otpSchema).find("one_time_token", (b) =>
-          b.whereIndex("idx_ott_user_type", (eb) =>
-            eb.and(eb("userId", "=", userId), eb("type", "=", type)),
-          ),
-        );
-        const [existingTokens] = await uow.retrievalPhase;
+      generateToken: function (userId: string, type: OttType, durationMinutes: number = 15) {
+        return this.serviceTx(otpSchema)
+          .retrieve((uow) =>
+            uow.find("one_time_token", (b) =>
+              b.whereIndex("idx_ott_user_type", (eb) =>
+                eb.and(eb("userId", "=", userId), eb("type", "=", type)),
+              ),
+            ),
+          )
+          .mutate(({ uow, retrieveResult: [existingTokens] }) => {
+            for (const existingToken of existingTokens) {
+              uow.delete("one_time_token", existingToken.id);
+            }
 
-        // Delete existing tokens
-        for (const existingToken of existingTokens) {
-          uow.delete("one_time_token", existingToken.id);
-        }
+            const token = generateToken();
+            const now = Date.now();
+            const expiresAt = new Date(now + durationMinutes * 60 * 1000).toISOString();
 
-        // Generate new token (stored in uppercase for case-insensitive lookups)
-        const token = generateToken();
-        const now = Date.now();
-        const expiresAt = new Date(now + durationMinutes * 60 * 1000).toISOString();
+            uow.create("one_time_token", {
+              userId,
+              token: token.toUpperCase(),
+              type,
+              // @ts-expect-error TS2322
+              expiresAt,
+            });
 
-        uow.create("one_time_token", {
-          userId,
-          token: token.toUpperCase(),
-          type,
-          // @ts-expect-error TS2322
-          expiresAt,
-        });
-
-        // Wait for the handler to run executeMutate()
-        await uow.mutationPhase;
-
-        return { token };
+            return { token };
+          })
+          .build();
       },
 
-      getAll: async function () {
-        const uow = this.uow(otpSchema).find("one_time_token", (b) =>
-          b.whereIndex("primary", () => true),
-        );
-        const [tokens] = await uow.retrievalPhase;
-        return tokens;
+      getAll: function () {
+        return this.serviceTx(otpSchema)
+          .retrieve((uow) => uow.find("one_time_token", (b) => b.whereIndex("primary", () => true)))
+          .build();
       },
 
-      validateToken: async function (userId: string, tokenString: string, type: OttType) {
-        // Normalize token for case-insensitive comparison
+      validateToken: function (userId: string, tokenString: string, type: OttType) {
         const normalizedToken = tokenString.toUpperCase();
 
-        // Query by userId and type (efficient index query)
-        const uow = this.uow(otpSchema).find("one_time_token", (b) =>
-          b.whereIndex("idx_ott_user_type", (eb) =>
-            eb.and(eb("userId", "=", userId), eb("type", "=", type)),
-          ),
-        );
-        const [tokens] = await uow.retrievalPhase;
+        return this.serviceTx(otpSchema)
+          .retrieve((uow) =>
+            uow.find("one_time_token", (b) =>
+              b.whereIndex("idx_ott_user_type", (eb) =>
+                eb.and(eb("userId", "=", userId), eb("type", "=", type)),
+              ),
+            ),
+          )
+          .mutate(({ uow, retrieveResult: [tokens] }) => {
+            const token = tokens.find((t) => t.token === normalizedToken);
 
-        // Filter by token in memory
-        const token = tokens.find((t) => t.token === normalizedToken);
+            if (!token) {
+              return {
+                valid: false,
+                error: "token_invalid" as const,
+              };
+            }
 
-        // No token found
-        if (!token) {
-          return {
-            valid: false,
-            error: "token_invalid" as const,
-          };
-        }
+            // Check expiry
+            const now = new Date();
 
-        // Database returns timestamp strings without timezone - treat as UTC
-        const tokenExpiresAt = new Date(token.expiresAt + "Z");
+            if (token.expiresAt.getTime() < now.getTime()) {
+              uow.delete("one_time_token", token.id);
+              return {
+                valid: false,
+                error: "token_expired" as const,
+              };
+            }
 
-        // Check expiry
-        const now = new Date();
-        if (tokenExpiresAt.getTime() < now.getTime()) {
-          uow.delete("one_time_token", token.id);
-          await uow.mutationPhase;
-          return {
-            valid: false,
-            error: "token_expired" as const,
-          };
-        }
-
-        // Token is valid - delete it (one-time use)
-        uow.delete("one_time_token", token.id);
-        await uow.mutationPhase;
-        return {
-          valid: true,
-        };
+            uow.delete("one_time_token", token.id);
+            return {
+              valid: true,
+            };
+          })
+          .build();
       },
 
-      cleanupExpiredTokens: async function () {
+      cleanupExpiredTokens: function () {
         const now = new Date();
 
-        // Schedule retrieval to count expired tokens
-        const uow = this.uow(otpSchema).find("one_time_token", (b) =>
-          b.whereIndex("idx_expires_at", (eb) => eb("expiresAt", "<", now)),
-        );
-        const [expiredTokens] = await uow.retrievalPhase;
+        return this.serviceTx(otpSchema)
+          .retrieve((uow) =>
+            uow.find("one_time_token", (b) =>
+              b.whereIndex("idx_expires_at", (eb) => eb("expiresAt", "<", now)),
+            ),
+          )
+          .mutate(({ uow, retrieveResult: [expiredTokens] }) => {
+            for (const expiredToken of expiredTokens) {
+              uow.delete("one_time_token", expiredToken.id);
+            }
 
-        // Schedule deletion
-        for (const expiredToken of expiredTokens) {
-          uow.delete("one_time_token", expiredToken.id);
-        }
-
-        // Wait for mutation phase
-        await uow.mutationPhase;
-
-        return { deletedCount: expiredTokens.length };
+            return { deletedCount: expiredTokens.length };
+          })
+          .build();
       },
 
-      invalidateTokens: async function (userId: string, type: OttType) {
-        // Schedule retrieval to count tokens
-        const uow = this.uow(otpSchema).find("one_time_token", (b) =>
-          b.whereIndex("idx_ott_user_type", (eb) =>
-            eb.and(eb("userId", "=", userId), eb("type", "=", type)),
-          ),
-        );
-        const [tokens] = await uow.retrievalPhase;
+      invalidateTokens: function (userId: string, type: OttType) {
+        return this.serviceTx(otpSchema)
+          .retrieve((uow) =>
+            uow.find("one_time_token", (b) =>
+              b.whereIndex("idx_ott_user_type", (eb) =>
+                eb.and(eb("userId", "=", userId), eb("type", "=", type)),
+              ),
+            ),
+          )
+          .mutate(({ uow, retrieveResult: [tokens] }) => {
+            for (const token of tokens) {
+              uow.delete("one_time_token", token.id);
+            }
 
-        // Schedule deletion
-        for (const token of tokens) {
-          uow.delete("one_time_token", token.id);
-        }
-
-        // Wait for mutation phase
-        await uow.mutationPhase;
-
-        return { deletedCount: tokens.length };
+            return { deletedCount: tokens.length };
+          })
+          .build();
       },
 
       // TOTP services
-      enableTotp: async function (userId: string) {
-        // Check if TOTP is already enabled
-        const uow = this.uow(otpSchema).findFirst("totp_secret", (b) =>
-          b.whereIndex("idx_totp_user", (eb) => eb("userId", "=", userId)),
-        );
-        const [existing] = await uow.retrievalPhase;
-
-        if (existing) {
-          throw new Error("TOTP already enabled for this user");
-        }
-
-        // Generate secret (20 random bytes)
+      enableTotp: function (userId: string, hashedBackupCodes: string[]) {
         const secretBytes = crypto.getRandomValues(new Uint8Array(20));
         const secret = base32Encode(secretBytes);
 
-        // Generate 10 backup codes
-        const backupCodes: string[] = [];
-        for (let i = 0; i < 10; i++) {
-          backupCodes.push(generateBackupCode());
-        }
-
-        // Hash backup codes before storing
-        const hashedBackupCodes = await Promise.all(
-          backupCodes.map((code) => hashBackupCode(code)),
-        );
-
-        // Store in database
-        uow.create("totp_secret", {
-          userId,
-          secret,
-          backupCodes: JSON.stringify(hashedBackupCodes),
-        });
-
-        // Generate QR code URL
         const issuer = config?.issuer || "SimpleAuth";
         const qrCodeUrl = `otpauth://totp/${encodeURIComponent(issuer)}:${encodeURIComponent(userId)}?secret=${secret}&issuer=${encodeURIComponent(issuer)}`;
 
-        return {
-          uow,
-          secret,
-          qrCodeUrl,
-          backupCodes, // Return unhashed codes for user to save
-        };
-      },
+        return this.serviceTx(otpSchema)
+          .retrieve((uow) =>
+            uow.findFirst("totp_secret", (b) =>
+              b.whereIndex("idx_totp_user", (eb) => eb("userId", "=", userId)),
+            ),
+          )
+          .mutate(({ uow, retrieveResult: [existing] }) => {
+            if (existing) {
+              throw new Error("TOTP already enabled for this user");
+            }
 
-      verifyTotp: async function (userId: string, code: string) {
-        const uow = this.uow(otpSchema).findFirst("totp_secret", (b) =>
-          b.whereIndex("idx_totp_user", (eb) => eb("userId", "=", userId)),
-        );
-        const [totpRecord] = await uow.retrievalPhase;
-
-        if (!totpRecord) {
-          return { valid: false };
-        }
-
-        const valid = await verifyTOTP(totpRecord.secret, code, 1);
-        return { valid };
-      },
-
-      verifyBackupCode: async function (userId: string, code: string) {
-        const uow = this.uow(otpSchema).findFirst("totp_secret", (b) =>
-          b.whereIndex("idx_totp_user", (eb) => eb("userId", "=", userId)),
-        );
-        const [totpRecord] = await uow.retrievalPhase;
-
-        if (!totpRecord) {
-          return { valid: false };
-        }
-
-        const backupCodes: string[] = JSON.parse(totpRecord.backupCodes);
-
-        // Check each backup code
-        for (let i = 0; i < backupCodes.length; i++) {
-          const isValid = await verifyBackupCode(code.toUpperCase(), backupCodes[i]);
-          if (isValid) {
-            // Remove the used backup code - delete and recreate
-            backupCodes.splice(i, 1);
-            uow.delete("totp_secret", totpRecord.id);
             uow.create("totp_secret", {
-              userId: totpRecord.userId,
-              secret: totpRecord.secret,
-              backupCodes: JSON.stringify(backupCodes),
+              userId,
+              secret,
+              backupCodes: JSON.stringify(hashedBackupCodes),
             });
-            // Wait for mutation phase
-            return { valid: true };
-          }
-        }
 
-        return { valid: false };
+            return {
+              secret,
+              qrCodeUrl,
+            };
+          })
+          .build();
       },
 
-      disableTotp: async function (userId: string) {
-        const uow = this.uow(otpSchema).findFirst("totp_secret", (b) =>
-          b.whereIndex("idx_totp_user", (eb) => eb("userId", "=", userId)),
-        );
-        const [totpRecord] = await uow.retrievalPhase;
+      verifyTotp: function (userId: string, code: string) {
+        return this.serviceTx(otpSchema)
+          .retrieve((uow) =>
+            uow.findFirst("totp_secret", (b) =>
+              b.whereIndex("idx_totp_user", (eb) => eb("userId", "=", userId)),
+            ),
+          )
+          .transformRetrieve(async ([totpRecord]) => {
+            if (!totpRecord) {
+              return { valid: false };
+            }
 
-        if (!totpRecord) {
-          return false;
-        }
-
-        uow.delete("totp_secret", totpRecord.id);
-        // Wait for mutation phase
-        return true;
+            const valid = await verifyTOTP(totpRecord.secret, code, 1);
+            return { valid };
+          })
+          .build();
       },
 
-      getTotpStatus: async function (userId: string) {
-        const uow = this.uow(otpSchema).findFirst("totp_secret", (b) =>
-          b.whereIndex("idx_totp_user", (eb) => eb("userId", "=", userId)),
-        );
-        const [totpRecord] = await uow.retrievalPhase;
-        console.log("totpRecord", totpRecord);
-        return {
-          enabled: !!totpRecord,
-        };
+      verifyBackupCode: function (userId: string, code: string) {
+        return this.serviceTx(otpSchema)
+          .retrieve((uow) =>
+            uow.findFirst("totp_secret", (b) =>
+              b.whereIndex("idx_totp_user", (eb) => eb("userId", "=", userId)),
+            ),
+          )
+          .transformRetrieve(async ([totpRecord]) => {
+            if (!totpRecord) {
+              return { valid: false };
+            }
+
+            const backupCodes: string[] = JSON.parse(totpRecord.backupCodes);
+
+            for (let i = 0; i < backupCodes.length; i++) {
+              const isValid = await verifyBackupCode(code.toUpperCase(), backupCodes[i]);
+              if (isValid) {
+                const nextBackupCodes = [...backupCodes];
+                nextBackupCodes.splice(i, 1);
+                return {
+                  valid: true,
+                  expectedBackupCodes: backupCodes,
+                  nextBackupCodes,
+                };
+              }
+            }
+
+            return { valid: false };
+          })
+          .build();
+      },
+
+      consumeBackupCode: function (
+        userId: string,
+        expectedBackupCodes: string[],
+        nextBackupCodes: string[],
+      ) {
+        const expectedJson = JSON.stringify(expectedBackupCodes);
+
+        return this.serviceTx(otpSchema)
+          .retrieve((uow) =>
+            uow.findFirst("totp_secret", (b) =>
+              b.whereIndex("idx_totp_user", (eb) => eb("userId", "=", userId)),
+            ),
+          )
+          .mutate(({ uow, retrieveResult: [totpRecord] }) => {
+            if (!totpRecord) {
+              return { success: false };
+            }
+
+            // Compare-and-swap: only update if current state matches expected snapshot
+            if (totpRecord.backupCodes !== expectedJson) {
+              return { success: false };
+            }
+
+            uow.update("totp_secret", totpRecord.id, (b) =>
+              b.set({ backupCodes: JSON.stringify(nextBackupCodes) }).check(),
+            );
+
+            return { success: true };
+          })
+          .build();
+      },
+
+      disableTotp: function (userId: string) {
+        return this.serviceTx(otpSchema)
+          .retrieve((uow) =>
+            uow.findFirst("totp_secret", (b) =>
+              b.whereIndex("idx_totp_user", (eb) => eb("userId", "=", userId)),
+            ),
+          )
+          .mutate(({ uow, retrieveResult: [totpRecord] }) => {
+            if (!totpRecord) {
+              return false;
+            }
+
+            uow.delete("totp_secret", totpRecord.id);
+            return true;
+          })
+          .build();
+      },
+
+      getTotpStatus: function (userId: string) {
+        return this.serviceTx(otpSchema)
+          .retrieve((uow) =>
+            uow.findFirst("totp_secret", (b) =>
+              b.whereIndex("idx_totp_user", (eb) => eb("userId", "=", userId)),
+            ),
+          )
+          .mutate(({ retrieveResult: [totpRecord] }) => {
+            return {
+              enabled: !!totpRecord,
+            };
+          })
+          .build();
       },
     });
   })

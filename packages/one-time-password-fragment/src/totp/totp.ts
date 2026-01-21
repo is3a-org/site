@@ -220,22 +220,20 @@ export const totpRoutesFactory = defineRoutes<typeof otpFragmentDefinition>().cr
         handler: async function ({ input }, { json, error }) {
           const { userId } = await input.valid();
 
+          // Generate backup codes and hash them in the handler (async work)
+          const backupCodes: string[] = [];
+          for (let i = 0; i < 10; i++) {
+            backupCodes.push(generateBackupCode());
+          }
+          const hashedBackupCodes = await Promise.all(
+            backupCodes.map((code) => hashBackupCode(code)),
+          );
+
           try {
-            const result = await this.uow(
-              async ({ executeRetrieve, executeMutate }) => {
-                const resultPromise = services.enableTotp(userId);
-                await executeRetrieve();
-                const result = await resultPromise;
-                await executeMutate();
-                return result;
-              },
-              {
-                onSuccess: async (uow) => {
-                  console.log("onSuccess: uow", uow);
-                },
-              },
-            );
-            return json(result);
+            const [result] = await this.handlerTx()
+              .withServiceCalls(() => [services.enableTotp(userId, hashedBackupCodes)])
+              .execute();
+            return json({ ...result, backupCodes });
           } catch (err) {
             if (err instanceof Error && err.message.includes("already enabled")) {
               return error({ message: "TOTP already enabled", code: "totp_already_enabled" }, 400);
@@ -259,11 +257,9 @@ export const totpRoutesFactory = defineRoutes<typeof otpFragmentDefinition>().cr
         handler: async function ({ input }, { json, error }) {
           const { userId, code } = await input.valid();
 
-          const result = await this.uow(async ({ executeRetrieve }) => {
-            const resultPromise = services.verifyTotp(userId, code);
-            await executeRetrieve();
-            return resultPromise;
-          });
+          const [result] = await this.handlerTx()
+            .withServiceCalls(() => [services.verifyTotp(userId, code)])
+            .execute();
 
           if (!result.valid) {
             return error({ message: "Invalid TOTP code", code: "totp_invalid_code" }, 401);
@@ -287,19 +283,34 @@ export const totpRoutesFactory = defineRoutes<typeof otpFragmentDefinition>().cr
         handler: async function ({ input }, { json, error }) {
           const { userId, code } = await input.valid();
 
-          const result = await this.uow(async ({ executeRetrieve, executeMutate }) => {
-            const resultPromise = services.verifyBackupCode(userId, code);
-            await executeRetrieve();
-            const result = await resultPromise;
-            await executeMutate();
-            return result;
-          });
+          // Step 1: Verify the backup code and get the expected/next states
+          const [verifyResult] = await this.handlerTx()
+            .withServiceCalls(() => [services.verifyBackupCode(userId, code)])
+            .execute();
 
-          if (!result.valid) {
+          if (!verifyResult.valid) {
             return error({ message: "Invalid backup code", code: "backup_code_invalid" }, 401);
           }
 
-          return json(result);
+          // Step 2: Atomically consume with compare-and-swap
+          // This fails if another request modified backupCodes between steps
+          if (verifyResult.expectedBackupCodes && verifyResult.nextBackupCodes) {
+            const [consumeResult] = await this.handlerTx()
+              .withServiceCalls(() => [
+                services.consumeBackupCode(
+                  userId,
+                  verifyResult.expectedBackupCodes,
+                  verifyResult.nextBackupCodes,
+                ),
+              ])
+              .execute();
+
+            if (!consumeResult.success) {
+              return error({ message: "Invalid backup code", code: "backup_code_invalid" }, 401);
+            }
+          }
+
+          return json({ valid: true });
         },
       }),
 
@@ -316,13 +327,9 @@ export const totpRoutesFactory = defineRoutes<typeof otpFragmentDefinition>().cr
         handler: async function ({ input }, { json, error }) {
           const { userId } = await input.valid();
 
-          const success = await this.uow(async ({ executeRetrieve, executeMutate }) => {
-            const resultPromise = services.disableTotp(userId);
-            await executeRetrieve();
-            const result = await resultPromise;
-            await executeMutate();
-            return result;
-          });
+          const [success] = await this.handlerTx()
+            .withServiceCalls(() => [services.disableTotp(userId)])
+            .execute();
 
           if (!success) {
             return error({ message: "TOTP not enabled", code: "totp_not_enabled" }, 400);
@@ -347,13 +354,9 @@ export const totpRoutesFactory = defineRoutes<typeof otpFragmentDefinition>().cr
             return json({ enabled: false });
           }
 
-          const result = await this.uow(async ({ executeRetrieve }) => {
-            const resultPromise = services.getTotpStatus(userId);
-            await executeRetrieve();
-            return resultPromise;
-          });
-
-          console.log("result", result);
+          const [result] = await this.handlerTx()
+            .withServiceCalls(() => [services.getTotpStatus(userId)])
+            .execute();
 
           return json(result);
         },
