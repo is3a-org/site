@@ -42,11 +42,9 @@ export const ottRoutesFactory = defineRoutes<typeof otpFragmentDefinition>().cre
         handler: async function ({ input }, { json }) {
           const { userId, type, durationMinutes } = await input.valid();
 
-          const result = await this.uow(async ({ executeMutate }) => {
-            const resultPromise = services.generateToken(userId, type, durationMinutes);
-            await executeMutate();
-            return resultPromise;
-          });
+          const [result] = await this.handlerTx()
+            .withServiceCalls(() => [services.generateToken(userId, type, durationMinutes)])
+            .execute();
 
           return json(result);
         },
@@ -67,12 +65,9 @@ export const ottRoutesFactory = defineRoutes<typeof otpFragmentDefinition>().cre
         handler: async function ({ input }, { json, error }) {
           const { userId, token, type } = await input.valid();
 
-          const result = await this.uow(async ({ executeRetrieve, executeMutate }) => {
-            const resultPromise = services.validateToken(userId, token, type);
-            await executeRetrieve();
-            await executeMutate();
-            return resultPromise;
-          });
+          const [result] = await this.handlerTx()
+            .withServiceCalls(() => [services.validateToken(userId, token, type)])
+            .execute();
 
           if (!result.valid && result.error) {
             const errorMessages = {
@@ -107,12 +102,9 @@ export const ottRoutesFactory = defineRoutes<typeof otpFragmentDefinition>().cre
         }),
         errorCodes: [],
         handler: async function (_, { json }) {
-          const result = await this.uow(async ({ executeRetrieve, executeMutate }) => {
-            const resultPromise = services.cleanupExpiredTokens();
-            await executeRetrieve();
-            await executeMutate();
-            return resultPromise;
-          });
+          const [result] = await this.handlerTx()
+            .withServiceCalls(() => [services.cleanupExpiredTokens()])
+            .execute();
 
           return json(result);
         },
@@ -132,12 +124,9 @@ export const ottRoutesFactory = defineRoutes<typeof otpFragmentDefinition>().cre
         handler: async function ({ input }, { json }) {
           const { userId, type } = await input.valid();
 
-          const result = await this.uow(async ({ executeRetrieve, executeMutate }) => {
-            const resultPromise = services.invalidateTokens(userId, type);
-            await executeRetrieve();
-            await executeMutate();
-            return resultPromise;
-          });
+          const [result] = await this.handlerTx()
+            .withServiceCalls(() => [services.invalidateTokens(userId, type)])
+            .execute();
 
           return json(result);
         },
