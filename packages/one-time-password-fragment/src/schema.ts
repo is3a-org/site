@@ -1,6 +1,6 @@
 import { column, idColumn, schema } from "@fragno-dev/db/schema";
 
-export const otpSchema = schema((s) => {
+export const otpSchema = schema("otp", (s) => {
   return s
     .addTable("totp_secret", (t) => {
       return t

@@ -1,5 +1,5 @@
 import { eq } from "drizzle-orm";
-import { user_simple_auth_db, subscription_stripe } from "~/db/postgres/fragno-schema";
+import { user_auth, subscription_stripe } from "~/db/postgres/fragno-schema";
 import { user_stripe } from "~/db/postgres/postgres.schema";
 import { type DrizzleDatabase } from "~/db/postgres/is3a-postgres";
 
@@ -13,18 +13,18 @@ export class UserRepo {
   async getAllUsers() {
     return await this.#db
       .select({
-        id: user_simple_auth_db.id,
-        email: user_simple_auth_db.email,
-        createdAt: user_simple_auth_db.createdAt,
+        id: user_auth.id,
+        email: user_auth.email,
+        createdAt: user_auth.createdAt,
         stripeCustomerId: user_stripe.stripeCustomerId,
         subscriptionId: subscription_stripe.id,
         subscriptionStatus: subscription_stripe.status,
         subscriptionStripePriceId: subscription_stripe.stripePriceId,
       })
-      .from(user_simple_auth_db)
-      .leftJoin(user_stripe, eq(user_stripe.userId, user_simple_auth_db.id))
-      .leftJoin(subscription_stripe, eq(subscription_stripe.referenceId, user_simple_auth_db.id))
-      .orderBy(user_simple_auth_db.email);
+      .from(user_auth)
+      .leftJoin(user_stripe, eq(user_stripe.userId, user_auth.id))
+      .leftJoin(subscription_stripe, eq(subscription_stripe.referenceId, user_auth.id))
+      .orderBy(user_auth.email);
   }
 
   async setStripeCustomerId(userId: string, stripeCustomerId: string) {
@@ -45,9 +45,9 @@ export class UserRepo {
   async getUserById(id: string) {
     const user = await this.#db
       .select({
-        id: user_simple_auth_db.id,
-        email: user_simple_auth_db.email,
-        createdAt: user_simple_auth_db.createdAt,
+        id: user_auth.id,
+        email: user_auth.email,
+        createdAt: user_auth.createdAt,
         stripeCustomerId: user_stripe.stripeCustomerId,
         subscriptionId: subscription_stripe.id,
         subscriptionStatus: subscription_stripe.status,
@@ -57,10 +57,10 @@ export class UserRepo {
         cancelAt: subscription_stripe.cancelAt,
         cancelAtPeriodEnd: subscription_stripe.cancelAtPeriodEnd,
       })
-      .from(user_simple_auth_db)
-      .leftJoin(user_stripe, eq(user_stripe.userId, user_simple_auth_db.id))
-      .leftJoin(subscription_stripe, eq(subscription_stripe.referenceId, user_simple_auth_db.id))
-      .where(eq(user_simple_auth_db.id, id))
+      .from(user_auth)
+      .leftJoin(user_stripe, eq(user_stripe.userId, user_auth.id))
+      .leftJoin(subscription_stripe, eq(subscription_stripe.referenceId, user_auth.id))
+      .where(eq(user_auth.id, id))
       .orderBy(subscription_stripe.status) // 'active' comes first
       .limit(1); // We've set "1 subscription per customer" setting in Stripe
     return user.length === 1 ? user[0] : null;
@@ -69,18 +69,18 @@ export class UserRepo {
   async getUserByEmail(email: string) {
     const user = await this.#db
       .select({
-        id: user_simple_auth_db.id,
-        email: user_simple_auth_db.email,
-        createdAt: user_simple_auth_db.createdAt,
+        id: user_auth.id,
+        email: user_auth.email,
+        createdAt: user_auth.createdAt,
         stripeCustomerId: user_stripe.stripeCustomerId,
         subscriptionId: subscription_stripe.id,
         subscriptionStatus: subscription_stripe.status,
         subscriptionStripePriceId: subscription_stripe.stripePriceId,
       })
-      .from(user_simple_auth_db)
-      .leftJoin(user_stripe, eq(user_stripe.userId, user_simple_auth_db.id))
-      .leftJoin(subscription_stripe, eq(subscription_stripe.referenceId, user_simple_auth_db.id))
-      .where(eq(user_simple_auth_db.email, email))
+      .from(user_auth)
+      .leftJoin(user_stripe, eq(user_stripe.userId, user_auth.id))
+      .leftJoin(subscription_stripe, eq(subscription_stripe.referenceId, user_auth.id))
+      .where(eq(user_auth.email, email))
       .limit(1);
     return user.length === 1 ? user[0] : null;
   }
@@ -88,17 +88,17 @@ export class UserRepo {
   async getUserByStripeCustomerId(stripeCustomerId: string) {
     const user = await this.#db
       .select({
-        id: user_simple_auth_db.id,
-        email: user_simple_auth_db.email,
-        createdAt: user_simple_auth_db.createdAt,
+        id: user_auth.id,
+        email: user_auth.email,
+        createdAt: user_auth.createdAt,
         stripeCustomerId: user_stripe.stripeCustomerId,
         subscriptionId: subscription_stripe.id,
         subscriptionStatus: subscription_stripe.status,
         subscriptionStripePriceId: subscription_stripe.stripePriceId,
       })
-      .from(user_simple_auth_db)
-      .leftJoin(user_stripe, eq(user_stripe.userId, user_simple_auth_db.id))
-      .leftJoin(subscription_stripe, eq(subscription_stripe.referenceId, user_simple_auth_db.id))
+      .from(user_auth)
+      .leftJoin(user_stripe, eq(user_stripe.userId, user_auth.id))
+      .leftJoin(subscription_stripe, eq(subscription_stripe.referenceId, user_auth.id))
       .where(eq(user_stripe.stripeCustomerId, stripeCustomerId))
       .limit(1);
     return user.length === 1 ? user[0] : null;

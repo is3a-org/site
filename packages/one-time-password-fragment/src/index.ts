@@ -12,7 +12,7 @@ export interface OtpFragmentConfig extends OttConfig, TotpConfig {
 }
 
 export const otpFragmentDefinition = defineFragment<OtpFragmentConfig>("one-time-password")
-  .extend(withDatabase(otpSchema, "one-time-password-db"))
+  .extend(withDatabase(otpSchema))
   .providesBaseService(({ defineService, config }) => {
     return defineService({
       // OTT services

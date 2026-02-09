@@ -8,6 +8,7 @@ import {
   json,
   timestamp,
   index,
+  pgSchema,
   bigint,
   foreignKey,
   boolean,
@@ -16,7 +17,7 @@ import { createId } from "@fragno-dev/db/id";
 import { relations } from "drizzle-orm";
 
 // ============================================================================
-// Fragment:
+// Fragment: (none)
 // ============================================================================
 
 export const fragno_db_settings = pgTable(
@@ -24,6 +25,7 @@ export const fragno_db_settings = pgTable(
   {
     id: varchar("id", { length: 30 })
       .notNull()
+      .unique()
       .$defaultFn(() => createId()),
     key: text("key").notNull(),
     value: text("value").notNull(),
@@ -38,6 +40,7 @@ export const fragno_hooks = pgTable(
   {
     id: varchar("id", { length: 30 })
       .notNull()
+      .unique()
       .$defaultFn(() => createId()),
     namespace: text("namespace").notNull(),
     hookName: text("hookName").notNull(),
@@ -59,15 +62,39 @@ export const fragno_hooks = pgTable(
   ],
 );
 
-// ============================================================================
-// Fragment: simple-auth-db
-// ============================================================================
-
-export const user_simple_auth_db = pgTable(
-  "user_simple-auth-db",
+export const fragno_db_outbox = pgTable(
+  "fragno_db_outbox",
   {
     id: varchar("id", { length: 30 })
       .notNull()
+      .unique()
+      .$defaultFn(() => createId()),
+    versionstamp: text("versionstamp").notNull(),
+    uowId: text("uowId").notNull(),
+    payload: json("payload").notNull(),
+    refMap: json("refMap"),
+    createdAt: timestamp("createdAt").notNull().defaultNow(),
+    _internalId: bigserial("_internalId", { mode: "number" }).primaryKey().notNull(),
+    _version: integer("_version").notNull().default(0),
+  },
+  (table) => [
+    uniqueIndex("idx_outbox_versionstamp").on(table.versionstamp),
+    index("idx_outbox_uow").on(table.uowId),
+  ],
+);
+
+// ============================================================================
+// Fragment: auth
+// ============================================================================
+
+const schema_auth = pgSchema("auth");
+
+export const user_auth = schema_auth.table(
+  "user",
+  {
+    id: varchar("id", { length: 30 })
+      .notNull()
+      .unique()
       .$defaultFn(() => createId()),
     email: text("email").notNull(),
     passwordHash: text("passwordHash").notNull(),
@@ -77,17 +104,18 @@ export const user_simple_auth_db = pgTable(
     _version: integer("_version").notNull().default(0),
   },
   (table) => [
-    index("idx_user_email_simple-auth-db").on(table.email),
-    uniqueIndex("idx_user_id_simple-auth-db").on(table.id),
-    index("idx_user_createdAt_simple-auth-db").on(table.createdAt),
+    index("idx_user_email").on(table.email),
+    uniqueIndex("idx_user_id").on(table.id),
+    index("idx_user_createdAt").on(table.createdAt),
   ],
 );
 
-export const session_simple_auth_db = pgTable(
-  "session_simple-auth-db",
+export const session_auth = schema_auth.table(
+  "session",
   {
     id: varchar("id", { length: 30 })
       .notNull()
+      .unique()
       .$defaultFn(() => createId()),
     userId: bigint("userId", { mode: "number" }).notNull(),
     expiresAt: timestamp("expiresAt").notNull(),
@@ -98,48 +126,51 @@ export const session_simple_auth_db = pgTable(
   (table) => [
     foreignKey({
       columns: [table.userId],
-      foreignColumns: [user_simple_auth_db._internalId],
-      name: "fk_session_user_sessionOwner_simple-auth-db",
+      foreignColumns: [user_auth._internalId],
+      name: "fk_session_user_sessionOwner",
     }),
-    index("idx_session_user_simple-auth-db").on(table.userId),
+    index("idx_session_user").on(table.userId),
   ],
 );
 
-export const user_simple_auth_dbRelations = relations(user_simple_auth_db, ({ many }) => ({
-  sessionList: many(session_simple_auth_db, {
+export const user_authRelations = relations(user_auth, ({ many }) => ({
+  sessionList: many(session_auth, {
     relationName: "session_user",
   }),
 }));
 
-export const session_simple_auth_dbRelations = relations(session_simple_auth_db, ({ one }) => ({
-  sessionOwner: one(user_simple_auth_db, {
+export const session_authRelations = relations(session_auth, ({ one }) => ({
+  sessionOwner: one(user_auth, {
     relationName: "session_user",
-    fields: [session_simple_auth_db.userId],
-    references: [user_simple_auth_db._internalId],
+    fields: [session_auth.userId],
+    references: [user_auth._internalId],
   }),
 }));
 
-export const simple_auth_db_schema = {
-  user_simple_auth_db: user_simple_auth_db,
-  user_simple_auth_dbRelations: user_simple_auth_dbRelations,
-  user: user_simple_auth_db,
-  userRelations: user_simple_auth_dbRelations,
-  session_simple_auth_db: session_simple_auth_db,
-  session_simple_auth_dbRelations: session_simple_auth_dbRelations,
-  session: session_simple_auth_db,
-  sessionRelations: session_simple_auth_dbRelations,
+export const auth_schema = {
+  user_auth: user_auth,
+  user_authRelations: user_authRelations,
+  user: user_auth,
+  userRelations: user_authRelations,
+  session_auth: session_auth,
+  session_authRelations: session_authRelations,
+  session: session_auth,
+  sessionRelations: session_authRelations,
   schemaVersion: 4,
 };
 
 // ============================================================================
-// Fragment: one-time-password-db
+// Fragment: otp
 // ============================================================================
 
-export const totp_secret_one_time_password_db = pgTable(
-  "totp_secret_one-time-password-db",
+const schema_otp = pgSchema("otp");
+
+export const totp_secret_otp = schema_otp.table(
+  "totp_secret",
   {
     id: varchar("id", { length: 30 })
       .notNull()
+      .unique()
       .$defaultFn(() => createId()),
     userId: text("userId").notNull(),
     secret: text("secret").notNull(),
@@ -148,14 +179,15 @@ export const totp_secret_one_time_password_db = pgTable(
     _internalId: bigserial("_internalId", { mode: "number" }).primaryKey().notNull(),
     _version: integer("_version").notNull().default(0),
   },
-  (table) => [uniqueIndex("idx_totp_user_one-time-password-db").on(table.userId)],
+  (table) => [uniqueIndex("idx_totp_user").on(table.userId)],
 );
 
-export const one_time_token_one_time_password_db = pgTable(
-  "one_time_token_one-time-password-db",
+export const one_time_token_otp = schema_otp.table(
+  "one_time_token",
   {
     id: varchar("id", { length: 30 })
       .notNull()
+      .unique()
       .$defaultFn(() => createId()),
     userId: text("userId").notNull(),
     token: text("token").notNull(),
@@ -166,17 +198,17 @@ export const one_time_token_one_time_password_db = pgTable(
     _version: integer("_version").notNull().default(0),
   },
   (table) => [
-    uniqueIndex("idx_ott_token_one-time-password-db").on(table.token),
-    index("idx_ott_user_type_one-time-password-db").on(table.userId, table.type),
-    index("idx_expires_at_one-time-password-db").on(table.expiresAt),
+    uniqueIndex("idx_ott_token").on(table.token),
+    index("idx_ott_user_type").on(table.userId, table.type),
+    index("idx_expires_at").on(table.expiresAt),
   ],
 );
 
-export const one_time_password_db_schema = {
-  totp_secret_one_time_password_db: totp_secret_one_time_password_db,
-  totp_secret: totp_secret_one_time_password_db,
-  one_time_token_one_time_password_db: one_time_token_one_time_password_db,
-  one_time_token: one_time_token_one_time_password_db,
+export const otp_schema = {
+  totp_secret_otp: totp_secret_otp,
+  totp_secret: totp_secret_otp,
+  one_time_token_otp: one_time_token_otp,
+  one_time_token: one_time_token_otp,
   schemaVersion: 2,
 };
 
@@ -184,11 +216,14 @@ export const one_time_password_db_schema = {
 // Fragment: stripe
 // ============================================================================
 
-export const subscription_stripe = pgTable(
-  "subscription_stripe",
+const schema_stripe = pgSchema("stripe");
+
+export const subscription_stripe = schema_stripe.table(
+  "subscription",
   {
     id: varchar("id", { length: 30 })
       .notNull()
+      .unique()
       .$defaultFn(() => createId()),
     referenceId: text("referenceId"),
     stripePriceId: text("stripePriceId").notNull(),
@@ -208,9 +243,9 @@ export const subscription_stripe = pgTable(
     _version: integer("_version").notNull().default(0),
   },
   (table) => [
-    index("idx_stripe_customer_id_stripe").on(table.stripeCustomerId),
-    index("idx_stripe_subscription_id_stripe").on(table.stripeSubscriptionId),
-    index("idx_reference_id_stripe").on(table.referenceId),
+    index("idx_stripe_customer_id").on(table.stripeCustomerId),
+    index("idx_stripe_subscription_id").on(table.stripeSubscriptionId),
+    index("idx_reference_id").on(table.referenceId),
   ],
 );
 
@@ -224,11 +259,14 @@ export const stripe_schema = {
 // Fragment: forms
 // ============================================================================
 
-export const form_forms = pgTable(
-  "form_forms",
+const schema_forms = pgSchema("forms");
+
+export const form_forms = schema_forms.table(
+  "form",
   {
     id: varchar("id", { length: 30 })
       .notNull()
+      .unique()
       .$defaultFn(() => createId()),
     title: text("title").notNull(),
     description: text("description"),
@@ -243,16 +281,17 @@ export const form_forms = pgTable(
     _version: integer("_version").notNull().default(0),
   },
   (table) => [
-    index("idx_form_status_forms").on(table.status),
-    uniqueIndex("idx_form_slug_forms").on(table.slug),
+    index("idx_form_status").on(table.status),
+    uniqueIndex("idx_form_slug").on(table.slug),
   ],
 );
 
-export const response_forms = pgTable(
-  "response_forms",
+export const response_forms = schema_forms.table(
+  "response",
   {
     id: varchar("id", { length: 30 })
       .notNull()
+      .unique()
       .$defaultFn(() => createId()),
     formId: text("formId").notNull(),
     formVersion: integer("formVersion").notNull(),
@@ -264,8 +303,8 @@ export const response_forms = pgTable(
     _version: integer("_version").notNull().default(0),
   },
   (table) => [
-    index("idx_response_form_forms").on(table.formId),
-    index("idx_response_submitted_at_forms").on(table.submittedAt),
+    index("idx_response_form").on(table.formId),
+    index("idx_response_submitted_at").on(table.submittedAt),
   ],
 );
 

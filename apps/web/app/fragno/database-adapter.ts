@@ -1,4 +1,4 @@
-import { DrizzleAdapter } from "@fragno-dev/db/adapters/drizzle";
+import { SqlAdapter } from "@fragno-dev/db/adapters/sql";
 import { NodePostgresDriverConfig } from "@fragno-dev/db/drivers";
 import { PostgresDialect } from "@fragno-dev/db/dialects";
 import type { PostgresPool } from "../db/postgres/is3a-postgres.ts";
@@ -12,7 +12,7 @@ export function createAdapter(pool: PostgresPool | (() => PostgresPool)) {
 
   const dialect = new PostgresDialect({ pool: resolvedPool });
 
-  return new DrizzleAdapter({
+  return new SqlAdapter({
     dialect,
     driverConfig: new NodePostgresDriverConfig(),
   });
