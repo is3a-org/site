@@ -20,7 +20,7 @@ export interface AuthConfig {
 }
 
 export const authFragmentDefinition = defineFragment<AuthConfig>("simple-auth")
-  .extend(withDatabase(authSchema, "simple-auth-db"))
+  .extend(withDatabase(authSchema))
   .providesBaseService(({ deps, config }) => {
     const userServices = createUserServices(deps.db);
     const sessionServices = createSessionServices(deps.db, config.cookieOptions);
