@@ -210,10 +210,13 @@ const ErrorAlert = ({ message }: { message: string }) => (
 
 export async function loader({ context, request }: Route.LoaderArgs) {
   const auth = createSimpleAuthServer(context.pool);
-  const session = await auth.services.getSession(request.headers);
-  if (session) {
+  const response = await auth.callRoute("GET", "/me", {
+    headers: request.headers,
+  });
+
+  if (response.type === "json" && response.data) {
     const frag = createStripeServer(context.pool);
-    const subscriptions = await frag.services.getSubscriptionsByReferenceId(session.userId);
+    const subscriptions = await frag.services.getSubscriptionsByReferenceId(response.data.userId);
     // Get the first subscription (most apps only have one per customer)
     const subscription = subscriptions[0] || null;
     return { subscription };

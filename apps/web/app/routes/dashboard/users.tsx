@@ -23,7 +23,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
-import type { Role } from "@is3a/simple-auth-fragment";
+import type { Role } from "@fragno-dev/auth";
 
 export async function loader({ context: _context, request: _request }: Route.LoaderArgs) {
   return {};

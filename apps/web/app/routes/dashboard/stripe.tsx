@@ -36,8 +36,22 @@ export async function action({ request, context }: Route.ActionArgs) {
       if (createNewUser && newUserEmail) {
         // Create new user with auto-generated password
         const password = crypto.randomUUID();
-        const newUser = await auth.services.createUser(newUserEmail, password);
-        targetUserId = newUser.id;
+        const response = await auth.callRoute("POST", "/sign-up", {
+          body: { email: newUserEmail, password },
+        });
+        if (response.type === "error") {
+          return {
+            success: false,
+            error: response.error.message || "Failed to create user",
+          };
+        }
+        if (response.type !== "json") {
+          return {
+            success: false,
+            error: "Failed to create user",
+          };
+        }
+        targetUserId = response.data.userId;
       } else if (userId) {
         // Use selected user
         targetUserId = userId;

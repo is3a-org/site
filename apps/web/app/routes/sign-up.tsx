@@ -42,28 +42,28 @@ export async function action({ request, context }: Route.ActionArgs) {
   }
 
   try {
-    // Check if user already exists
-    const existingUser = await auth.services.getUserByEmail(email);
-    if (existingUser) {
+    const response = await auth.callRoute("POST", "/sign-up", {
+      headers: request.headers,
+      body: { email, password },
+    });
+
+    if (response.type === "error") {
       return {
-        error: "An account with this email already exists",
+        error: response.error.message || "Failed to create account",
         email,
       };
     }
 
-    // Create the user
-    const user = await auth.services.createUser(email, password);
+    if (response.type !== "json") {
+      return {
+        error: "Failed to create account",
+        email,
+      };
+    }
 
-    // Create a session for the new user
-    const session = await auth.services.createSession(user.id);
-
-    console.log({
-      user,
-      session,
+    return redirect("/dashboard/membership", {
+      headers: response.headers,
     });
-
-    // Set the session cookie and redirect to dashboard
-    return redirect("/dashboard/membership");
   } catch (error) {
     console.error("Sign up error:", error);
     return {
