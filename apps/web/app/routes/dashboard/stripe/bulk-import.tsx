@@ -103,9 +103,33 @@ export async function action({ request, context }: Route.ActionArgs) {
 
           // Create new user with auto-generated password
           const password = crypto.randomUUID();
-          const newUser = await auth.services.createUser(customerEmail, password);
-          targetUserId = newUser.id;
+          const response = await auth.callRoute("POST", "/sign-up", {
+            body: { email: customerEmail, password },
+          });
+          if (response.type === "error") {
+            return {
+              success: false,
+              error: response.error.message || `Failed to create user for ${customerEmail}`,
+              results,
+            };
+          }
+          if (response.type !== "json") {
+            return {
+              success: false,
+              error: `Failed to create user for ${customerEmail}`,
+              results,
+            };
+          }
+          targetUserId = response.data.userId;
           console.log(`[Bulk Import] Created new user: ${targetUserId}`);
+        }
+
+        if (!targetUserId) {
+          return {
+            success: false,
+            error: `Failed to resolve user for Stripe customer ${customerId}`,
+            results,
+          };
         }
 
         console.log(`[Bulk Import] Final matched user ID: ${targetUserId}`);

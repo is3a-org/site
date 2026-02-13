@@ -55,7 +55,12 @@ export async function action({ request, context }: Route.ActionArgs) {
 
   if (intent === "magic-link") {
     // Magic link login flow
-    const user = await auth.services.getUserByEmail(email);
+    const user = await auth.inContext(async function () {
+      const [result] = await this.handlerTx()
+        .withServiceCalls(() => [auth.services.getUserByEmail(email)] as const)
+        .execute();
+      return result;
+    });
     if (!user) {
       return {
         error: "No account found with this email address",

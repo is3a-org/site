@@ -1,8 +1,10 @@
-import { createAuthFragment } from "@is3a/simple-auth-fragment";
+import { createAuthFragment } from "@fragno-dev/auth";
 import { createAdapter } from "./database-adapter.ts";
 import { createPostgresPool, type PostgresPool } from "../db/postgres/is3a-postgres.ts";
 
-export function createSimpleAuthServer(pool: PostgresPool | (() => PostgresPool)) {
+export function createSimpleAuthServer(
+  pool: PostgresPool | (() => PostgresPool),
+): ReturnType<typeof createAuthFragment> {
   return createAuthFragment(
     {
       sendEmail: async ({ to, subject, body }) => {
@@ -14,10 +16,12 @@ export function createSimpleAuthServer(pool: PostgresPool | (() => PostgresPool)
     },
     {
       databaseAdapter: createAdapter(pool),
+      databaseNamespace: "auth",
+      mountRoute: "/api/simple-auth",
     },
   );
 }
 
-export const fragment = createSimpleAuthServer(() => {
+export const fragment: ReturnType<typeof createAuthFragment> = createSimpleAuthServer(() => {
   return createPostgresPool();
 });

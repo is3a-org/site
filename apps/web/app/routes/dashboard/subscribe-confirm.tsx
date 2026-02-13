@@ -14,15 +14,17 @@ import { useEffect } from "react";
 
 export async function loader({ context, request }: Route.LoaderArgs) {
   const auth = createSimpleAuthServer(context.pool);
-  const session = await auth.services.getSession(request.headers);
+  const response = await auth.callRoute("GET", "/me", {
+    headers: request.headers,
+  });
 
-  if (!session) {
+  if (response.type !== "json" || !response.data) {
     console.error("No session found");
     return { status: "error", message: "Could not retrieve data for user" };
   }
 
   const userRepo = new UserRepo(context.db);
-  const user = await userRepo.getUserById(session.userId);
+  const user = await userRepo.getUserById(response.data.userId);
   if (!user || !user.stripeCustomerId) {
     console.error("User not found or missing Stripe customer ID");
     return { status: "error", message: "Could not retrieve data for user" };

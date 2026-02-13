@@ -26,7 +26,12 @@ export async function loader({ request, context }: Route.LoaderArgs) {
   const otp = createOtpServer(context.pool);
 
   // Lookup user by email
-  const user = await auth.services.getUserByEmail(email);
+  const user = await auth.inContext(async function () {
+    const [result] = await this.handlerTx()
+      .withServiceCalls(() => [auth.services.getUserByEmail(email)] as const)
+      .execute();
+    return result;
+  });
   if (!user) {
     return { error: "Account not found. The account associated with this link no longer exists." };
   }
@@ -52,7 +57,12 @@ export async function loader({ request, context }: Route.LoaderArgs) {
   }
 
   // Create session for the user
-  const session = await auth.services.createSession(user.id);
+  const session = await auth.inContext(async function () {
+    const [result] = await this.handlerTx()
+      .withServiceCalls(() => [auth.services.createSession(user.id)] as const)
+      .execute();
+    return result;
+  });
 
   // Redirect to dashboard with session cookie
   return redirect("/dashboard/membership", {
