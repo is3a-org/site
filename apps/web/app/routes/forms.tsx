@@ -143,7 +143,9 @@ export default function PublicFormPage({ loaderData }: Route.ComponentProps) {
       )}
       <CardHeader>
         <CardTitle>{form.title}</CardTitle>
-        {form.description && <CardDescription>{form.description}</CardDescription>}
+        {form.description && (
+          <CardDescription className="whitespace-pre-line">{form.description}</CardDescription>
+        )}
       </CardHeader>
       <CardContent>
         {submitError && (
