@@ -14,10 +14,24 @@ export async function loader({ params }: Route.LoaderArgs) {
   return { slug: params.slug };
 }
 
-function PageWrapper({ children, wide }: { children: ReactNode; wide?: boolean }) {
+function PageWrapper({
+  children,
+  wide,
+  noCard,
+}: {
+  children: ReactNode;
+  wide?: boolean;
+  noCard?: boolean;
+}) {
+  const widthClass = wide ? "w-full max-w-2xl" : "w-full max-w-md";
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 p-4 dark:bg-gray-900">
-      <Card className={wide ? "w-full max-w-2xl" : "w-full max-w-md text-center"}>{children}</Card>
+    <div className="flex min-h-screen items-center justify-center bg-red-800 p-4">
+      {noCard ? (
+        <div className={`${widthClass}`}>{children}</div>
+      ) : (
+        <Card className={`${widthClass} text-center`}>{children}</Card>
+      )}
     </div>
   );
 }
@@ -132,51 +146,61 @@ export default function PublicFormPage({ loaderData }: Route.ComponentProps) {
   const isDraft = form.status === "draft";
 
   return (
-    <PageWrapper wide>
-      {isDraft && (
-        <div className="flex items-center gap-2 rounded-t-lg border-b bg-yellow-50 px-4 py-3 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-200">
-          <AlertTriangle className="h-5 w-5" />
-          <span className="text-sm font-medium">
-            This form is in draft mode. Submissions are disabled.
-          </span>
-        </div>
-      )}
-      <CardHeader>
-        <CardTitle>{form.title}</CardTitle>
-        {form.description && (
-          <CardDescription className="whitespace-pre-line">{form.description}</CardDescription>
-        )}
-      </CardHeader>
-      <CardContent>
-        {submitError && (
-          <div className="mb-4 rounded-md border border-red-200 bg-red-50 p-4 text-red-800">
-            {submitError.message || "Failed to submit form. Please try again."}
-          </div>
-        )}
+    <PageWrapper wide noCard>
+      <div className="space-y-4">
+        <Card>
+          {isDraft && (
+            <div className="flex items-center gap-2 rounded-t-lg border-b bg-yellow-50 px-4 py-3 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-200">
+              <AlertTriangle className="h-5 w-5" />
+              <span className="text-sm font-medium">
+                This form is in draft mode. Submissions are disabled.
+              </span>
+            </div>
+          )}
+          <CardHeader className="space-y-4">
+            <img src="/is3a.svg" alt="IS3A logo" className="h-10 w-auto" />
+            <CardTitle className="text-3xl leading-tight font-bold">{form.title}</CardTitle>
+            {form.description && (
+              <CardDescription className="text-foreground text-base whitespace-pre-line">
+                {form.description}
+              </CardDescription>
+            )}
+          </CardHeader>
+        </Card>
 
-        <JsonForms
-          schema={form.dataSchema as Record<string, unknown>}
-          uischema={form.uiSchema as unknown as UISchemaElement}
-          data={formData}
-          renderers={shadcnRenderers}
-          cells={shadcnCells}
-          onChange={({ data, errors }) => {
-            setFormData(data ?? {});
-            setFormErrors(errors ?? []);
-          }}
-        />
+        <Card>
+          <CardContent className="pt-6">
+            {submitError && (
+              <div className="mb-4 rounded-md border border-red-200 bg-red-50 p-4 text-red-800">
+                {submitError.message || "Failed to submit form. Please try again."}
+              </div>
+            )}
 
-        <div className="mt-6">
-          <Button
-            type="submit"
-            className="w-full"
-            disabled={isSubmitting || isDraft || formErrors.length > 0}
-            onClick={handleSubmit}
-          >
-            {isSubmitting ? "Submitting..." : "Submit"}
-          </Button>
-        </div>
-      </CardContent>
+            <JsonForms
+              schema={form.dataSchema as Record<string, unknown>}
+              uischema={form.uiSchema as unknown as UISchemaElement}
+              data={formData}
+              renderers={shadcnRenderers}
+              cells={shadcnCells}
+              onChange={({ data, errors }) => {
+                setFormData(data ?? {});
+                setFormErrors(errors ?? []);
+              }}
+            />
+
+            <div className="mt-6">
+              <Button
+                type="submit"
+                className="w-full"
+                disabled={isSubmitting || isDraft || formErrors.length > 0}
+                onClick={handleSubmit}
+              >
+                {isSubmitting ? "Submitting..." : "Submit"}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </PageWrapper>
   );
 }
