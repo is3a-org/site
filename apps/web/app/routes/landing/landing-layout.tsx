@@ -22,9 +22,6 @@ export default function LandingLayout() {
               <Link to="/" className="text-gray-700 transition-colors hover:text-red-800">
                 Home
               </Link>
-              <Link to="/join" className="text-gray-700 transition-colors hover:text-red-800">
-                Join
-              </Link>
               <Link to="/login" className="text-gray-700 transition-colors hover:text-red-800">
                 Login
               </Link>
@@ -60,13 +57,6 @@ export default function LandingLayout() {
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Home
-              </Link>
-              <Link
-                to="/join"
-                className="block py-2 text-gray-700 transition-colors hover:text-red-800"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                Join
               </Link>
               <Link
                 to="/login"

@@ -171,6 +171,9 @@ export default function Login({ actionData }: Route.ComponentProps) {
           <CardHeader className="text-center">
             <CardTitle className="text-3xl">Member Login</CardTitle>
             <CardDescription>Sign in to your IS3A member account</CardDescription>
+            <p className="rounded-md bg-amber-50 px-3 py-2 text-sm text-amber-800">
+              This website is under construction: this login is for developers only.
+            </p>
             {turnstileError && (
               <div className="rounded-md bg-red-50 p-3 text-sm text-red-800">{turnstileError}</div>
             )}
