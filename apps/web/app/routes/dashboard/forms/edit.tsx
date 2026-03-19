@@ -12,8 +12,9 @@ import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
+import { Textarea } from "~/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
-import { ArrowLeft, Save, Eye } from "lucide-react";
+import { ArrowLeft, Save, Eye, Code, Hammer } from "lucide-react";
 import { formsClient } from "~/lib/forms-client";
 import { JsonForms } from "@jsonforms/react";
 import type { UISchemaElement } from "@jsonforms/core";
@@ -35,6 +36,8 @@ export default function FormEditPage({ params }: Route.ComponentProps) {
     status: "draft",
   });
   const [schemas, setSchemas] = useState<GeneratedSchemas | null>(null);
+  const [dataSchemaText, setDataSchemaText] = useState("");
+  const [uiSchemaText, setUiSchemaText] = useState("");
   const [previewData, setPreviewData] = useState<Record<string, unknown>>({});
 
   // Initialize form state when data loads
@@ -46,10 +49,11 @@ export default function FormEditPage({ params }: Route.ComponentProps) {
         description: form.description || "",
         status: form.status as FormMetadata["status"],
       });
-      setSchemas({
-        dataSchema: form.dataSchema as unknown as GeneratedSchemas["dataSchema"],
-        uiSchema: form.uiSchema as unknown as GeneratedSchemas["uiSchema"],
-      });
+      const dataSchema = form.dataSchema as unknown as GeneratedSchemas["dataSchema"];
+      const uiSchema = form.uiSchema as unknown as GeneratedSchemas["uiSchema"];
+      setSchemas({ dataSchema, uiSchema });
+      setDataSchemaText(JSON.stringify(dataSchema, null, 2));
+      setUiSchemaText(JSON.stringify(uiSchema, null, 2));
     }
   }, [form]);
 
@@ -75,6 +79,8 @@ export default function FormEditPage({ params }: Route.ComponentProps) {
 
   const handleSchemasChange = (newSchemas: GeneratedSchemas) => {
     setSchemas(newSchemas);
+    setDataSchemaText(JSON.stringify(newSchemas.dataSchema, null, 2));
+    setUiSchemaText(JSON.stringify(newSchemas.uiSchema, null, 2));
   };
 
   return (
@@ -138,10 +144,17 @@ export default function FormEditPage({ params }: Route.ComponentProps) {
 
           <Tabs defaultValue="builder">
             <TabsList>
-              <TabsTrigger value="builder">Builder</TabsTrigger>
+              <TabsTrigger value="builder">
+                <Hammer className="h-4 w-4" />
+                Builder
+              </TabsTrigger>
               <TabsTrigger value="preview">
-                <Eye className="mr-2 h-4 w-4" />
+                <Eye className="h-4 w-4" />
                 Preview
+              </TabsTrigger>
+              <TabsTrigger value="json">
+                <Code className="h-4 w-4" />
+                JSON
               </TabsTrigger>
             </TabsList>
 
@@ -189,6 +202,45 @@ export default function FormEditPage({ params }: Route.ComponentProps) {
                   )}
                 </CardContent>
               </Card>
+            </TabsContent>
+
+            <TabsContent value="json" className="mt-6 space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="dataSchema">Data Schema</Label>
+                <Textarea
+                  id="dataSchema"
+                  className="font-mono text-sm"
+                  rows={20}
+                  value={dataSchemaText}
+                  onChange={(e) => {
+                    setDataSchemaText(e.target.value);
+                    try {
+                      const parsed = JSON.parse(e.target.value);
+                      setSchemas((prev) => (prev ? { ...prev, dataSchema: parsed } : null));
+                    } catch {
+                      // Allow typing invalid JSON
+                    }
+                  }}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="uiSchema">UI Schema</Label>
+                <Textarea
+                  id="uiSchema"
+                  className="font-mono text-sm"
+                  rows={20}
+                  value={uiSchemaText}
+                  onChange={(e) => {
+                    setUiSchemaText(e.target.value);
+                    try {
+                      const parsed = JSON.parse(e.target.value);
+                      setSchemas((prev) => (prev ? { ...prev, uiSchema: parsed } : null));
+                    } catch {
+                      // Allow typing invalid JSON
+                    }
+                  }}
+                />
+              </div>
             </TabsContent>
           </Tabs>
         </div>
