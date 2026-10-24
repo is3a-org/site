@@ -1,129 +1,143 @@
 import { Menu, X } from "lucide-react";
-import { useState } from "react";
-import { Link, Outlet } from "react-router";
-import { IS3ALogo } from "~/components/icons/is3a";
+import { useEffect, useState } from "react";
+import { Link, NavLink, Outlet } from "react-router";
+import { SiteColumn, SiteSection, siteText } from "~/components/landing/site-grid";
+import { cn } from "~/lib/utils";
+
+const navLinks = [
+  { to: "/", label: "Home" },
+  { to: "/login", label: "Login" },
+  { to: "/team", label: "Team" },
+];
+
+const navLinkClass = ({ isActive }: { isActive: boolean }) =>
+  cn(
+    "font-pt-sans text-base leading-[normal] transition-colors hover:text-black/80",
+    isActive ? "font-bold text-black/80" : "text-black/64",
+  );
+
+const footerLinkClass = "text-[#971400] underline";
 
 export default function LandingLayout() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 0);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex min-h-screen flex-col bg-white">
       {/* Header */}
-      <header className="sticky top-0 z-50 border-b border-gray-200 bg-white">
-        <nav className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="flex h-16 items-center justify-between">
-            {/* Logo */}
-            <Link to="/" className="flex items-center space-x-2">
-              <IS3ALogo className="h-8" />
-            </Link>
+      <header
+        className={cn(
+          "fixed inset-x-0 top-0 z-20 border-b bg-white",
+          scrolled ? "border-[#ccc]" : "border-transparent",
+        )}
+      >
+        <nav className="-mb-px flex h-14 items-center pr-6 pl-[11px] md:pl-4">
+          <button
+            className="-m-2 mr-[-7px] p-2 text-black/64 hover:text-black/80 md:hidden"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
+          >
+            {mobileMenuOpen ? <X /> : <Menu />}
+          </button>
 
-            {/* Navigation Links */}
-            <div className="hidden items-center space-x-8 md:flex">
-              <Link to="/" className="text-gray-700 transition-colors hover:text-red-800">
-                Home
-              </Link>
-              <Link to="/login" className="text-gray-700 transition-colors hover:text-red-800">
-                Login
-              </Link>
-              <Link to="/team" className="text-gray-700 transition-colors hover:text-red-800">
-                Team
-              </Link>
-            </div>
+          <Link to="/" className="flex items-center">
+            <img
+              src="/is3a.png"
+              alt="IS3A Logo"
+              className="h-14 w-28 object-contain pt-2 pr-1 pb-2 pl-3"
+            />
+            <span className="font-pt-sans hidden px-3 text-xl font-bold text-black/80 md:inline-block">
+              IS3A
+            </span>
+          </Link>
 
-            {/* Mobile Menu Button */}
-            <button
-              className="p-2 text-gray-600 hover:text-gray-900 md:hidden"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
-            >
-              {mobileMenuOpen ? <X /> : <Menu />}
-            </button>
+          <div className="ml-auto hidden items-center gap-[26px] md:flex">
+            {navLinks.map(({ to, label }) => (
+              <NavLink key={to} to={to} end className={navLinkClass}>
+                {label}
+              </NavLink>
+            ))}
           </div>
         </nav>
 
         {/* Mobile Menu */}
         <div
-          className={`grid transition-all duration-300 ease-in-out md:hidden ${
-            mobileMenuOpen
-              ? "grid-rows-[1fr] border-t border-gray-200 opacity-100"
-              : "grid-rows-[0fr] opacity-0"
+          className={`grid bg-white transition-all duration-300 ease-in-out md:hidden ${
+            mobileMenuOpen ? "grid-rows-[1fr] opacity-100 shadow-md" : "grid-rows-[0fr] opacity-0"
           }`}
         >
           <div className="overflow-hidden">
             <div className="space-y-1 px-4 py-3">
-              <Link
-                to="/"
-                className="block py-2 text-gray-700 transition-colors hover:text-red-800"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                Home
-              </Link>
-              <Link
-                to="/login"
-                className="block py-2 text-gray-700 transition-colors hover:text-red-800"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                Login
-              </Link>
-              <Link
-                to="/team"
-                className="block py-2 text-gray-700 transition-colors hover:text-red-800"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                Team
-              </Link>
+              {navLinks.map(({ to, label }) => (
+                <NavLink
+                  key={to}
+                  to={to}
+                  end
+                  className={(state) => cn("block py-2", navLinkClass(state))}
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  {label}
+                </NavLink>
+              ))}
             </div>
           </div>
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="flex-1">
+      <main className="flex-1 pt-14">
         <Outlet />
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-gray-200 bg-white py-8">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col items-center space-y-4">
-            <div className="flex items-center space-x-4 text-sm text-gray-600">
-              <a
-                href="https://instagram.com/is3a.nl"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="transition-colors hover:text-red-800"
-              >
-                🖼️ Instagram
-              </a>
-              <span>|</span>
-              <a
-                href="https://www.linkedin.com/company/is3a/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="transition-colors hover:text-red-800"
-              >
-                🧑‍💼 LinkedIn
-              </a>
+      <footer>
+        <SiteSection>
+          <SiteColumn>
+            <div className={cn(siteText, "p-2 text-center")}>
+              <p>
+                <a
+                  href="https://instagram.com/is3a.nl"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={footerLinkClass}
+                >
+                  🖼️ Instagram
+                </a>{" "}
+                |{" "}
+                <a
+                  href="https://www.linkedin.com/company/is3a/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={footerLinkClass}
+                >
+                  🧑‍💼 LinkedIn
+                </a>
+              </p>
+              <p className="mt-3">
+                E:{" "}
+                <a href="mailto:contact@is3a.nl" className={footerLinkClass}>
+                  contact@is3a.nl
+                </a>{" "}
+                | KvK: 84535849 |{" "}
+                <a
+                  href="https://calendar.google.com/calendar/ical/c_ehjqad1bljvvebaed6gv2tb8vo%40group.calendar.google.com/public/basic.ics"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={footerLinkClass}
+                >
+                  Events iCal
+                </a>
+              </p>
             </div>
-            <div className="flex items-center space-x-2 text-sm text-gray-600">
-              <span>E:</span>
-              <a href="mailto:contact@is3a.nl" className="transition-colors hover:text-red-800">
-                contact@is3a.nl
-              </a>
-              <span>|</span>
-              <span>KvK: 84535849</span>
-              <span>|</span>
-              <a
-                href="https://calendar.google.com/calendar/ical/c_ehjqad1bljvvebaed6gv2tb8vo%40group.calendar.google.com/public/basic.ics"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="transition-colors hover:text-red-800"
-              >
-                Events iCal
-              </a>
-            </div>
-          </div>
-        </div>
+          </SiteColumn>
+        </SiteSection>
       </footer>
     </div>
   );
