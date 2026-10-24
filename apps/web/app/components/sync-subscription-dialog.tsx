@@ -1,7 +1,10 @@
 "use client";
 
+import { AlertCircle, CheckCircle2, Loader2 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useFetcher } from "react-router";
+
+import { Button } from "~/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -10,6 +13,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "~/components/ui/dialog";
+import { Input } from "~/components/ui/input";
+import { Label } from "~/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -17,10 +22,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
-import { Button } from "~/components/ui/button";
-import { Input } from "~/components/ui/input";
-import { Label } from "~/components/ui/label";
-import { AlertCircle, CheckCircle2, Loader2 } from "lucide-react";
 
 type User = {
   id: string;
@@ -149,17 +150,17 @@ export function SyncSubscriptionDialog({
           {/* Customer Info */}
           <div className="space-y-1 rounded-md border p-3">
             <p className="text-sm font-medium">Stripe Customer</p>
-            <p className="text-muted-foreground text-sm">
+            <p className="text-sm text-muted-foreground">
               {customer.name || customer.email || customer.id}
             </p>
-            {customer.email && <p className="text-muted-foreground text-xs">{customer.email}</p>}
+            {customer.email && <p className="text-xs text-muted-foreground">{customer.email}</p>}
           </div>
 
           {/* Error Display */}
           {fetcher.data?.error && (
-            <div className="border-destructive/50 bg-destructive/10 flex items-start gap-2 rounded-md border p-3">
-              <AlertCircle className="text-destructive mt-0.5 h-4 w-4 shrink-0" />
-              <div className="text-destructive text-sm">{fetcher.data.error}</div>
+            <div className="flex items-start gap-2 rounded-md border border-destructive/50 bg-destructive/10 p-3">
+              <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-destructive" />
+              <div className="text-sm text-destructive">{fetcher.data.error}</div>
             </div>
           )}
 
@@ -251,7 +252,7 @@ export function SyncSubscriptionDialog({
                   value={newUserEmail}
                   onChange={(e) => setNewUserEmail(e.target.value)}
                 />
-                <p className="text-muted-foreground text-xs">
+                <p className="text-xs text-muted-foreground">
                   A password will be auto-generated for this user.
                 </p>
               </div>

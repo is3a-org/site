@@ -21,8 +21,8 @@ jobs:
       - name: Install dependencies
         run: vp install --frozen-lockfile
 
-      - name: Check formatting and lint
-        run: vp check
+      - name: Generate types and check formatting, lint, and types
+        run: vp run check
 
   build:
     runs-on: ubuntu-latest

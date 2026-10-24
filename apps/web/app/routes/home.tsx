@@ -1,7 +1,9 @@
-import type { Route } from "./+types/home";
 import { Link } from "react-router";
+
 import { SiteColumn, SiteSection, siteHeading, siteText } from "~/components/landing/site-grid";
 import { cn } from "~/lib/utils";
+
+import type { Route } from "./+types/home";
 
 export function meta(_: Route.MetaArgs) {
   return [
@@ -33,7 +35,7 @@ export default function Home() {
         }}
       >
         <SiteColumn className="text-center">
-          <h1 className="font-pt-sans px-2 py-3.5 text-[25.3333px] leading-[1.1] text-white md:text-[33.3333px]">
+          <h1 className="px-2 py-3.5 font-pt-sans text-[25.3333px] leading-[1.1] text-white md:text-[33.3333px]">
             Welcome to <span className="font-bold">IS3A</span>
           </h1>
           <p className={cn(siteText, "px-2 py-3.5 text-white italic")}>
@@ -109,7 +111,7 @@ export default function Home() {
         <SiteColumn className="md:col-span-4 md:col-start-5">
           <Link
             to="/join"
-            className="font-merriweather flex h-9 w-full items-center justify-center rounded bg-red-800 px-3 text-center text-[14.6667px] text-white transition-[filter] hover:brightness-110"
+            className="flex h-9 w-full items-center justify-center rounded bg-red-800 px-3 text-center font-merriweather text-[14.6667px] text-white transition-[filter] hover:brightness-110"
           >
             Become a member!
           </Link>

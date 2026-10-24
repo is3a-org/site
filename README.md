@@ -36,8 +36,9 @@ vp run dev          # Start the React Router development server
 vp run build        # Build the library, then the web app
 vp run build:watch  # Rebuild the library on changes (use a second terminal)
 vp run types:check  # Generate Worker/route types and type-check all packages
-vp check            # Check formatting and lint without requiring generated types
-vp run check        # Formatting, lint, and framework-aware type checks
+vp check            # Formatting and type checks; lint findings are warnings
+vp run check        # Build dependencies/generate types, then run all static checks
+vp run ready        # Full validation: static checks, tests, and production build
 vp lint             # Lint codebase with Oxlint
 vp fmt              # Format code with Oxfmt (including Tailwind class sorting)
 vp run test         # Build the library and run its tests
@@ -51,10 +52,22 @@ React Router's framework CLI, and the workspace library must be built first. Pac
 also be run directly, e.g. `vp run @is3a/web#build` or `vp run @is3a/web#preview`.
 
 - **Monorepo**: pnpm workspaces with Vite+ task dependencies and local build/test caching
-- **Code Quality**: `vp install` sets up hooks. They format/lint staged files and, for TypeScript
-  changes, run builds, type checks, and tests. Inspect with `vp hooks status`.
-- **TypeScript**: Strict mode enabled across all packages; `vp run types:check` retains `tsc` and
-  the framework's code generation rather than checking incomplete generated types in `vp check`.
+- **Code Quality**: `vp install` sets up a staged-files-only hook (`vp staged` → `vp fmt`, then
+  `vp check`). Formatting is automatic; advisory lint does not rewrite application code. Builds and
+  tests are explicit via `vp run ready`, not part of pre-commit. Inspect with `vp hooks status`.
+- **Linting**: Uses the TypeScript/Unicorn rules and vendored `anti-slop` plugin from
+  `brand-intelligence`, with rule violations reported as warnings while the backlog is addressed.
+  Formatting and compiler errors still block checks and commits; type-aware linting remains enabled.
+- **Dependency patch**: `patches/@fragno-dev__unplugin-fragno@0.0.8.patch` corrects the Rollup
+  integration’s declaration export to the file actually shipped in that release. This keeps native
+  type checking enabled without suppressing the missing declaration error.
+- **Formatting**: Imports, package manifests, and Tailwind classes are sorted. Workspace imports use
+  the `@is3a/*` group; Tailwind uses the web app stylesheet and recognizes `cn()`.
+- **TypeScript**: Run `vp run types:check` after a fresh install to build dependencies and generate
+  Worker/route types before direct `vp check` or staged checks. `vp run check` and CI do this
+  automatically.
+- **Editor**: Install the recommended Vite+ extension pack in VS Code for Oxc formatting and fixes
+  on save. Root lint/format settings apply across workspace packages.
 - **Configuration**: Shared lint/format rules live in the root `vite.config.ts`; the library's
   `pack` configuration preserves its browser/server exports and Fragno code splitting.
 
@@ -84,7 +97,9 @@ Pushing to `main` deploys `apps/web` as the `site` Cloudflare Worker (IS3A accou
 
 ```
 /
-├── apps/               # Deployable apps
-└── packages/           # Resuable packages
-    └── typescript-config/  # TypeScript configs
+├── apps/
+│   └── web/                         # React Router + Cloudflare application
+├── packages/
+│   └── one-time-password-fragment/  # Authentication fragment
+└── tooling/                         # Shared lint plugins
 ```

@@ -1,7 +1,7 @@
 import { drizzle } from "drizzle-orm/node-postgres";
+import { Pool } from "pg";
 
 import { schema } from "./postgres.schema.ts";
-import { Pool } from "pg";
 
 export function createPostgresPool() {
   return new Pool({

@@ -1,5 +1,7 @@
-import { defineRoute, defineRoutes } from "@fragno-dev/core";
 import { z } from "zod";
+
+import { defineRoute, defineRoutes } from "@fragno-dev/core";
+
 import type { otpFragmentDefinition } from "..";
 
 export interface OttConfig {

@@ -1,4 +1,5 @@
 import { ChevronsUpDown, LogOut } from "lucide-react";
+import { useNavigate } from "react-router";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -16,7 +17,6 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { simpleAuthClient } from "@/lib/simple-auth-client";
-import { useNavigate } from "react-router";
 
 export function NavUser({
   user,

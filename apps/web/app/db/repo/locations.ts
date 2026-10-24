@@ -1,7 +1,8 @@
-import { location } from "~/db/postgres/postgres.schema";
-import { type DrizzleDatabase } from "~/db/postgres/is3a-postgres";
-import { z } from "zod";
 import { eq } from "drizzle-orm";
+import { z } from "zod";
+
+import { type DrizzleDatabase } from "~/db/postgres/is3a-postgres";
+import { location } from "~/db/postgres/postgres.schema";
 
 export const LocationSchema = z.object({
   id: z.number(),

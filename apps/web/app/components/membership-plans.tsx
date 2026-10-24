@@ -1,3 +1,6 @@
+import { Check, Users, MessageCircle, Calendar, Info } from "lucide-react";
+
+import { Button } from "~/components/ui/button";
 import {
   Card,
   CardContent,
@@ -6,9 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from "~/components/ui/card";
-import { Button } from "~/components/ui/button";
 import { MEMBERSHIPS } from "~/lib/memberships";
-import { Check, Users, MessageCircle, Calendar, Info } from "lucide-react";
 import { stripeFragmentClient } from "~/lib/stripe-client";
 
 export function MembershipPlans() {
@@ -58,9 +59,9 @@ export function MembershipPlans() {
             <div className="space-y-2">
               <div className="flex items-baseline gap-2">
                 <span className="text-4xl font-bold">€50</span>
-                <span className="text-muted-foreground text-sm">per year</span>
+                <span className="text-sm text-muted-foreground">per year</span>
               </div>
-              <p className="text-muted-foreground text-sm">
+              <p className="text-sm text-muted-foreground">
                 Graduated this year? Use code <span className="font-semibold">GRADUATE24</span> for
                 €25
               </p>
@@ -68,35 +69,35 @@ export function MembershipPlans() {
 
             <div className="space-y-3">
               <div className="flex items-start gap-3">
-                <Check className="text-primary mt-0.5 h-5 w-5 shrink-0" />
+                <Check className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
                 <div>
                   <p className="font-medium">4 Event Credits</p>
-                  <p className="text-muted-foreground text-sm">
+                  <p className="text-sm text-muted-foreground">
                     Access to all events throughout the year
                   </p>
                 </div>
               </div>
               <div className="flex items-start gap-3">
-                <Calendar className="text-primary mt-0.5 h-5 w-5 shrink-0" />
+                <Calendar className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
                 <div>
                   <p className="font-medium">Quarterly Events</p>
-                  <p className="text-muted-foreground text-sm">
+                  <p className="text-sm text-muted-foreground">
                     At least one networking event every 3 months
                   </p>
                 </div>
               </div>
               <div className="flex items-start gap-3">
-                <MessageCircle className="text-primary mt-0.5 h-5 w-5 shrink-0" />
+                <MessageCircle className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
                 <div>
                   <p className="font-medium">WhatsApp Community</p>
-                  <p className="text-muted-foreground text-sm">Connect with members year-round</p>
+                  <p className="text-sm text-muted-foreground">Connect with members year-round</p>
                 </div>
               </div>
               <div className="flex items-start gap-3">
-                <Users className="text-primary mt-0.5 h-5 w-5 shrink-0" />
+                <Users className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
                 <div>
                   <p className="font-medium">Network & Grow</p>
-                  <p className="text-muted-foreground text-sm">
+                  <p className="text-sm text-muted-foreground">
                     Build lasting professional connections
                   </p>
                 </div>
@@ -127,42 +128,42 @@ export function MembershipPlans() {
             <div className="space-y-2">
               <div className="flex items-baseline gap-2">
                 <span className="text-4xl font-bold">€25</span>
-                <span className="text-muted-foreground text-sm">per year</span>
+                <span className="text-sm text-muted-foreground">per year</span>
               </div>
-              <p className="text-muted-foreground text-sm">Plus €10 per additional event ticket</p>
+              <p className="text-sm text-muted-foreground">Plus €10 per additional event ticket</p>
             </div>
 
             <div className="space-y-3">
               <div className="flex items-start gap-3">
-                <Check className="text-primary mt-0.5 h-5 w-5 shrink-0" />
+                <Check className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
                 <div>
                   <p className="font-medium">1 Event Credit</p>
-                  <p className="text-muted-foreground text-sm">
+                  <p className="text-sm text-muted-foreground">
                     Includes one event, additional tickets €10 each
                   </p>
                 </div>
               </div>
               <div className="flex items-start gap-3">
-                <Calendar className="text-primary mt-0.5 h-5 w-5 shrink-0" />
+                <Calendar className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
                 <div>
                   <p className="font-medium">Flex Attendance</p>
-                  <p className="text-muted-foreground text-sm">
+                  <p className="text-sm text-muted-foreground">
                     Choose which events you want to attend
                   </p>
                 </div>
               </div>
               <div className="flex items-start gap-3">
-                <MessageCircle className="text-primary mt-0.5 h-5 w-5 shrink-0" />
+                <MessageCircle className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
                 <div>
                   <p className="font-medium">WhatsApp Community</p>
-                  <p className="text-muted-foreground text-sm">Connect with members year-round</p>
+                  <p className="text-sm text-muted-foreground">Connect with members year-round</p>
                 </div>
               </div>
               <div className="flex items-start gap-3">
-                <Users className="text-primary mt-0.5 h-5 w-5 shrink-0" />
+                <Users className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
                 <div>
                   <p className="font-medium">Network & Grow</p>
-                  <p className="text-muted-foreground text-sm">
+                  <p className="text-sm text-muted-foreground">
                     Build lasting professional connections
                   </p>
                 </div>
@@ -194,24 +195,24 @@ export function MembershipPlans() {
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <h4 className="font-semibold">Event Credits</h4>
-            <p className="text-muted-foreground text-sm">
+            <p className="text-sm text-muted-foreground">
               Event coupons that are included in your membership are used upon registration to an
               event. Credits expire after one year.
             </p>
           </div>
           <div className="space-y-2">
             <h4 className="font-semibold">Legal Requirements</h4>
-            <p className="text-muted-foreground text-sm">
+            <p className="text-sm text-muted-foreground">
               As we are an association, Dutch law requires us to:
             </p>
-            <ul className="text-muted-foreground ml-4 list-disc space-y-1 text-sm">
+            <ul className="ml-4 list-disc space-y-1 text-sm text-muted-foreground">
               <li>Know the address of our members</li>
               <li>Not make a (personal) financial profit</li>
             </ul>
           </div>
           <div className="space-y-2">
             <h4 className="font-semibold">Try Before You Buy</h4>
-            <p className="text-muted-foreground text-sm">
+            <p className="text-sm text-muted-foreground">
               Feel free to join one of our events once prior to your membership registration to see
               if we are the right fit for you.
             </p>

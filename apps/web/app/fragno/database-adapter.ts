@@ -1,6 +1,7 @@
 import { SqlAdapter } from "@fragno-dev/db/adapters/sql";
-import { NodePostgresDriverConfig } from "@fragno-dev/db/drivers";
 import { PostgresDialect } from "@fragno-dev/db/dialects";
+import { NodePostgresDriverConfig } from "@fragno-dev/db/drivers";
+
 import type { PostgresPool } from "../db/postgres/is3a-postgres.ts";
 
 export function createAdapter(pool: PostgresPool | (() => PostgresPool)) {

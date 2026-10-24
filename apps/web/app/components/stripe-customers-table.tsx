@@ -1,5 +1,15 @@
+import { createStripeFragmentClient } from "@fragno-dev/stripe/react";
+import { MoreHorizontal, RefreshCw } from "lucide-react";
 import { useState } from "react";
+
+import { SyncSubscriptionDialog } from "~/components/sync-subscription-dialog";
 import { Button } from "~/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "~/components/ui/dropdown-menu";
 import {
   Table,
   TableBody,
@@ -9,15 +19,6 @@ import {
   TableHeader,
   TableRow,
 } from "~/components/ui/table";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "~/components/ui/dropdown-menu";
-import { createStripeFragmentClient } from "@fragno-dev/stripe/react";
-import { SyncSubscriptionDialog } from "~/components/sync-subscription-dialog";
-import { MoreHorizontal, RefreshCw } from "lucide-react";
 
 const PAGE_LIMIT = 40;
 const { useCustomers } = createStripeFragmentClient();
@@ -149,7 +150,7 @@ export function StripeCustomersTable({ users }: StripeCustomersTableProps) {
         >
           Previous
         </Button>
-        <span className="text-muted-foreground text-sm">Page {pageHistory.length + 1}</span>
+        <span className="text-sm text-muted-foreground">Page {pageHistory.length + 1}</span>
         <Button onClick={handleNextPage} disabled={loading || !data.hasMore} variant="outline">
           Next
         </Button>

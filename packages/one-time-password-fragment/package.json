@@ -1,17 +1,23 @@
 {
-  "description": "A Fragno fragment",
+  "name": "@is3a/one-time-password-fragment",
   "version": "0.0.1",
+  "private": true,
+  "description": "A Fragno fragment",
+  "keywords": [
+    "fragno",
+    "react",
+    "solidjs",
+    "svelte",
+    "typescript",
+    "vue"
+  ],
   "files": [
     "dist"
   ],
-  "keywords": [
-    "fragno",
-    "typescript",
-    "react",
-    "vue",
-    "svelte",
-    "solidjs"
-  ],
+  "type": "module",
+  "main": "./dist/node/index.js",
+  "module": "./dist/node/index.js",
+  "types": "./dist/node/index.d.ts",
   "exports": {
     ".": {
       "types": "./dist/node/index.d.ts",
@@ -58,16 +64,11 @@
       "default": "./dist/browser/client/vanilla.js"
     }
   },
-  "main": "./dist/node/index.js",
-  "module": "./dist/node/index.js",
-  "types": "./dist/node/index.d.ts",
   "scripts": {
     "types:check": "tsc --noEmit",
     "build:watch": "vp pack --watch",
     "test:watch": "vp test"
   },
-  "type": "module",
-  "private": true,
   "dependencies": {
     "@fragno-dev/core": "0.2.0",
     "@fragno-dev/db": "0.3.0",
@@ -87,6 +88,5 @@
     "svelte": ">=4.0.0",
     "typescript": "^5",
     "vue": ">=3.0.0"
-  },
-  "name": "@is3a/one-time-password-fragment"
+  }
 }

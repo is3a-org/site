@@ -1,6 +1,7 @@
 import { Menu, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link, NavLink, Outlet } from "react-router";
+
 import { SiteColumn, SiteSection, siteText } from "~/components/landing/site-grid";
 import { cn } from "~/lib/utils";
 
@@ -53,7 +54,7 @@ export default function LandingLayout() {
               alt="IS3A Logo"
               className="h-14 w-28 object-contain pt-2 pr-1 pb-2 pl-3"
             />
-            <span className="font-pt-sans hidden px-3 text-xl font-bold text-black/80 md:inline-block">
+            <span className="hidden px-3 font-pt-sans text-xl font-bold text-black/80 md:inline-block">
               IS3A
             </span>
           </Link>

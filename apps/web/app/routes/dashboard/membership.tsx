@@ -1,15 +1,3 @@
-import { useState } from "react";
-import { cn } from "~/lib/utils";
-import type { Route } from "./+types/membership";
-import { BreadcrumbItem, BreadcrumbPage } from "~/components/ui/breadcrumb";
-import { DashboardBreadcrumb } from "~/components/dashboard-breadcrumb";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
-import { Button } from "~/components/ui/button";
-import { Badge } from "~/components/ui/badge";
-import { Input } from "~/components/ui/input";
-import { Label } from "~/components/ui/label";
-import { stripeFragmentClient } from "~/lib/stripe-client";
-import { simpleAuthClient } from "~/lib/simple-auth-client";
 import {
   Check,
   Calendar,
@@ -19,11 +7,24 @@ import {
   User,
   Lock,
 } from "lucide-react";
-import { MembershipPlans } from "~/components/membership-plans";
-import { getMembershipByPriceId } from "~/lib/memberships";
+import { useState } from "react";
 
+import { DashboardBreadcrumb } from "~/components/dashboard-breadcrumb";
+import { MembershipPlans } from "~/components/membership-plans";
+import { Badge } from "~/components/ui/badge";
+import { BreadcrumbItem, BreadcrumbPage } from "~/components/ui/breadcrumb";
+import { Button } from "~/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
+import { Input } from "~/components/ui/input";
+import { Label } from "~/components/ui/label";
 import { createSimpleAuthServer } from "~/fragno/simple-auth-server";
 import { createStripeServer } from "~/fragno/stripe-server";
+import { getMembershipByPriceId } from "~/lib/memberships";
+import { simpleAuthClient } from "~/lib/simple-auth-client";
+import { stripeFragmentClient } from "~/lib/stripe-client";
+import { cn } from "~/lib/utils";
+
+import type { Route } from "./+types/membership";
 
 type StatusMeta = {
   label: string;
@@ -379,7 +380,7 @@ export default function DashboardSubscribe({
           )}
 
           {!hasSubscription && (
-            <p className="text-muted-foreground max-w-3xl text-lg">
+            <p className="max-w-3xl text-lg text-muted-foreground">
               We organize networking events at least once every three months. To cover the costs for
               this plus peripheral matters, we charge an annual membership fee. Feel free to join
               one of our events once prior to your membership registration.
@@ -402,20 +403,20 @@ export default function DashboardSubscribe({
           </CardHeader>
           <CardContent className="space-y-6">
             {userLoading ? (
-              <p className="text-muted-foreground text-sm">Loading...</p>
+              <p className="text-sm text-muted-foreground">Loading...</p>
             ) : userData ? (
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
                   <p className="text-sm font-medium">Email</p>
-                  <p className="text-muted-foreground text-sm">{userData.email}</p>
+                  <p className="text-sm text-muted-foreground">{userData.email}</p>
                 </div>
                 <div>
                   <p className="text-sm font-medium">Role</p>
-                  <p className="text-muted-foreground text-sm capitalize">{userData.role}</p>
+                  <p className="text-sm text-muted-foreground capitalize">{userData.role}</p>
                 </div>
               </div>
             ) : (
-              <p className="text-muted-foreground text-sm">Unable to load user information</p>
+              <p className="text-sm text-muted-foreground">Unable to load user information</p>
             )}
 
             {/* Change Password */}
@@ -553,23 +554,23 @@ export default function DashboardSubscribe({
                 {/* Membership Details */}
                 <div className="grid gap-4 md:grid-cols-2">
                   <div className="flex items-start gap-3">
-                    <div className="bg-primary/10 rounded-full p-2">
-                      <CreditCard className="text-primary h-4 w-4" />
+                    <div className="rounded-full bg-primary/10 p-2">
+                      <CreditCard className="h-4 w-4 text-primary" />
                     </div>
                     <div>
                       <p className="text-sm font-medium">Billing</p>
-                      <p className="text-muted-foreground text-sm">
+                      <p className="text-sm text-muted-foreground">
                         {membership?.price || "N/A"} per year
                       </p>
                     </div>
                   </div>
                   <div className="flex items-start gap-3">
-                    <div className="bg-primary/10 rounded-full p-2">
-                      <Calendar className="text-primary h-4 w-4" />
+                    <div className="rounded-full bg-primary/10 p-2">
+                      <Calendar className="h-4 w-4 text-primary" />
                     </div>
                     <div>
                       <p className="text-sm font-medium">{nextBillingLabel}</p>
-                      <p className="text-muted-foreground text-sm">{nextBillingDate}</p>
+                      <p className="text-sm text-muted-foreground">{nextBillingDate}</p>
                     </div>
                   </div>
                 </div>
@@ -579,17 +580,17 @@ export default function DashboardSubscribe({
                   <h4 className="font-semibold">Your Membership Includes:</h4>
                   <div className="space-y-2">
                     <div className="flex items-center gap-2">
-                      <Check className="text-primary h-4 w-4" />
+                      <Check className="h-4 w-4 text-primary" />
                       <span className="text-sm">
                         {membership?.id === "FULL" ? "4 Event Credits" : "1 Event Credit"} per year
                       </span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <MessageCircle className="text-primary h-4 w-4" />
+                      <MessageCircle className="h-4 w-4 text-primary" />
                       <span className="text-sm">Access to WhatsApp Community</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <CalendarHeart className="text-primary h-4 w-4" />
+                      <CalendarHeart className="h-4 w-4 text-primary" />
                       <span className="text-sm">
                         At least 4 Networking events throughout the year
                       </span>
@@ -612,7 +613,7 @@ export default function DashboardSubscribe({
                 {/* Expired or Incomplete - Show restart option */}
                 {(status === "incomplete_expired" || status === "canceled") && (
                   <div className="border-t pt-4">
-                    <p className="text-muted-foreground mb-3 text-sm">
+                    <p className="mb-3 text-sm text-muted-foreground">
                       {status === "incomplete_expired"
                         ? "Your subscription setup has expired. You can start a new subscription below."
                         : "Your subscription has ended. You can subscribe again below."}
@@ -627,7 +628,7 @@ export default function DashboardSubscribe({
               <>
                 <div className="space-y-4">
                   <h3 className="text-2xl font-bold tracking-tight">Renew Your Membership</h3>
-                  <p className="text-muted-foreground max-w-3xl">
+                  <p className="max-w-3xl text-muted-foreground">
                     Your membership is scheduled to cancel. You can renew your current plan or
                     choose a new plan after{" "}
                     {new Date(cancelDate!).toLocaleDateString("en-US", {
@@ -651,7 +652,7 @@ export default function DashboardSubscribe({
                   <h3 className="text-2xl font-bold tracking-tight">
                     {status === "unpaid" ? "Restart Your Membership" : "Choose a Plan"}
                   </h3>
-                  <p className="text-muted-foreground max-w-3xl">
+                  <p className="max-w-3xl text-muted-foreground">
                     {status === "unpaid"
                       ? "Your previous subscription could not be processed. Please select a plan below to restart your membership."
                       : "Select a membership plan to get started."}

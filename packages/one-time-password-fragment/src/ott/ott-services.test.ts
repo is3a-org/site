@@ -1,7 +1,9 @@
 import { afterAll, describe, expect, it } from "vite-plus/test";
-import { otpFragmentDefinition } from "..";
-import { buildDatabaseFragmentsTest } from "@fragno-dev/test";
+
 import { instantiate } from "@fragno-dev/core";
+import { buildDatabaseFragmentsTest } from "@fragno-dev/test";
+
+import { otpFragmentDefinition } from "..";
 
 const testUserId = "test-user-id";
 

@@ -1,10 +1,21 @@
+import { Search, ChevronLeft, ChevronRight, ArrowUpDown } from "lucide-react";
 import { useState } from "react";
-import type { Route } from "./+types/users";
-import { BreadcrumbItem, BreadcrumbPage } from "~/components/ui/breadcrumb";
+
+import type { Role } from "@fragno-dev/auth";
+
 import { DashboardBreadcrumb } from "~/components/dashboard-breadcrumb";
+import { BreadcrumbItem, BreadcrumbPage } from "~/components/ui/breadcrumb";
+import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
-import { Button } from "~/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "~/components/ui/select";
+import { Skeleton } from "~/components/ui/skeleton";
 import {
   Table,
   TableBody,
@@ -13,17 +24,9 @@ import {
   TableHeader,
   TableRow,
 } from "~/components/ui/table";
-import { Search, ChevronLeft, ChevronRight, ArrowUpDown } from "lucide-react";
 import { simpleAuthClient } from "~/lib/simple-auth-client";
-import { Skeleton } from "~/components/ui/skeleton";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "~/components/ui/select";
-import type { Role } from "@fragno-dev/auth";
+
+import type { Route } from "./+types/users";
 
 export async function loader({ context: _context, request: _request }: Route.LoaderArgs) {
   return {};
@@ -125,7 +128,7 @@ export default function UsersPage() {
             {/* Search Input */}
             <div className="mb-6 flex items-center gap-2">
               <div className="relative flex-1">
-                <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
+                <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
                   placeholder="Search by email..."
                   value={search}
@@ -142,7 +145,7 @@ export default function UsersPage() {
 
             {/* Error State */}
             {error && (
-              <div className="border-destructive/50 bg-destructive/10 text-destructive rounded-md border p-4 text-sm">
+              <div className="rounded-md border border-destructive/50 bg-destructive/10 p-4 text-sm text-destructive">
                 Failed to load users. Please try again.
               </div>
             )}
@@ -167,7 +170,7 @@ export default function UsersPage() {
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="data-[state=open]:bg-accent -ml-3 h-8"
+                            className="-ml-3 h-8 data-[state=open]:bg-accent"
                             onClick={() => toggleSort("email")}
                           >
                             Email
@@ -178,7 +181,7 @@ export default function UsersPage() {
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="data-[state=open]:bg-accent -ml-3 h-8"
+                            className="-ml-3 h-8 data-[state=open]:bg-accent"
                             onClick={() => toggleSort("createdAt")}
                             disabled={!!search}
                             title={
@@ -241,7 +244,7 @@ export default function UsersPage() {
                 {/* Pagination */}
                 {(hasPreviousPage || hasNextPage) && (
                   <div className="mt-4 flex items-center justify-between">
-                    <p className="text-muted-foreground text-sm">
+                    <p className="text-sm text-muted-foreground">
                       Page {currentPage} • Showing {pageSize} users per page
                     </p>
                     <div className="flex items-center gap-2">

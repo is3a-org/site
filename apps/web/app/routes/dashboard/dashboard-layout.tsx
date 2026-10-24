@@ -1,6 +1,6 @@
-import type { Route } from "./+types/dashboard-layout";
+import { AlertCircle } from "lucide-react";
 import { isRouteErrorResponse, Outlet, redirect } from "react-router";
-import { DashboardNavigationSidebar } from "~/routes/dashboard/dashboard-sidebar";
+
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -9,11 +9,13 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "~/components/ui/breadcrumb";
-import { SidebarInset, SidebarProvider, SidebarTrigger } from "~/components/ui/sidebar";
-import { Separator } from "~/components/ui/separator";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
-import { AlertCircle } from "lucide-react";
+import { Separator } from "~/components/ui/separator";
+import { SidebarInset, SidebarProvider, SidebarTrigger } from "~/components/ui/sidebar";
 import { createSimpleAuthServer } from "~/fragno/simple-auth-server";
+import { DashboardNavigationSidebar } from "~/routes/dashboard/dashboard-sidebar";
+
+import type { Route } from "./+types/dashboard-layout";
 
 export function meta(_: Route.MetaArgs) {
   return [{ title: "Dashboard" }, { name: "description", content: "Dashboard" }];
@@ -56,29 +58,29 @@ export function ErrorBoundary({ error, loaderData }: Route.ErrorBoundaryProps) {
     <Card className="mx-4 my-6">
       <CardHeader>
         <div className="flex items-center gap-2">
-          <AlertCircle className="text-destructive h-5 w-5" />
+          <AlertCircle className="h-5 w-5 text-destructive" />
           <CardTitle>Error {error.status}</CardTitle>
         </div>
         <CardDescription>{error.statusText}</CardDescription>
       </CardHeader>
       <CardContent>
-        <p className="text-muted-foreground text-sm">{error.data}</p>
+        <p className="text-sm text-muted-foreground">{error.data}</p>
       </CardContent>
     </Card>
   ) : error instanceof Error ? (
     <Card className="mx-4 my-6">
       <CardHeader>
         <div className="flex items-center gap-2">
-          <AlertCircle className="text-destructive h-5 w-5" />
+          <AlertCircle className="h-5 w-5 text-destructive" />
           <CardTitle>Error</CardTitle>
         </div>
       </CardHeader>
       <CardContent>
-        <p className="text-muted-foreground text-sm">{error.message}</p>
+        <p className="text-sm text-muted-foreground">{error.message}</p>
         {error.stack && (
           <div className="mt-4">
             <p className="mb-2 text-sm font-medium">Stack Trace:</p>
-            <pre className="bg-muted overflow-auto rounded-md p-4 text-xs">{error.stack}</pre>
+            <pre className="overflow-auto rounded-md bg-muted p-4 text-xs">{error.stack}</pre>
           </div>
         )}
       </CardContent>
@@ -87,12 +89,12 @@ export function ErrorBoundary({ error, loaderData }: Route.ErrorBoundaryProps) {
     <Card className="mx-4 my-6">
       <CardHeader>
         <div className="flex items-center gap-2">
-          <AlertCircle className="text-destructive h-5 w-5" />
+          <AlertCircle className="h-5 w-5 text-destructive" />
           <CardTitle>Unknown Error</CardTitle>
         </div>
       </CardHeader>
       <CardContent>
-        <p className="text-muted-foreground text-sm">An unexpected error occurred.</p>
+        <p className="text-sm text-muted-foreground">An unexpected error occurred.</p>
       </CardContent>
     </Card>
   );

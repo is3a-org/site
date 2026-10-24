@@ -1,4 +1,5 @@
 import { renderToStaticMarkup } from "react-dom/server";
+
 import { MagicLinkEmail } from "~/components/email/magic-link-email";
 
 const POSTMARK_TOKEN = process.env.POSTMARK_SERVER_API_TOKEN || undefined;

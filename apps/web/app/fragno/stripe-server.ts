@@ -1,12 +1,14 @@
 import { createStripeFragment } from "@fragno-dev/stripe";
-import { createAdapter } from "./database-adapter.ts";
+
+import { UserRepo } from "~/db/repo/user.ts";
+
 import {
   createPostgresPool,
   createDrizzleDatabase,
   type PostgresPool,
 } from "../db/postgres/is3a-postgres.ts";
+import { createAdapter } from "./database-adapter.ts";
 import { createSimpleAuthServer } from "./simple-auth-server.ts";
-import { UserRepo } from "~/db/repo/user.ts";
 
 type StripeFragment = ReturnType<typeof createStripeFragment>;
 

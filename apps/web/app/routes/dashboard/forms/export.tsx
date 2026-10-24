@@ -1,6 +1,7 @@
-import type { Route } from "./+types/export";
+import { ArrowLeft, Download } from "lucide-react";
 import { useState, useMemo, useEffect } from "react";
 import { Link } from "react-router";
+
 import { DashboardBreadcrumb } from "~/components/dashboard-breadcrumb";
 import {
   BreadcrumbItem,
@@ -10,6 +11,8 @@ import {
 } from "~/components/ui/breadcrumb";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
+import { Checkbox } from "~/components/ui/checkbox";
+import { Label } from "~/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -17,8 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
-import { Checkbox } from "~/components/ui/checkbox";
-import { Label } from "~/components/ui/label";
+import { Skeleton } from "~/components/ui/skeleton";
 import {
   Table,
   TableBody,
@@ -27,9 +29,9 @@ import {
   TableHeader,
   TableRow,
 } from "~/components/ui/table";
-import { ArrowLeft, Download } from "lucide-react";
-import { Skeleton } from "~/components/ui/skeleton";
 import { formsClient } from "~/lib/forms-client";
+
+import type { Route } from "./+types/export";
 
 function flattenObject(obj: Record<string, unknown>, prefix = ""): Record<string, unknown> {
   return Object.entries(obj).reduce(
@@ -240,7 +242,7 @@ export default function ExportSubmissionsPage({ params }: Route.ComponentProps) 
                   </SelectContent>
                 </Select>
                 {selectedVersion && (
-                  <p className="text-muted-foreground text-sm">
+                  <p className="text-sm text-muted-foreground">
                     {filteredSubmissions.length} submission
                     {filteredSubmissions.length !== 1 ? "s" : ""} for this version. Each form
                     version represents a different data schema.
@@ -316,7 +318,7 @@ export default function ExportSubmissionsPage({ params }: Route.ComponentProps) 
               )}
 
               {filteredSubmissions.length === 0 && selectedVersion && (
-                <p className="text-muted-foreground py-4 text-center">
+                <p className="py-4 text-center text-muted-foreground">
                   No submissions for this version
                 </p>
               )}

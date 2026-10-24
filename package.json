@@ -7,7 +7,8 @@
     "dev": "vp run @is3a/web#dev",
     "types:check": "vp run -r types:check",
     "test": "vp run -r test",
-    "check": "vp check && vp run types:check",
+    "check": "vp run types:check && vp check",
+    "ready": "vp run check && vp run test && vp run build",
     "prepare": "vp config --no-agent",
     "format": "vp fmt .",
     "format:check": "vp fmt --check .",
@@ -25,10 +26,10 @@
     "vite-plus": "catalog:",
     "wrangler": "^4.152.0"
   },
-  "packageManager": "pnpm@10.0.0",
   "engines": {
     "node": "^22.22.1 || ^24.11.0 || >=26.0.0"
   },
+  "packageManager": "pnpm@10.0.0",
   "pnpm": {
     "overrides": {
       "vite@*": "npm:@voidzero-dev/vite-plus-core@1.4.0"
@@ -40,6 +41,9 @@
       "allowedVersions": {
         "vite": "*"
       }
+    },
+    "patchedDependencies": {
+      "@fragno-dev/unplugin-fragno@0.0.8": "patches/@fragno-dev__unplugin-fragno@0.0.8.patch"
     }
   }
 }

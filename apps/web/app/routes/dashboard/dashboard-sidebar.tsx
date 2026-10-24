@@ -8,9 +8,9 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { Link } from "react-router";
-import { StripeIcon } from "~/components/icons/stripe";
-import { IS3ALogo } from "~/components/icons/is3a";
 
+import { IS3ALogo } from "~/components/icons/is3a";
+import { StripeIcon } from "~/components/icons/stripe";
 import { NavMain } from "~/components/nav-main";
 import { NavUser } from "~/components/nav-user";
 import {

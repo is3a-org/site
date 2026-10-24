@@ -1,10 +1,12 @@
-import type { Route } from "./+types/sign-up";
+import { redirect } from "react-router";
+
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { redirect } from "react-router";
 import { createSimpleAuthServer } from "~/fragno/simple-auth-server";
+
+import type { Route } from "./+types/sign-up";
 
 export function meta(_: Route.MetaArgs) {
   return [
@@ -132,9 +134,9 @@ export default function SignUp({ actionData }: Route.ComponentProps) {
               </Button>
             </form>
 
-            <p className="text-muted-foreground mt-6 text-center text-sm">
+            <p className="mt-6 text-center text-sm text-muted-foreground">
               Already have an account?{" "}
-              <a href="/login" className="text-primary font-semibold hover:underline">
+              <a href="/login" className="font-semibold text-primary hover:underline">
                 Sign In
               </a>
             </p>

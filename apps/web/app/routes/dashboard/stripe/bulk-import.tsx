@@ -1,15 +1,16 @@
-import type { Route } from "./+types/bulk-import";
+import { BulkImportWizard } from "~/components/bulk-import-wizard";
+import { DashboardBreadcrumb } from "~/components/dashboard-breadcrumb";
 import {
   BreadcrumbItem,
   BreadcrumbLink,
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "~/components/ui/breadcrumb";
-import { DashboardBreadcrumb } from "~/components/dashboard-breadcrumb";
-import { BulkImportWizard } from "~/components/bulk-import-wizard";
 import { UserRepo } from "~/db/repo/user";
-import { createStripeServer } from "~/fragno/stripe-server";
 import { createSimpleAuthServer } from "~/fragno/simple-auth-server";
+import { createStripeServer } from "~/fragno/stripe-server";
+
+import type { Route } from "./+types/bulk-import";
 
 export async function loader({ context }: Route.LoaderArgs) {
   const userRepo = new UserRepo(context.db);
@@ -193,7 +194,7 @@ export default function BulkImportPage({ loaderData }: Route.ComponentProps) {
       <div className="flex flex-1 flex-col gap-6 p-4">
         <div>
           <h2 className="text-2xl font-bold">Bulk Import Stripe Customers</h2>
-          <p className="text-muted-foreground mt-2 text-sm">
+          <p className="mt-2 text-sm text-muted-foreground">
             Import multiple Stripe customers and their subscriptions in one batch
           </p>
         </div>

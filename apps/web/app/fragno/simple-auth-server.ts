@@ -1,6 +1,7 @@
 import { createAuthFragment } from "@fragno-dev/auth";
-import { createAdapter } from "./database-adapter.ts";
+
 import { createPostgresPool, type PostgresPool } from "../db/postgres/is3a-postgres.ts";
+import { createAdapter } from "./database-adapter.ts";
 
 export function createSimpleAuthServer(
   pool: PostgresPool | (() => PostgresPool),

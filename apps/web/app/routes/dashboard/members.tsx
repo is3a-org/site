@@ -1,8 +1,5 @@
-import { cn } from "~/lib/utils";
-import type { Route } from "./+types/members";
-import { BreadcrumbItem, BreadcrumbPage } from "~/components/ui/breadcrumb";
 import { DashboardBreadcrumb } from "~/components/dashboard-breadcrumb";
-
+import { BreadcrumbItem, BreadcrumbPage } from "~/components/ui/breadcrumb";
 import {
   Table,
   TableBody,
@@ -12,9 +9,11 @@ import {
   TableHeader,
   TableRow,
 } from "~/components/ui/table";
-
 import { UserRepo } from "~/db/repo/user";
 import { getMembershipByPriceId } from "~/lib/memberships";
+import { cn } from "~/lib/utils";
+
+import type { Route } from "./+types/members";
 
 export async function loader({ context }: Route.LoaderArgs) {
   const userRepo = new UserRepo(context.db);

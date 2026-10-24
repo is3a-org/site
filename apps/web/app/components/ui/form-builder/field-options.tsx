@@ -1,10 +1,11 @@
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { EnumValuesEditor } from "./enum-values-editor";
-import { getFieldTypeConfig } from "./constants";
-import type { FieldType, FieldOptions as FieldOptionsType } from "./types";
 import { cn } from "@/lib/utils";
+
+import { getFieldTypeConfig } from "./constants";
+import { EnumValuesEditor } from "./enum-values-editor";
+import type { FieldType, FieldOptions as FieldOptionsType } from "./types";
 
 export interface FieldOptionsProps {
   fieldType: FieldType;
@@ -42,7 +43,7 @@ export function FieldOptions({ fieldType, options, onChange, className }: FieldO
       <div data-slot="field-options" className={cn("border-t pt-4", className)}>
         <div className="grid grid-cols-3 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="min-value" className="text-muted-foreground text-sm">
+            <Label htmlFor="min-value" className="text-sm text-muted-foreground">
               Minimum
             </Label>
             <Input
@@ -53,7 +54,7 @@ export function FieldOptions({ fieldType, options, onChange, className }: FieldO
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="default-value" className="text-muted-foreground text-sm">
+            <Label htmlFor="default-value" className="text-sm text-muted-foreground">
               Default
             </Label>
             <Input
@@ -64,7 +65,7 @@ export function FieldOptions({ fieldType, options, onChange, className }: FieldO
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="max-value" className="text-muted-foreground text-sm">
+            <Label htmlFor="max-value" className="text-sm text-muted-foreground">
               Maximum
             </Label>
             <Input
@@ -84,7 +85,7 @@ export function FieldOptions({ fieldType, options, onChange, className }: FieldO
       <div data-slot="field-options" className={cn("border-t pt-4", className)}>
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="min-value" className="text-muted-foreground text-sm">
+            <Label htmlFor="min-value" className="text-sm text-muted-foreground">
               Minimum
             </Label>
             <Input
@@ -98,7 +99,7 @@ export function FieldOptions({ fieldType, options, onChange, className }: FieldO
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="max-value" className="text-muted-foreground text-sm">
+            <Label htmlFor="max-value" className="text-sm text-muted-foreground">
               Maximum
             </Label>
             <Input
@@ -120,7 +121,7 @@ export function FieldOptions({ fieldType, options, onChange, className }: FieldO
     return (
       <div data-slot="field-options" className={cn("border-t pt-4", className)}>
         <div className="space-y-2">
-          <Label htmlFor="placeholder" className="text-muted-foreground text-sm">
+          <Label htmlFor="placeholder" className="text-sm text-muted-foreground">
             Placeholder
           </Label>
           <Input
@@ -138,7 +139,7 @@ export function FieldOptions({ fieldType, options, onChange, className }: FieldO
     return (
       <div data-slot="field-options" className={cn("space-y-4 border-t pt-4", className)}>
         <div className="space-y-2">
-          <Label htmlFor="raw-json-schema" className="text-muted-foreground text-sm">
+          <Label htmlFor="raw-json-schema" className="text-sm text-muted-foreground">
             JSON Schema
           </Label>
           <Textarea
@@ -151,7 +152,7 @@ export function FieldOptions({ fieldType, options, onChange, className }: FieldO
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="raw-ui-schema" className="text-muted-foreground text-sm">
+          <Label htmlFor="raw-ui-schema" className="text-sm text-muted-foreground">
             UI Schema
           </Label>
           <Textarea
