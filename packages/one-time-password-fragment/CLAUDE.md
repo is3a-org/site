@@ -247,7 +247,7 @@ Fragments require code splitting between client and server bundles using
 ### Type Checking
 
 ```bash
-bun run types:check
+vp run types:check
 ```
 
 ## Common Patterns
@@ -328,9 +328,7 @@ Then use the generated hooks in your components:
 import { useData } from "@/lib/fragment-client";
 
 function MyComponent() {
-  const { data, loading, error } = useData({
-    /* input */
-  });
+  const { data, loading, error } = useData({/* input */});
 
   if (loading) return <div>Loading...</div>;
   if (error) return <div>Error: {error.message}</div>;

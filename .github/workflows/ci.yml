@@ -8,72 +8,60 @@ on:
 jobs:
   lint:
     runs-on: ubuntu-latest
-    env:
-      TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
-      TURBO_TEAM: ${{ vars.TURBO_TEAM }}
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Setup Vite+
+        uses: voidzero-dev/setup-vp@v1.22.0
         with:
-          node-version: "24"
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+          node-version-file: .node-version
+          cache: true
+          run-install: false
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: vp install --frozen-lockfile
 
-      - name: Check formatting
-        run: pnpx prettier --ignore-unknown --check .
-
-      - name: Run lint
-        run: pnpx oxlint
+      - name: Check formatting and lint
+        run: vp check
 
   build:
     runs-on: ubuntu-latest
-    env:
-      TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
-      TURBO_TEAM: ${{ vars.TURBO_TEAM }}
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Setup Vite+
+        uses: voidzero-dev/setup-vp@v1.22.0
         with:
-          node-version: "24"
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+          node-version-file: .node-version
+          cache: true
+          run-install: false
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: vp install --frozen-lockfile
 
-      - name: Check types & build
-        run: pnpm turbo run types:check build
+      - name: Build project
+        run: vp run build
+
+      - name: Check types
+        run: vp run types:check
 
   test:
     runs-on: ubuntu-latest
-    env:
-      TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
-      TURBO_TEAM: ${{ vars.TURBO_TEAM }}
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Setup Vite+
+        uses: voidzero-dev/setup-vp@v1.22.0
         with:
-          node-version: "24"
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+          node-version-file: .node-version
+          cache: true
+          run-install: false
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: vp install --frozen-lockfile
 
       - name: Run tests
-        run: pnpm turbo run test
+        run: vp run test
 
   deploy:
     # Only run on pushes to main, not on PRs
@@ -82,8 +70,6 @@ jobs:
     needs: [lint, build, test]
     runs-on: ubuntu-latest
     env:
-      TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
-      TURBO_TEAM: ${{ vars.TURBO_TEAM }}
       VITE_STRIPE_PRICE_ID_FULL: price_1PP5qhJ3Pt748JzgIsCiWawn
       VITE_STRIPE_PRICE_ID_FLEX: price_1PP5q9J3Pt748Jzg2wLlJ0jB
       VITE_CF_TURNSTILE_SITE_KEY: "0x4AAAAAACH5P-GjR3rNGHEa"
@@ -91,25 +77,24 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Setup Vite+
+        uses: voidzero-dev/setup-vp@v1.22.0
         with:
-          node-version: "24"
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+          node-version-file: .node-version
+          cache: true
+          run-install: false
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: vp install --frozen-lockfile
 
       - name: Build project
-        run: pnpm turbo run build
+        run: vp run build
 
       - name: Run database migrations
         working-directory: apps/web
         env:
           PG_DATABASE_URL: ${{ secrets.PG_DATABASE_URL }}
-        run: pnpm exec drizzle-kit migrate --config postgres.drizzle.config.ts
+        run: vp run db:postgres:migrate
 
       - name: Deploy Worker
         uses: cloudflare/wrangler-action@v3

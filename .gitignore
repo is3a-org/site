@@ -15,8 +15,11 @@ node_modules
 # Testing
 coverage
 
-# Turbo
+# Tool caches (including legacy Turbo artifacts)
 .turbo
+.vite/
+.vitest/
+.vite-hooks/_/
 
 # Vercel
 .vercel

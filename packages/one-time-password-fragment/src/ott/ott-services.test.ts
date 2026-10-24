@@ -1,4 +1,4 @@
-import { afterAll, describe, expect, it } from "vitest";
+import { afterAll, describe, expect, it } from "vite-plus/test";
 import { otpFragmentDefinition } from "..";
 import { buildDatabaseFragmentsTest } from "@fragno-dev/test";
 import { instantiate } from "@fragno-dev/core";
