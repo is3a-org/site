@@ -1,3 +1,22 @@
+import {
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@is3a/design-system/breadcrumb";
+import { Button } from "@is3a/design-system/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@is3a/design-system/card";
+import { Input } from "@is3a/design-system/input";
+import { Label } from "@is3a/design-system/label";
+import { Skeleton } from "@is3a/design-system/skeleton";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@is3a/design-system/tabs";
+import { Textarea } from "@is3a/design-system/textarea";
 import { ArrowLeft, Save, Eye, Code, Hammer } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Link } from "react-router";
@@ -8,21 +27,8 @@ import type { UISchemaElement } from "@jsonforms/core";
 import { JsonForms } from "@jsonforms/react";
 
 import { DashboardBreadcrumb } from "~/components/dashboard-breadcrumb";
-import {
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "~/components/ui/breadcrumb";
-import { Button } from "~/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
 import { FormBuilder, FormMetadataEditor } from "~/components/ui/form-builder";
 import type { GeneratedSchemas, FormMetadata } from "~/components/ui/form-builder";
-import { Input } from "~/components/ui/input";
-import { Label } from "~/components/ui/label";
-import { Skeleton } from "~/components/ui/skeleton";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
-import { Textarea } from "~/components/ui/textarea";
 import { formsClient } from "~/lib/forms-client";
 
 import type { Route } from "./+types/edit";

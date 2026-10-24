@@ -1,9 +1,15 @@
+import { Button } from "@is3a/design-system/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@is3a/design-system/card";
+import { Input } from "@is3a/design-system/input";
+import { Label } from "@is3a/design-system/label";
 import { redirect } from "react-router";
 
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { createSimpleAuthServer } from "~/fragno/simple-auth-server";
 
 import type { Route } from "./+types/sign-up";

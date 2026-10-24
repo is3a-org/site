@@ -1,11 +1,16 @@
+import { Button } from "@is3a/design-system/button";
+import { Card, CardContent } from "@is3a/design-system/card";
+import { Input } from "@is3a/design-system/input";
+import { Label } from "@is3a/design-system/label";
+import { Switch } from "@is3a/design-system/switch";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@is3a/design-system/tooltip";
 import { ChevronUp, ChevronDown, Copy, Trash2 } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 
 import { getFieldTypeConfig } from "./constants";

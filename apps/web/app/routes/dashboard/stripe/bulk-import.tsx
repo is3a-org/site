@@ -1,11 +1,12 @@
-import { BulkImportWizard } from "~/components/bulk-import-wizard";
-import { DashboardBreadcrumb } from "~/components/dashboard-breadcrumb";
 import {
   BreadcrumbItem,
   BreadcrumbLink,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from "~/components/ui/breadcrumb";
+} from "@is3a/design-system/breadcrumb";
+
+import { BulkImportWizard } from "~/components/bulk-import-wizard";
+import { DashboardBreadcrumb } from "~/components/dashboard-breadcrumb";
 import { UserRepo } from "~/db/repo/user";
 import { createSimpleAuthServer } from "~/fragno/simple-auth-server";
 import { createStripeServer } from "~/fragno/stripe-server";

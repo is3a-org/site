@@ -1,12 +1,18 @@
+import { Button } from "@is3a/design-system/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@is3a/design-system/card";
+import { Input } from "@is3a/design-system/input";
+import { Label } from "@is3a/design-system/label";
 import { useState } from "react";
 import { redirect } from "react-router";
 
 import { Turnstile } from "@marsidev/react-turnstile";
 
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { createOtpServer } from "~/fragno/otp-server";
 import { createSimpleAuthServer } from "~/fragno/simple-auth-server";
 import { magicLinkTemplate, sendEmail } from "~/lib/email";

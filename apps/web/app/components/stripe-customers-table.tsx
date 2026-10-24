@@ -1,15 +1,11 @@
 import { createStripeFragmentClient } from "@fragno-dev/stripe/react";
-import { MoreHorizontal, RefreshCw } from "lucide-react";
-import { useState } from "react";
-
-import { SyncSubscriptionDialog } from "~/components/sync-subscription-dialog";
-import { Button } from "~/components/ui/button";
+import { Button } from "@is3a/design-system/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "~/components/ui/dropdown-menu";
+} from "@is3a/design-system/dropdown-menu";
 import {
   Table,
   TableBody,
@@ -18,7 +14,11 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "~/components/ui/table";
+} from "@is3a/design-system/table";
+import { MoreHorizontal, RefreshCw } from "lucide-react";
+import { useState } from "react";
+
+import { SyncSubscriptionDialog } from "~/components/sync-subscription-dialog";
 
 const PAGE_LIMIT = 40;
 const { useCustomers } = createStripeFragmentClient();

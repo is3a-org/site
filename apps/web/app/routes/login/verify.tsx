@@ -1,8 +1,14 @@
+import { Button } from "@is3a/design-system/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@is3a/design-system/card";
 import { TriangleAlert } from "lucide-react";
 import { redirect, Link } from "react-router";
 
-import { Button } from "~/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
 import { createOtpServer } from "~/fragno/otp-server";
 import { createSimpleAuthServer } from "~/fragno/simple-auth-server";
 

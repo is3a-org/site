@@ -1,12 +1,18 @@
+import { BreadcrumbItem, BreadcrumbPage } from "@is3a/design-system/breadcrumb";
+import { Button } from "@is3a/design-system/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@is3a/design-system/card";
 import { CheckCircle2, XCircle, Loader2, HeartCrack } from "lucide-react";
 import { useEffect } from "react";
 import { useSearchParams } from "react-router";
 import { useNavigate } from "react-router";
 
 import { DashboardBreadcrumb } from "~/components/dashboard-breadcrumb";
-import { BreadcrumbItem, BreadcrumbPage } from "~/components/ui/breadcrumb";
-import { Button } from "~/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
 import { UserRepo } from "~/db/repo/user";
 import { createSimpleAuthServer } from "~/fragno/simple-auth-server";
 import { createStripeServer } from "~/fragno/stripe-server";

@@ -1,14 +1,13 @@
-import { Plus, Pencil, FileText, Trash2, ClipboardList, ExternalLink } from "lucide-react";
-import { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router";
-
-import type { FormStatus } from "@fragno-dev/forms";
-
-import { DashboardBreadcrumb } from "~/components/dashboard-breadcrumb";
-import { Badge } from "~/components/ui/badge";
-import { BreadcrumbItem, BreadcrumbPage } from "~/components/ui/breadcrumb";
-import { Button } from "~/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
+import { Badge } from "@is3a/design-system/badge";
+import { BreadcrumbItem, BreadcrumbPage } from "@is3a/design-system/breadcrumb";
+import { Button } from "@is3a/design-system/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@is3a/design-system/card";
 import {
   Dialog,
   DialogContent,
@@ -16,17 +15,17 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "~/components/ui/dialog";
-import { Input } from "~/components/ui/input";
-import { Label } from "~/components/ui/label";
+} from "@is3a/design-system/dialog";
+import { Input } from "@is3a/design-system/input";
+import { Label } from "@is3a/design-system/label";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "~/components/ui/select";
-import { Skeleton } from "~/components/ui/skeleton";
+} from "@is3a/design-system/select";
+import { Skeleton } from "@is3a/design-system/skeleton";
 import {
   Table,
   TableBody,
@@ -34,8 +33,15 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "~/components/ui/table";
-import { Textarea } from "~/components/ui/textarea";
+} from "@is3a/design-system/table";
+import { Textarea } from "@is3a/design-system/textarea";
+import { Plus, Pencil, FileText, Trash2, ClipboardList, ExternalLink } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router";
+
+import type { FormStatus } from "@fragno-dev/forms";
+
+import { DashboardBreadcrumb } from "~/components/dashboard-breadcrumb";
 import { formsClient } from "~/lib/forms-client";
 
 import type { Route } from "./+types/forms";

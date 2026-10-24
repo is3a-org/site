@@ -4,9 +4,9 @@ import {
   BreadcrumbLink,
   BreadcrumbList,
   BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
-import { Separator } from "@/components/ui/separator";
-import { SidebarTrigger } from "@/components/ui/sidebar";
+} from "@is3a/design-system/breadcrumb";
+import { Separator } from "@is3a/design-system/separator";
+import { SidebarTrigger } from "@is3a/design-system/sidebar";
 
 export function DashboardBreadcrumb({ children }: { children: React.ReactNode }) {
   return (

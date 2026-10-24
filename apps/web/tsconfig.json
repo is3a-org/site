@@ -16,6 +16,7 @@
     "noEmit": true,
     "types": ["./worker-configuration.d.ts"],
     "paths": {
+      "@/components/ui/*": ["../../packages/design-system/src/components/*"],
       "@/*": ["./app/*"],
       "~/*": ["./app/*"]
     },

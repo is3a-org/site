@@ -4,7 +4,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from "@is3a/design-system/select";
 
 import { FIELD_TYPES } from "./constants";
 import type { FieldType } from "./types";

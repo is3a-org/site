@@ -1,0 +1,18 @@
+/* Use the same entry order as the web app. Explicitly scan the hidden preview directory. */
+@import "tailwindcss";
+@import "../src/theme.css";
+
+@source "./preview.tsx";
+
+:root {
+  color-scheme: light;
+}
+
+:root.dark {
+  color-scheme: dark;
+}
+
+body {
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}

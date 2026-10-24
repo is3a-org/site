@@ -1,6 +1,6 @@
+import { Button } from "@is3a/design-system/button";
 import { Plus } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 import { FieldCard } from "./field-card";

@@ -1,7 +1,7 @@
+import { Button } from "@is3a/design-system/button";
+import { Input } from "@is3a/design-system/input";
 import { Plus, Trash2, ChevronUp, ChevronDown } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
 export interface EnumValuesEditorProps {

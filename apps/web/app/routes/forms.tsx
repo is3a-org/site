@@ -1,3 +1,12 @@
+import { Button } from "@is3a/design-system/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@is3a/design-system/card";
+import { Skeleton } from "@is3a/design-system/skeleton";
 import { CheckCircle2, XCircle, AlertTriangle } from "lucide-react";
 import type { ReactNode } from "react";
 import { useState } from "react";
@@ -6,9 +15,6 @@ import { shadcnRenderers, shadcnCells } from "@fragno-dev/jsonforms-shadcn-rende
 import type { UISchemaElement } from "@jsonforms/core";
 import { JsonForms } from "@jsonforms/react";
 
-import { Button } from "~/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
-import { Skeleton } from "~/components/ui/skeleton";
 import { formsClient } from "~/lib/forms-client";
 
 import type { Route } from "./+types/forms";
@@ -164,7 +170,7 @@ export default function PublicFormPage({ loaderData }: Route.ComponentProps) {
             <img src="/is3a.svg" alt="IS3A logo" className="h-10 w-auto" />
             <CardTitle className="text-3xl leading-tight font-bold">{form.title}</CardTitle>
             {form.description && (
-              <CardDescription className="text-foreground text-base whitespace-pre-line">
+              <CardDescription className="text-base whitespace-pre-line text-foreground">
                 {form.description}
               </CardDescription>
             )}
