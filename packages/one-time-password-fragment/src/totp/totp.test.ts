@@ -1,4 +1,4 @@
-import { afterAll, assert, describe, expect, it } from "vitest";
+import { afterAll, assert, describe, expect, it } from "vite-plus/test";
 import { otpFragmentDefinition } from "..";
 import { ottRoutesFactory } from "../ott/ott";
 import { totpRoutesFactory } from "./totp";

@@ -63,9 +63,8 @@
   "types": "./dist/node/index.d.ts",
   "scripts": {
     "types:check": "tsc --noEmit",
-    "build": "tsdown",
-    "test": "vitest run",
-    "test:watch": "vitest"
+    "build:watch": "vp pack --watch",
+    "test:watch": "vp test"
   },
   "type": "module",
   "private": true,
@@ -79,8 +78,8 @@
     "@fragno-dev/test": "2.0.0",
     "@fragno-dev/unplugin-fragno": "0.0.8",
     "@types/node": "^22",
-    "tsdown": "^0.11.9",
-    "vitest": "^2.0.0"
+    "vite": "catalog:",
+    "vite-plus": "catalog:"
   },
   "peerDependencies": {
     "react": ">=18.0.0",

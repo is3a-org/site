@@ -2,32 +2,44 @@
   "name": "@is3a/root",
   "private": true,
   "scripts": {
-    "build": "turbo run build",
-    "build:watch": "turbo watch build --filter='!@is3a/web'",
-    "dev": "turbo run dev",
-    "types:check": "turbo run types:check",
-    "test": "turbo run test",
-    "format": "prettier --write .",
-    "format:check": "prettier --check .",
-    "format:changed": "prettier -u --write $(git ls-files --others --exclude-standard && git diff --name-only --diff-filter=d HEAD | sort -u | xargs)",
-    "lint": "oxlint .",
-    "lint:fix": "oxlint --fix .",
-    "clean": "find . -type d \\( -name dist -o -name node_modules -o -name .turbo -o -name .next -o -name .output -o -name .nuxt -o -name .react-router -o -name .open-next -o -name .source -o -name .svelte-kit \\) -prune -exec rm -rf {} + -o -name tsconfig.tsbuildinfo -o -name coverage.json -exec rm -f {} +",
-    "clean:install": "pnpm run clean && pnpm install",
-    "update:canary": "pnpm -r ls | grep fragno | cut -d' ' -f1 | sort -u | xargs -I {} pnpm update {}@canary -r",
-    "update:fragno": "pnpm -r ls | grep fragno | cut -d' ' -f1 | sort -u | xargs -I {} pnpm update {}@latest -r"
+    "build": "vp run -r build",
+    "build:watch": "vp run @is3a/one-time-password-fragment#build:watch",
+    "dev": "vp run @is3a/web#dev",
+    "types:check": "vp run -r types:check",
+    "test": "vp run -r test",
+    "check": "vp check && vp run types:check",
+    "prepare": "vp config --no-agent",
+    "format": "vp fmt .",
+    "format:check": "vp fmt --check .",
+    "format:changed": "(git ls-files --others --exclude-standard -z && git diff --name-only --diff-filter=d -z HEAD) | xargs -0 vp fmt --no-error-on-unmatched-pattern",
+    "lint": "vp lint .",
+    "lint:fix": "vp lint --fix .",
+    "clean": "find . -type d \\( -name dist -o -name node_modules -o -name .vite -o -name .turbo -o -name .next -o -name .output -o -name .nuxt -o -name .react-router -o -name .open-next -o -name .source -o -name .svelte-kit \\) -prune -exec rm -rf {} + -o -name tsconfig.tsbuildinfo -o -name coverage.json -exec rm -f {} +",
+    "clean:install": "vp run clean && vp install",
+    "update:canary": "vp list -r | grep fragno | cut -d' ' -f1 | sort -u | xargs -I {} vp update {}@canary -r",
+    "update:fragno": "vp list -r | grep fragno | cut -d' ' -f1 | sort -u | xargs -I {} vp update {}@latest -r"
   },
   "devDependencies": {
-    "lefthook": "^2.0.2",
-    "oxlint": "^1.25.0",
-    "prettier": "^3.6.2",
-    "prettier-plugin-tailwindcss": "^0.7.1",
-    "turbo": "^2.6.0",
     "typescript": "5.9.2",
-    "wrangler": "^4.45.3"
+    "vite": "catalog:",
+    "vite-plus": "catalog:",
+    "wrangler": "^4.152.0"
   },
   "packageManager": "pnpm@10.0.0",
   "engines": {
-    "node": ">=22"
+    "node": "^22.22.1 || ^24.11.0 || >=26.0.0"
+  },
+  "pnpm": {
+    "overrides": {
+      "vite@*": "npm:@voidzero-dev/vite-plus-core@1.4.0"
+    },
+    "peerDependencyRules": {
+      "allowAny": [
+        "vite"
+      ],
+      "allowedVersions": {
+        "vite": "*"
+      }
+    }
   }
 }

@@ -1,0 +1,10 @@
+#!/bin/sh
+set -e
+
+vp staged
+
+if git diff --cached --name-only --diff-filter=ACMR | grep -Eq '\.(ts|tsx)$|(^|/)tsconfig[^/]*\.json$'; then
+  vp run build
+  vp run types:check
+  vp run test
+fi
