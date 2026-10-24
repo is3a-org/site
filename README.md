@@ -56,7 +56,17 @@ UPDATE "user_simple-auth-db"
 
 ## Deployment
 
-Deployed to Cloudflare. Configuration in `wrangler.jsonc` files.
+Pushing to `main` deploys `apps/web` as the `site` Cloudflare Worker (IS3A account, served at
+`new.is3a.nl`) once lint, build, and test pass. See the `deploy` job in
+[ci.yml](.github/workflows/ci.yml): build, run Drizzle migrations, `wrangler deploy`.
+
+- **Database**: [Neon](https://neon.tech) Postgres. The `IS3A_D1` binding is unused.
+- **Migrations** run before the new Worker goes live, so keep them compatible with the old code.
+- **Secrets** live in two places; keep both `PG_DATABASE_URL`s pointing at the same database:
+  - GitHub Actions: `PG_DATABASE_URL`, `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`
+  - Worker (`wrangler secret put`): `PG_DATABASE_URL`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`,
+    `POSTMARK_SERVER_API_TOKEN`, `CF_TURNSTILE_SECRET_KEY`
+- **Public `VITE_*` vars** are baked in at build time and set in `ci.yml`.
 
 ## Project Structure
 
