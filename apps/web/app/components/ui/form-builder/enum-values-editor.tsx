@@ -1,4 +1,5 @@
 import { Plus, Trash2, ChevronUp, ChevronDown } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
@@ -36,11 +37,11 @@ export function EnumValuesEditor({ values, onChange, className }: EnumValuesEdit
 
   return (
     <div data-slot="enum-values-editor" className={cn("space-y-2", className)}>
-      <div className="text-muted-foreground text-sm font-medium">Options</div>
+      <div className="text-sm font-medium text-muted-foreground">Options</div>
       <div className="space-y-2">
         {values.map((value, index) => (
           <div key={index} className="flex items-center gap-2">
-            <span className="text-muted-foreground w-4 text-xs">{index + 1}.</span>
+            <span className="w-4 text-xs text-muted-foreground">{index + 1}.</span>
             <Input
               value={value}
               onChange={(e) => updateOption(index, e.target.value)}
@@ -74,7 +75,7 @@ export function EnumValuesEditor({ values, onChange, className }: EnumValuesEdit
                 type="button"
                 variant="ghost"
                 size="icon"
-                className="text-destructive hover:text-destructive size-8"
+                className="size-8 text-destructive hover:text-destructive"
                 onClick={() => deleteOption(index)}
                 disabled={values.length <= 1}
               >

@@ -1,6 +1,12 @@
-import type { Route } from "./+types/edit";
-import { Link } from "react-router";
+import { ArrowLeft, Save, Eye, Code, Hammer } from "lucide-react";
 import { useState, useEffect } from "react";
+import { Link } from "react-router";
+
+import type { FormStatus } from "@fragno-dev/forms";
+import { shadcnRenderers, shadcnCells } from "@fragno-dev/jsonforms-shadcn-renderers";
+import type { UISchemaElement } from "@jsonforms/core";
+import { JsonForms } from "@jsonforms/react";
+
 import { DashboardBreadcrumb } from "~/components/dashboard-breadcrumb";
 import {
   BreadcrumbItem,
@@ -10,20 +16,16 @@ import {
 } from "~/components/ui/breadcrumb";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
-import { Input } from "~/components/ui/input";
-import { Label } from "~/components/ui/label";
-import { Textarea } from "~/components/ui/textarea";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
-import { ArrowLeft, Save, Eye, Code, Hammer } from "lucide-react";
-import { formsClient } from "~/lib/forms-client";
-import { JsonForms } from "@jsonforms/react";
-import type { UISchemaElement } from "@jsonforms/core";
-import { shadcnRenderers, shadcnCells } from "@fragno-dev/jsonforms-shadcn-renderers";
-import { Skeleton } from "~/components/ui/skeleton";
 import { FormBuilder, FormMetadataEditor } from "~/components/ui/form-builder";
 import type { GeneratedSchemas, FormMetadata } from "~/components/ui/form-builder";
+import { Input } from "~/components/ui/input";
+import { Label } from "~/components/ui/label";
+import { Skeleton } from "~/components/ui/skeleton";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
+import { Textarea } from "~/components/ui/textarea";
+import { formsClient } from "~/lib/forms-client";
 
-import type { FormStatus } from "@fragno-dev/forms";
+import type { Route } from "./+types/edit";
 
 export default function FormEditPage({ params }: Route.ComponentProps) {
   const { data: form, loading: isLoading } = formsClient.useFormById({ path: { id: params.id } });
@@ -163,7 +165,7 @@ export default function FormEditPage({ params }: Route.ComponentProps) {
               <div className="space-y-2">
                 <Label htmlFor="slug">Slug</Label>
                 <Input id="slug" value={slug} onChange={(e) => setSlug(e.target.value)} />
-                <p className="text-muted-foreground text-sm">Public URL: /forms/{slug}</p>
+                <p className="text-sm text-muted-foreground">Public URL: /forms/{slug}</p>
               </div>
 
               {schemas ? (
@@ -196,7 +198,7 @@ export default function FormEditPage({ params }: Route.ComponentProps) {
                       onChange={({ data }) => setPreviewData(data ?? {})}
                     />
                   ) : (
-                    <div className="text-muted-foreground flex items-center justify-center py-8">
+                    <div className="flex items-center justify-center py-8 text-muted-foreground">
                       No schema defined yet
                     </div>
                   )}

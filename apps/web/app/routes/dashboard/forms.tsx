@@ -1,21 +1,14 @@
-import type { Route } from "./+types/forms";
+import { Plus, Pencil, FileText, Trash2, ClipboardList, ExternalLink } from "lucide-react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router";
+
+import type { FormStatus } from "@fragno-dev/forms";
+
 import { DashboardBreadcrumb } from "~/components/dashboard-breadcrumb";
+import { Badge } from "~/components/ui/badge";
 import { BreadcrumbItem, BreadcrumbPage } from "~/components/ui/breadcrumb";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "~/components/ui/table";
-import { Badge } from "~/components/ui/badge";
-import { Skeleton } from "~/components/ui/skeleton";
-import { Plus, Pencil, FileText, Trash2, ClipboardList, ExternalLink } from "lucide-react";
-import { formsClient } from "~/lib/forms-client";
 import {
   Dialog,
   DialogContent,
@@ -24,10 +17,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "~/components/ui/dialog";
-import type { FormStatus } from "@fragno-dev/forms";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
-import { Textarea } from "~/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -35,7 +26,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
-import { useState, useEffect } from "react";
+import { Skeleton } from "~/components/ui/skeleton";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "~/components/ui/table";
+import { Textarea } from "~/components/ui/textarea";
+import { formsClient } from "~/lib/forms-client";
+
+import type { Route } from "./+types/forms";
 
 export async function loader(_args: Route.LoaderArgs) {
   return {};
@@ -177,7 +180,7 @@ export default function FormsPage() {
                 <Skeleton className="h-10 w-full" />
               </div>
             ) : !forms || typeof forms === "string" || forms.length === 0 ? (
-              <div className="text-muted-foreground flex flex-col items-center justify-center py-12">
+              <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
                 <FileText className="mb-4 h-12 w-12 opacity-50" />
                 <p className="text-lg font-medium">No forms yet</p>
                 <p className="text-sm">Get started by creating your first form</p>
@@ -197,7 +200,7 @@ export default function FormsPage() {
                     <TableRow key={form.id}>
                       <TableCell className="font-medium">{form.title}</TableCell>
                       <TableCell>
-                        <code className="bg-muted rounded px-2 py-1 text-sm">{form.slug}</code>
+                        <code className="rounded bg-muted px-2 py-1 text-sm">{form.slug}</code>
                       </TableCell>
                       <TableCell>{getStatusBadge(form.status)}</TableCell>
                       <TableCell className="text-right">
@@ -264,7 +267,7 @@ export default function FormsPage() {
                 value={newFormSlug}
                 onChange={(e) => setNewFormSlug(e.target.value)}
               />
-              <p className="text-muted-foreground text-sm">
+              <p className="text-sm text-muted-foreground">
                 Public URL: /forms/{newFormSlug || "..."}
               </p>
             </div>

@@ -1,9 +1,10 @@
-import { cn } from "~/lib/utils";
-import type { Route } from "./+types/dashboard-home";
+import { DashboardBreadcrumb } from "~/components/dashboard-breadcrumb";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Badge } from "~/components/ui/badge";
 import { BreadcrumbItem, BreadcrumbPage } from "~/components/ui/breadcrumb";
-import { DashboardBreadcrumb } from "~/components/dashboard-breadcrumb";
+import { cn } from "~/lib/utils";
+
+import type { Route } from "./+types/dashboard-home";
 
 export async function loader({ context: _context, request: _request }: Route.LoaderArgs) {
   return {};

@@ -1,6 +1,7 @@
 import { createFormsFragment } from "@fragno-dev/forms";
-import { createAdapter } from "./database-adapter.ts";
+
 import { createPostgresPool, type PostgresPool } from "../db/postgres/is3a-postgres.ts";
+import { createAdapter } from "./database-adapter.ts";
 import { createSimpleAuthServer } from "./simple-auth-server.ts";
 
 type FormsFragment = ReturnType<typeof createFormsFragment>;

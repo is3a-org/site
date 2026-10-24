@@ -1,15 +1,18 @@
-import type { Route } from "./+types/login";
 import { useState } from "react";
+import { redirect } from "react-router";
+
+import { Turnstile } from "@marsidev/react-turnstile";
+
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { redirect } from "react-router";
-import { createSimpleAuthServer } from "~/fragno/simple-auth-server";
 import { createOtpServer } from "~/fragno/otp-server";
+import { createSimpleAuthServer } from "~/fragno/simple-auth-server";
 import { magicLinkTemplate, sendEmail } from "~/lib/email";
-import { Turnstile } from "@marsidev/react-turnstile";
 import { verifyTurnstile } from "~/lib/turnstile";
+
+import type { Route } from "./+types/login";
 export function meta(_: Route.MetaArgs) {
   return [
     { title: "Login - IS3A" },
@@ -148,12 +151,12 @@ export default function Login({ actionData }: Route.ComponentProps) {
               </CardDescription>
             </CardHeader>
             <CardContent className="text-center">
-              <p className="text-muted-foreground mb-4">
+              <p className="mb-4 text-muted-foreground">
                 Click the link in your email to sign in. The link will expire in 15 minutes.
               </p>
-              <p className="text-muted-foreground text-sm">
+              <p className="text-sm text-muted-foreground">
                 Didn't receive it? Check your spam folder or{" "}
-                <a href="/login" className="text-primary font-semibold hover:underline">
+                <a href="/login" className="font-semibold text-primary hover:underline">
                   try again
                 </a>
               </p>
@@ -216,7 +219,7 @@ export default function Login({ actionData }: Route.ComponentProps) {
                     <span className="w-full border-t" />
                   </div>
                   <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-background text-muted-foreground px-2">or</span>
+                    <span className="bg-background px-2 text-muted-foreground">or</span>
                   </div>
                 </div>
 
@@ -277,7 +280,7 @@ export default function Login({ actionData }: Route.ComponentProps) {
                     <span className="w-full border-t" />
                   </div>
                   <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-background text-muted-foreground px-2">or</span>
+                    <span className="bg-background px-2 text-muted-foreground">or</span>
                   </div>
                 </div>
 
@@ -292,9 +295,9 @@ export default function Login({ actionData }: Route.ComponentProps) {
               </>
             )}
 
-            <p className="text-muted-foreground mt-6 text-center text-sm">
+            <p className="mt-6 text-center text-sm text-muted-foreground">
               Not a member yet?{" "}
-              <a href="/sign-up" className="text-primary font-semibold hover:underline">
+              <a href="/sign-up" className="font-semibold text-primary hover:underline">
                 Join IS3A
               </a>
             </p>

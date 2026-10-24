@@ -5,6 +5,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+
 import { FIELD_TYPES } from "./constants";
 import type { FieldType } from "./types";
 
@@ -26,7 +27,7 @@ export function FieldTypeSelector({ value, onChange }: FieldTypeSelectorProps) {
           return (
             <SelectItem key={fieldType.type} value={fieldType.type}>
               <span className="flex items-center gap-2">
-                <Icon className="text-muted-foreground size-4" />
+                <Icon className="size-4 text-muted-foreground" />
                 <span>{fieldType.label}</span>
               </span>
             </SelectItem>

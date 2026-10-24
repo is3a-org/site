@@ -1,10 +1,12 @@
-import type { Route } from "./+types/verify";
-import { redirect, Link } from "react-router";
-import { createSimpleAuthServer } from "~/fragno/simple-auth-server";
-import { createOtpServer } from "~/fragno/otp-server";
 import { TriangleAlert } from "lucide-react";
+import { redirect, Link } from "react-router";
+
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
+import { createOtpServer } from "~/fragno/otp-server";
+import { createSimpleAuthServer } from "~/fragno/simple-auth-server";
+
+import type { Route } from "./+types/verify";
 
 export function meta(_: Route.MetaArgs) {
   return [

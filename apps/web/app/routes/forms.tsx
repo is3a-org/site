@@ -1,14 +1,17 @@
-import type { Route } from "./+types/forms";
+import { CheckCircle2, XCircle, AlertTriangle } from "lucide-react";
 import type { ReactNode } from "react";
 import { useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
-import { Button } from "~/components/ui/button";
-import { Skeleton } from "~/components/ui/skeleton";
-import { CheckCircle2, XCircle, AlertTriangle } from "lucide-react";
-import { formsClient } from "~/lib/forms-client";
-import { JsonForms } from "@jsonforms/react";
-import type { UISchemaElement } from "@jsonforms/core";
+
 import { shadcnRenderers, shadcnCells } from "@fragno-dev/jsonforms-shadcn-renderers";
+import type { UISchemaElement } from "@jsonforms/core";
+import { JsonForms } from "@jsonforms/react";
+
+import { Button } from "~/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
+import { Skeleton } from "~/components/ui/skeleton";
+import { formsClient } from "~/lib/forms-client";
+
+import type { Route } from "./+types/forms";
 
 export async function loader({ params }: Route.LoaderArgs) {
   return { slug: params.slug };
@@ -52,7 +55,7 @@ function StatusPage({
       <CardHeader>
         <div className="mb-4 flex justify-center">{icon}</div>
         <CardTitle>{title}</CardTitle>
-        <p className="text-muted-foreground mt-2">{message}</p>
+        <p className="mt-2 text-muted-foreground">{message}</p>
       </CardHeader>
       {action && <CardContent>{action}</CardContent>}
     </PageWrapper>

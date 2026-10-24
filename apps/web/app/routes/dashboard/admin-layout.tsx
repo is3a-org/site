@@ -1,6 +1,8 @@
-import type { Route } from "./+types/admin-layout";
 import { Outlet, redirect } from "react-router";
+
 import { createSimpleAuthServer } from "~/fragno/simple-auth-server";
+
+import type { Route } from "./+types/admin-layout";
 
 export async function loader({ context, request }: Route.LoaderArgs) {
   const auth = createSimpleAuthServer(context.pool);

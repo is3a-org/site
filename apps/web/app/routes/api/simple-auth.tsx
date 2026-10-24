@@ -1,4 +1,5 @@
 import { createSimpleAuthServer } from "~/fragno/simple-auth-server";
+
 import type { Route } from "./+types/simple-auth";
 
 export async function loader({ request, context }: Route.LoaderArgs) {

@@ -47,7 +47,7 @@ export function FormMetadataEditor({ value, onChange, className }: FormMetadataE
 
       <div className="space-y-2">
         <Label htmlFor="form-description">
-          Description <span className="text-muted-foreground font-normal">(optional)</span>
+          Description <span className="font-normal text-muted-foreground">(optional)</span>
         </Label>
         <Input
           id="form-description"

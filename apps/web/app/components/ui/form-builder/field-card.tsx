@@ -1,15 +1,17 @@
 import { ChevronUp, ChevronDown, Copy, Trash2 } from "lucide-react";
+
+import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { FieldTypeSelector } from "./field-type-selector";
-import { FieldOptions } from "./field-options";
-import { getFieldTypeConfig } from "./constants";
-import type { FormField, FieldType } from "./types";
 import { cn } from "@/lib/utils";
+
+import { getFieldTypeConfig } from "./constants";
+import { FieldOptions } from "./field-options";
+import { FieldTypeSelector } from "./field-type-selector";
+import type { FormField, FieldType } from "./types";
 
 export interface FieldCardProps {
   field: FormField;
@@ -44,7 +46,7 @@ export function FieldCard({
 
   return (
     <Card data-slot="field-card" className={cn("relative", className)}>
-      <div className="bg-background text-muted-foreground absolute -top-3 left-4 px-2 text-xs font-medium">
+      <div className="absolute -top-3 left-4 bg-background px-2 text-xs font-medium text-muted-foreground">
         Field {index + 1}
       </div>
 
@@ -68,7 +70,7 @@ export function FieldCard({
           {field.fieldType !== "unsupported" && field.fieldType !== "label" && (
             <div className="space-y-2">
               <Label htmlFor={`field-description-${field.id}`}>
-                Description <span className="text-muted-foreground font-normal">(optional)</span>
+                Description <span className="font-normal text-muted-foreground">(optional)</span>
               </Label>
               <Input
                 id={`field-description-${field.id}`}
@@ -152,7 +154,7 @@ export function FieldCard({
                       type="button"
                       variant="ghost"
                       size="icon"
-                      className="text-destructive hover:text-destructive size-8"
+                      className="size-8 text-destructive hover:text-destructive"
                       onClick={onDelete}
                     >
                       <Trash2 className="size-4" />

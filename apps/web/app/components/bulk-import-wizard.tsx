@@ -1,9 +1,12 @@
 "use client";
 
+import { AlertCircle, CheckCircle2, Loader2, UserPlus, Users, XCircle } from "lucide-react";
 import { useState } from "react";
 import { useFetcher } from "react-router";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
+
+import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
 import { Checkbox } from "~/components/ui/checkbox";
 import {
   Table,
@@ -13,8 +16,6 @@ import {
   TableHeader,
   TableRow,
 } from "~/components/ui/table";
-import { Badge } from "~/components/ui/badge";
-import { AlertCircle, CheckCircle2, Loader2, UserPlus, Users, XCircle } from "lucide-react";
 import { matchStripeCustomerToUser } from "~/lib/bulk-import-helpers";
 
 type User = {
@@ -148,7 +149,7 @@ export function BulkImportWizard({ stripeCustomers, existingUsers }: BulkImportW
           </div>
           <span className="text-sm font-medium">Select Customers</span>
         </div>
-        <div className="bg-border h-px w-12" />
+        <div className="h-px w-12 bg-border" />
         <div className="flex items-center gap-2">
           <div
             className={`flex h-8 w-8 items-center justify-center rounded-full ${
@@ -161,7 +162,7 @@ export function BulkImportWizard({ stripeCustomers, existingUsers }: BulkImportW
           </div>
           <span className="text-sm font-medium">Preview</span>
         </div>
-        <div className="bg-border h-px w-12" />
+        <div className="h-px w-12 bg-border" />
         <div className="flex items-center gap-2">
           <div
             className={`flex h-8 w-8 items-center justify-center rounded-full ${
@@ -220,7 +221,7 @@ export function BulkImportWizard({ stripeCustomers, existingUsers }: BulkImportW
                   <TableBody>
                     {stripeCustomers.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={4} className="text-muted-foreground text-center">
+                        <TableCell colSpan={4} className="text-center text-muted-foreground">
                           No Stripe customers found
                         </TableCell>
                       </TableRow>
@@ -252,7 +253,7 @@ export function BulkImportWizard({ stripeCustomers, existingUsers }: BulkImportW
                 </Button>
               </div>
               {selectedCustomerIds.size > 50 && (
-                <p className="text-destructive text-sm">
+                <p className="text-sm text-destructive">
                   Please select 50 or fewer customers for bulk import
                 </p>
               )}
@@ -275,28 +276,28 @@ export function BulkImportWizard({ stripeCustomers, existingUsers }: BulkImportW
                   <Users className="h-8 w-8 text-blue-500" />
                   <div>
                     <p className="text-2xl font-bold">{existingUsersCount}</p>
-                    <p className="text-muted-foreground text-sm">Will Link</p>
+                    <p className="text-sm text-muted-foreground">Will Link</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3 rounded-lg border p-4">
                   <UserPlus className="h-8 w-8 text-green-500" />
                   <div>
                     <p className="text-2xl font-bold">{newUsersCount}</p>
-                    <p className="text-muted-foreground text-sm">Will Create</p>
+                    <p className="text-sm text-muted-foreground">Will Create</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3 rounded-lg border p-4">
                   <CheckCircle2 className="h-8 w-8 text-gray-500" />
                   <div>
                     <p className="text-2xl font-bold">{alreadySyncedCount}</p>
-                    <p className="text-muted-foreground text-sm">Already Synced</p>
+                    <p className="text-sm text-muted-foreground">Already Synced</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3 rounded-lg border p-4">
                   <XCircle className="h-8 w-8 text-red-500" />
                   <div>
                     <p className="text-2xl font-bold">{conflictsCount}</p>
-                    <p className="text-muted-foreground text-sm">Conflicts</p>
+                    <p className="text-sm text-muted-foreground">Conflicts</p>
                   </div>
                 </div>
               </div>
@@ -338,7 +339,7 @@ export function BulkImportWizard({ stripeCustomers, existingUsers }: BulkImportW
                                 <XCircle className="mr-1 h-3 w-3" />
                                 Conflict (Will be skipped)
                               </Badge>
-                              <p className="text-muted-foreground text-xs">
+                              <p className="text-xs text-muted-foreground">
                                 {result.conflictReason}
                               </p>
                             </div>
@@ -394,10 +395,10 @@ export function BulkImportWizard({ stripeCustomers, existingUsers }: BulkImportW
           </CardHeader>
           <CardContent>
             <div className="flex flex-col items-center justify-center gap-4 py-8">
-              <Loader2 className="text-primary h-12 w-12 animate-spin" />
-              <p className="text-muted-foreground text-sm">Importing {validCount} customer(s)...</p>
+              <Loader2 className="h-12 w-12 animate-spin text-primary" />
+              <p className="text-sm text-muted-foreground">Importing {validCount} customer(s)...</p>
               {(conflictsCount > 0 || alreadySyncedCount > 0) && (
-                <p className="text-muted-foreground text-xs">
+                <p className="text-xs text-muted-foreground">
                   (
                   {[
                     alreadySyncedCount > 0 && `${alreadySyncedCount} already synced`,

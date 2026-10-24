@@ -1,16 +1,18 @@
-import type { Route } from "./+types/subscribe-confirm";
-import { BreadcrumbItem, BreadcrumbPage } from "~/components/ui/breadcrumb";
-import { DashboardBreadcrumb } from "~/components/dashboard-breadcrumb";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
-import { Button } from "~/components/ui/button";
 import { CheckCircle2, XCircle, Loader2, HeartCrack } from "lucide-react";
-import { cn } from "~/lib/utils";
+import { useEffect } from "react";
 import { useSearchParams } from "react-router";
+import { useNavigate } from "react-router";
+
+import { DashboardBreadcrumb } from "~/components/dashboard-breadcrumb";
+import { BreadcrumbItem, BreadcrumbPage } from "~/components/ui/breadcrumb";
+import { Button } from "~/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
 import { UserRepo } from "~/db/repo/user";
 import { createSimpleAuthServer } from "~/fragno/simple-auth-server";
 import { createStripeServer } from "~/fragno/stripe-server";
-import { useNavigate } from "react-router";
-import { useEffect } from "react";
+import { cn } from "~/lib/utils";
+
+import type { Route } from "./+types/subscribe-confirm";
 
 export async function loader({ context, request }: Route.LoaderArgs) {
   const auth = createSimpleAuthServer(context.pool);
@@ -94,7 +96,7 @@ export default function DashboardSubscribeConfirm({
           </CardHeader>
           <CardContent className="text-center">
             {status === "success" ? (
-              <div className="text-muted-foreground flex items-center justify-center gap-2 text-sm">
+              <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
                 <Loader2 className="h-4 w-4 animate-spin" />
                 <span>Redirecting...</span>
               </div>

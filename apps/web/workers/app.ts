@@ -1,5 +1,5 @@
-import { createRequestHandler } from "react-router";
 import type { Pool } from "pg";
+import { createRequestHandler } from "react-router";
 
 import {
   createDrizzleDatabase,

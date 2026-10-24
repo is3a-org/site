@@ -1,5 +1,6 @@
-import type { Route } from "./+types/login-error";
 import { Link } from "react-router";
+
+import type { Route } from "./+types/login-error";
 
 export function meta(_: Route.MetaArgs) {
   return [

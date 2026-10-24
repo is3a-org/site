@@ -1,6 +1,7 @@
-import type { Route } from "./+types/submissions";
-import { Link } from "react-router";
+import { ArrowLeft, Trash2, Eye, ClipboardList, Download } from "lucide-react";
 import { useState } from "react";
+import { Link } from "react-router";
+
 import { DashboardBreadcrumb } from "~/components/dashboard-breadcrumb";
 import {
   BreadcrumbItem,
@@ -11,14 +12,6 @@ import {
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "~/components/ui/table";
-import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -26,9 +19,18 @@ import {
   DialogHeader,
   DialogTitle,
 } from "~/components/ui/dialog";
-import { ArrowLeft, Trash2, Eye, ClipboardList, Download } from "lucide-react";
 import { Skeleton } from "~/components/ui/skeleton";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "~/components/ui/table";
 import { formsClient } from "~/lib/forms-client";
+
+import type { Route } from "./+types/submissions";
 
 export default function FormSubmissionsPage({ params }: Route.ComponentProps) {
   const { data: form, loading: isLoadingForm } = formsClient.useFormById({
@@ -158,7 +160,7 @@ export default function FormSubmissionsPage({ params }: Route.ComponentProps) {
                   <Skeleton className="h-10 w-full" />
                 </div>
               ) : submissionsList.length === 0 ? (
-                <div className="text-muted-foreground flex flex-col items-center justify-center py-12">
+                <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
                   <ClipboardList className="mb-4 h-12 w-12 opacity-50" />
                   <p className="text-lg font-medium">No submissions yet</p>
                   <p className="text-sm">
@@ -182,12 +184,12 @@ export default function FormSubmissionsPage({ params }: Route.ComponentProps) {
                         <TableRow key={submission.id}>
                           <TableCell>{new Date(submission.submittedAt).toLocaleString()}</TableCell>
                           <TableCell>
-                            <code className="bg-muted rounded px-2 py-1 text-xs">
+                            <code className="rounded bg-muted px-2 py-1 text-xs">
                               v{submission.formVersion}
                             </code>
                           </TableCell>
                           <TableCell>
-                            <code className="bg-muted inline-block max-w-sm truncate rounded px-2 py-1 text-xs">
+                            <code className="inline-block max-w-sm truncate rounded bg-muted px-2 py-1 text-xs">
                               {JSON.stringify(data)}
                             </code>
                           </TableCell>
@@ -227,7 +229,7 @@ export default function FormSubmissionsPage({ params }: Route.ComponentProps) {
             <DialogTitle>Submission Details</DialogTitle>
             <DialogDescription>Full submission data</DialogDescription>
           </DialogHeader>
-          <pre className="bg-muted overflow-auto rounded-md p-4 text-sm">
+          <pre className="overflow-auto rounded-md bg-muted p-4 text-sm">
             {JSON.stringify(selectedSubmissionData, null, 2)}
           </pre>
           <DialogFooter>

@@ -1,4 +1,5 @@
 import { createOtpServer } from "~/fragno/otp-server";
+
 import type { Route } from "./+types/otp";
 
 export async function loader({ request, context }: Route.LoaderArgs) {

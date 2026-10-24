@@ -1,10 +1,12 @@
-import type { Route } from "./+types/locations";
-import { Form, useNavigation } from "react-router";
+import { Plus, Pencil, Trash2, MapPin, Mail, Globe, Calendar } from "lucide-react";
 import { useState, useEffect } from "react";
+import { Form, useNavigation } from "react-router";
+
 import { DashboardBreadcrumb } from "~/components/dashboard-breadcrumb";
 import { BreadcrumbItem, BreadcrumbPage } from "~/components/ui/breadcrumb";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
+import { Checkbox } from "~/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -13,6 +15,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "~/components/ui/dialog";
+import { Input } from "~/components/ui/input";
+import { Label } from "~/components/ui/label";
 import {
   Table,
   TableBody,
@@ -21,11 +25,9 @@ import {
   TableHeader,
   TableRow,
 } from "~/components/ui/table";
-import { Input } from "~/components/ui/input";
-import { Label } from "~/components/ui/label";
-import { Checkbox } from "~/components/ui/checkbox";
-import { Plus, Pencil, Trash2, MapPin, Mail, Globe, Calendar } from "lucide-react";
 import { LocationRepo, NewLocationSchema, type Location } from "~/db/repo/locations";
+
+import type { Route } from "./+types/locations";
 
 export async function loader({ context }: Route.LoaderArgs) {
   const locations = await new LocationRepo(context.db).getAllLocations();
@@ -163,7 +165,7 @@ export default function LocationsPage({ loaderData }: Route.ComponentProps) {
           </CardHeader>
           <CardContent>
             {locations.length === 0 ? (
-              <div className="text-muted-foreground flex flex-col items-center justify-center py-12">
+              <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
                 <MapPin className="mb-4 h-12 w-12 opacity-50" />
                 <p className="text-lg font-medium">No locations yet</p>
                 <p className="text-sm">Get started by adding your first location</p>
@@ -191,14 +193,14 @@ export default function LocationsPage({ loaderData }: Route.ComponentProps) {
                             {loc.email}
                           </div>
                         ) : (
-                          <span className="text-muted-foreground text-sm">—</span>
+                          <span className="text-sm text-muted-foreground">—</span>
                         )}
                       </TableCell>
                       <TableCell>
                         {loc.address ? (
                           <span className="text-sm">{loc.address}</span>
                         ) : (
-                          <span className="text-muted-foreground text-sm">—</span>
+                          <span className="text-sm text-muted-foreground">—</span>
                         )}
                       </TableCell>
                       <TableCell>
@@ -213,7 +215,7 @@ export default function LocationsPage({ loaderData }: Route.ComponentProps) {
                             Link
                           </a>
                         ) : (
-                          <span className="text-muted-foreground text-sm">—</span>
+                          <span className="text-sm text-muted-foreground">—</span>
                         )}
                       </TableCell>
                       <TableCell>
@@ -238,7 +240,7 @@ export default function LocationsPage({ loaderData }: Route.ComponentProps) {
                               <span>{activeSeasons.join(", ")}</span>
                             </div>
                           ) : (
-                            <span className="text-muted-foreground text-sm">—</span>
+                            <span className="text-sm text-muted-foreground">—</span>
                           );
                         })()}
                       </TableCell>

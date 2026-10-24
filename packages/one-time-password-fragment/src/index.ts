@@ -1,10 +1,12 @@
-import { defineFragment, instantiate } from "@fragno-dev/core";
 import { createClientBuilder, type FragnoPublicClientConfig } from "@fragno-dev/core/client";
+
+import { defineFragment, instantiate } from "@fragno-dev/core";
 import { withDatabase, type FragnoPublicConfigWithDatabase } from "@fragno-dev/db";
-import { otpSchema } from "./schema";
+
 import { ottRoutesFactory, type OttConfig, OttType } from "./ott/ott";
-import { totpRoutesFactory, type TotpConfig } from "./totp/totp";
 import { generateToken } from "./ott/ott";
+import { otpSchema } from "./schema";
+import { totpRoutesFactory, type TotpConfig } from "./totp/totp";
 import { base32Encode, verifyBackupCode, verifyTOTP } from "./totp/totp";
 
 export interface OtpFragmentConfig extends OttConfig, TotpConfig {

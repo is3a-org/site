@@ -1,9 +1,11 @@
+import path from "node:path";
+
 import { reactRouter } from "@react-router/dev/vite";
+import devtoolsJson from "vite-plugin-devtools-json";
+import { defineConfig, lazyPlugins } from "vite-plus";
+
 import { cloudflare } from "@cloudflare/vite-plugin";
 import tailwindcss from "@tailwindcss/vite";
-import { defineConfig, lazyPlugins } from "vite-plus";
-import devtoolsJson from "vite-plugin-devtools-json";
-import path from "path";
 
 export default defineConfig({
   run: {
@@ -38,8 +40,8 @@ export default defineConfig({
   resolve: {
     tsconfigPaths: true,
     alias: {
-      "@/components": path.resolve(__dirname, "./app/components"),
-      "@/lib": path.resolve(__dirname, "./app/lib"),
+      "@/components": path.resolve(import.meta.dirname, "./app/components"),
+      "@/lib": path.resolve(import.meta.dirname, "./app/lib"),
     },
   },
 });
