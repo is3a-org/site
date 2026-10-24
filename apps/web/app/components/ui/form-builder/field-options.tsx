@@ -1,6 +1,7 @@
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@is3a/design-system/input";
+import { Label } from "@is3a/design-system/label";
+import { Textarea } from "@is3a/design-system/textarea";
+
 import { cn } from "@/lib/utils";
 
 import { getFieldTypeConfig } from "./constants";

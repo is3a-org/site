@@ -1,5 +1,4 @@
-import { DashboardBreadcrumb } from "~/components/dashboard-breadcrumb";
-import { BreadcrumbItem, BreadcrumbPage } from "~/components/ui/breadcrumb";
+import { BreadcrumbItem, BreadcrumbPage } from "@is3a/design-system/breadcrumb";
 import {
   Table,
   TableBody,
@@ -8,7 +7,9 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "~/components/ui/table";
+} from "@is3a/design-system/table";
+
+import { DashboardBreadcrumb } from "~/components/dashboard-breadcrumb";
 import { UserRepo } from "~/db/repo/user";
 import { getMembershipByPriceId } from "~/lib/memberships";
 import { cn } from "~/lib/utils";

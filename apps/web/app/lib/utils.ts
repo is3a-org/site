@@ -1,12 +1,7 @@
-import { clsx, type ClassValue } from "clsx";
 import { customAlphabet } from "nanoid";
-import { twMerge } from "tailwind-merge";
+export { cn } from "@is3a/design-system/cn";
 
 const nanoIdGenerator = customAlphabet("346789ABCDEFGHJKLMNPQRTUVWXYabcdefghijkmnpqrtwxyz", 32);
-
-export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs));
-}
 
 export function assert(condition: unknown, message?: string): asserts condition {
   if (!condition) {

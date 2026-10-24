@@ -1,10 +1,6 @@
 "use client";
 
-import { AlertCircle, CheckCircle2, Loader2 } from "lucide-react";
-import { useState, useEffect } from "react";
-import { useFetcher } from "react-router";
-
-import { Button } from "~/components/ui/button";
+import { Button } from "@is3a/design-system/button";
 import {
   Dialog,
   DialogContent,
@@ -12,16 +8,19 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "~/components/ui/dialog";
-import { Input } from "~/components/ui/input";
-import { Label } from "~/components/ui/label";
+} from "@is3a/design-system/dialog";
+import { Input } from "@is3a/design-system/input";
+import { Label } from "@is3a/design-system/label";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "~/components/ui/select";
+} from "@is3a/design-system/select";
+import { AlertCircle, CheckCircle2, Loader2 } from "lucide-react";
+import { useState, useEffect } from "react";
+import { useFetcher } from "react-router";
 
 type User = {
   id: string;

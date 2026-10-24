@@ -1,16 +1,17 @@
-import { ArrowLeft, Trash2, Eye, ClipboardList, Download } from "lucide-react";
-import { useState } from "react";
-import { Link } from "react-router";
-
-import { DashboardBreadcrumb } from "~/components/dashboard-breadcrumb";
 import {
   BreadcrumbItem,
   BreadcrumbLink,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from "~/components/ui/breadcrumb";
-import { Button } from "~/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
+} from "@is3a/design-system/breadcrumb";
+import { Button } from "@is3a/design-system/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@is3a/design-system/card";
 import {
   Dialog,
   DialogContent,
@@ -18,8 +19,8 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "~/components/ui/dialog";
-import { Skeleton } from "~/components/ui/skeleton";
+} from "@is3a/design-system/dialog";
+import { Skeleton } from "@is3a/design-system/skeleton";
 import {
   Table,
   TableBody,
@@ -27,7 +28,12 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "~/components/ui/table";
+} from "@is3a/design-system/table";
+import { ArrowLeft, Trash2, Eye, ClipboardList, Download } from "lucide-react";
+import { useState } from "react";
+import { Link } from "react-router";
+
+import { DashboardBreadcrumb } from "~/components/dashboard-breadcrumb";
 import { formsClient } from "~/lib/forms-client";
 
 import type { Route } from "./+types/submissions";

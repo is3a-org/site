@@ -33,7 +33,9 @@ vp run build
 
 ```bash
 vp run dev          # Start the React Router development server
-vp run build        # Build the library, then the web app
+vp run build        # Build the library, web app, and static Storybook
+vp run storybook    # Start the component workshop on port 6006
+vp run storybook:build # Build just the static Storybook
 vp run build:watch  # Rebuild the library on changes (use a second terminal)
 vp run types:check  # Generate Worker/route types and type-check all packages
 vp check            # Formatting and type checks; lint findings are warnings
@@ -62,7 +64,7 @@ also be run directly, e.g. `vp run @is3a/web#build` or `vp run @is3a/web#preview
   integration’s declaration export to the file actually shipped in that release. This keeps native
   type checking enabled without suppressing the missing declaration error.
 - **Formatting**: Imports, package manifests, and Tailwind classes are sorted. Workspace imports use
-  the `@is3a/*` group; Tailwind uses the web app stylesheet and recognizes `cn()`.
+  the `@is3a/*` group; Tailwind uses the design system’s Storybook entry and recognizes `cn()`.
 - **TypeScript**: Run `vp run types:check` after a fresh install to build dependencies and generate
   Worker/route types before direct `vp check` or staged checks. `vp run check` and CI do this
   automatically.
@@ -70,6 +72,28 @@ also be run directly, e.g. `vp run @is3a/web#build` or `vp run @is3a/web#preview
   on save. Root lint/format settings apply across workspace packages.
 - **Configuration**: Shared lint/format rules live in the root `vite.config.ts`; the library's
   `pack` configuration preserves its browser/server exports and Fragno code splitting.
+
+### Design system and Storybook
+
+Shared UI lives in `packages/design-system`, following the same package layout as
+`brand-intelligence`. It exports React components directly from source, a shared `cn()` utility, and
+the existing IS3A theme. The app and Storybook use the same components and tokens.
+
+```tsx
+import { Button } from "@is3a/design-system/button";
+import { cn } from "@is3a/design-system/cn";
+```
+
+Run `vp run storybook` for the component workshop, or `vp run storybook --port 6016` if 6006 is
+already in use. The stories cover all 26 UI primitives, component states, and color, typography,
+spacing, and radius foundations. Use the theme toolbar to switch between light and dark.
+
+`vp run storybook:build` writes `packages/design-system/storybook-static/`. This is also part of the
+root build and CI; it is not deployed with the Cloudflare Worker. Application development does not
+need a Storybook build because the design system exports source.
+
+See [the design system README](packages/design-system/README.md) for component and theme
+conventions.
 
 ### Give your user the admin role
 
@@ -100,6 +124,7 @@ Pushing to `main` deploys `apps/web` as the `site` Cloudflare Worker (IS3A accou
 ├── apps/
 │   └── web/                         # React Router + Cloudflare application
 ├── packages/
+│   ├── design-system/               # Shared theme, UI components, and Storybook
 │   └── one-time-password-fragment/  # Authentication fragment
 └── tooling/                         # Shared lint plugins
 ```

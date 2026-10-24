@@ -1,7 +1,8 @@
+import { Avatar, AvatarFallback, AvatarImage } from "@is3a/design-system/avatar";
+import { Badge } from "@is3a/design-system/badge";
+import { BreadcrumbItem, BreadcrumbPage } from "@is3a/design-system/breadcrumb";
+
 import { DashboardBreadcrumb } from "~/components/dashboard-breadcrumb";
-import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
-import { Badge } from "~/components/ui/badge";
-import { BreadcrumbItem, BreadcrumbPage } from "~/components/ui/breadcrumb";
 import { cn } from "~/lib/utils";
 
 import type { Route } from "./+types/dashboard-home";

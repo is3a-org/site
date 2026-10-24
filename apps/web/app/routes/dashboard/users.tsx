@@ -1,21 +1,21 @@
-import { Search, ChevronLeft, ChevronRight, ArrowUpDown } from "lucide-react";
-import { useState } from "react";
-
-import type { Role } from "@fragno-dev/auth";
-
-import { DashboardBreadcrumb } from "~/components/dashboard-breadcrumb";
-import { BreadcrumbItem, BreadcrumbPage } from "~/components/ui/breadcrumb";
-import { Button } from "~/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
-import { Input } from "~/components/ui/input";
+import { BreadcrumbItem, BreadcrumbPage } from "@is3a/design-system/breadcrumb";
+import { Button } from "@is3a/design-system/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@is3a/design-system/card";
+import { Input } from "@is3a/design-system/input";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "~/components/ui/select";
-import { Skeleton } from "~/components/ui/skeleton";
+} from "@is3a/design-system/select";
+import { Skeleton } from "@is3a/design-system/skeleton";
 import {
   Table,
   TableBody,
@@ -23,7 +23,13 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "~/components/ui/table";
+} from "@is3a/design-system/table";
+import { Search, ChevronLeft, ChevronRight, ArrowUpDown } from "lucide-react";
+import { useState } from "react";
+
+import type { Role } from "@fragno-dev/auth";
+
+import { DashboardBreadcrumb } from "~/components/dashboard-breadcrumb";
 import { simpleAuthClient } from "~/lib/simple-auth-client";
 
 import type { Route } from "./+types/users";

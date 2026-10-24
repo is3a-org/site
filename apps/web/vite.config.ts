@@ -12,7 +12,8 @@ export default defineConfig({
     tasks: {
       build: {
         command: "react-router build",
-        dependsOn: [{ task: "build", from: "dependencies" }],
+        // The design system exports source; only the fragment needs a build before consumption.
+        dependsOn: ["@is3a/one-time-password-fragment#build"],
         cache: {
           env: ["VITE_*", "NODE_ENV"],
           input: [{ auto: true }, ".env*"],
@@ -21,12 +22,12 @@ export default defineConfig({
       },
       dev: {
         command: "react-router dev",
-        dependsOn: [{ task: "build", from: "dependencies" }],
+        dependsOn: ["@is3a/one-time-password-fragment#build"],
         cache: false,
       },
       "types:check": {
         command: "vp run types:generate && react-router typegen && tsc -b",
-        dependsOn: [{ task: "build", from: "dependencies" }],
+        dependsOn: ["@is3a/one-time-password-fragment#build"],
         cache: false,
       },
     },
@@ -37,9 +38,18 @@ export default defineConfig({
     reactRouter(),
     devtoolsJson(),
   ]),
+  optimizeDeps: {
+    // Scan linked source up front instead of re-optimizing its dependencies on first use.
+    entries: ["../../packages/design-system/src/components/*.tsx", "!**/*.stories.tsx"],
+  },
   resolve: {
     tsconfigPaths: true,
     alias: {
+      // Fragno JSON Forms renderers still import the app-style shadcn paths.
+      "@/components/ui": path.resolve(
+        import.meta.dirname,
+        "../../packages/design-system/src/components",
+      ),
       "@/components": path.resolve(import.meta.dirname, "./app/components"),
       "@/lib": path.resolve(import.meta.dirname, "./app/lib"),
     },

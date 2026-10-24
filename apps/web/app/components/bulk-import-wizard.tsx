@@ -1,13 +1,15 @@
 "use client";
 
-import { AlertCircle, CheckCircle2, Loader2, UserPlus, Users, XCircle } from "lucide-react";
-import { useState } from "react";
-import { useFetcher } from "react-router";
-
-import { Badge } from "~/components/ui/badge";
-import { Button } from "~/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
-import { Checkbox } from "~/components/ui/checkbox";
+import { Badge } from "@is3a/design-system/badge";
+import { Button } from "@is3a/design-system/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@is3a/design-system/card";
+import { Checkbox } from "@is3a/design-system/checkbox";
 import {
   Table,
   TableBody,
@@ -15,7 +17,11 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "~/components/ui/table";
+} from "@is3a/design-system/table";
+import { AlertCircle, CheckCircle2, Loader2, UserPlus, Users, XCircle } from "lucide-react";
+import { useState } from "react";
+import { useFetcher } from "react-router";
+
 import { matchStripeCustomerToUser } from "~/lib/bulk-import-helpers";
 
 type User = {

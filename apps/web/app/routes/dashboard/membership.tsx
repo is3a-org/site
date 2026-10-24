@@ -1,3 +1,15 @@
+import { Badge } from "@is3a/design-system/badge";
+import { BreadcrumbItem, BreadcrumbPage } from "@is3a/design-system/breadcrumb";
+import { Button } from "@is3a/design-system/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@is3a/design-system/card";
+import { Input } from "@is3a/design-system/input";
+import { Label } from "@is3a/design-system/label";
 import {
   Check,
   Calendar,
@@ -11,12 +23,6 @@ import { useState } from "react";
 
 import { DashboardBreadcrumb } from "~/components/dashboard-breadcrumb";
 import { MembershipPlans } from "~/components/membership-plans";
-import { Badge } from "~/components/ui/badge";
-import { BreadcrumbItem, BreadcrumbPage } from "~/components/ui/breadcrumb";
-import { Button } from "~/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
-import { Input } from "~/components/ui/input";
-import { Label } from "~/components/ui/label";
 import { createSimpleAuthServer } from "~/fragno/simple-auth-server";
 import { createStripeServer } from "~/fragno/stripe-server";
 import { getMembershipByPriceId } from "~/lib/memberships";

@@ -1,6 +1,4 @@
-import { Check, Users, MessageCircle, Calendar, Info } from "lucide-react";
-
-import { Button } from "~/components/ui/button";
+import { Button } from "@is3a/design-system/button";
 import {
   Card,
   CardContent,
@@ -8,7 +6,9 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "~/components/ui/card";
+} from "@is3a/design-system/card";
+import { Check, Users, MessageCircle, Calendar, Info } from "lucide-react";
+
 import { MEMBERSHIPS } from "~/lib/memberships";
 import { stripeFragmentClient } from "~/lib/stripe-client";
 

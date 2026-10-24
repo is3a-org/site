@@ -1,12 +1,13 @@
-import { Plus, Pencil, Trash2, MapPin, Mail, Globe, Calendar } from "lucide-react";
-import { useState, useEffect } from "react";
-import { Form, useNavigation } from "react-router";
-
-import { DashboardBreadcrumb } from "~/components/dashboard-breadcrumb";
-import { BreadcrumbItem, BreadcrumbPage } from "~/components/ui/breadcrumb";
-import { Button } from "~/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
-import { Checkbox } from "~/components/ui/checkbox";
+import { BreadcrumbItem, BreadcrumbPage } from "@is3a/design-system/breadcrumb";
+import { Button } from "@is3a/design-system/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@is3a/design-system/card";
+import { Checkbox } from "@is3a/design-system/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -14,9 +15,9 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "~/components/ui/dialog";
-import { Input } from "~/components/ui/input";
-import { Label } from "~/components/ui/label";
+} from "@is3a/design-system/dialog";
+import { Input } from "@is3a/design-system/input";
+import { Label } from "@is3a/design-system/label";
 import {
   Table,
   TableBody,
@@ -24,7 +25,12 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "~/components/ui/table";
+} from "@is3a/design-system/table";
+import { Plus, Pencil, Trash2, MapPin, Mail, Globe, Calendar } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Form, useNavigation } from "react-router";
+
+import { DashboardBreadcrumb } from "~/components/dashboard-breadcrumb";
 import { LocationRepo, NewLocationSchema, type Location } from "~/db/repo/locations";
 
 import type { Route } from "./+types/locations";

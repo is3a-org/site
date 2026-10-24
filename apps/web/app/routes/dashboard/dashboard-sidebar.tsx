@@ -1,4 +1,12 @@
 import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarHeader,
+  SidebarRail,
+  useSidebar,
+} from "@is3a/design-system/sidebar";
+import {
   Home,
   MapPin,
   Users,
@@ -13,14 +21,6 @@ import { IS3ALogo } from "~/components/icons/is3a";
 import { StripeIcon } from "~/components/icons/stripe";
 import { NavMain } from "~/components/nav-main";
 import { NavUser } from "~/components/nav-user";
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarFooter,
-  SidebarHeader,
-  SidebarRail,
-  useSidebar,
-} from "~/components/ui/sidebar";
 
 const navItems = [
   {

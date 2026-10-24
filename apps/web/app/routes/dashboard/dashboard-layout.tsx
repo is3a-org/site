@@ -1,6 +1,3 @@
-import { AlertCircle } from "lucide-react";
-import { isRouteErrorResponse, Outlet, redirect } from "react-router";
-
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -8,10 +5,19 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from "~/components/ui/breadcrumb";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
-import { Separator } from "~/components/ui/separator";
-import { SidebarInset, SidebarProvider, SidebarTrigger } from "~/components/ui/sidebar";
+} from "@is3a/design-system/breadcrumb";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@is3a/design-system/card";
+import { Separator } from "@is3a/design-system/separator";
+import { SidebarInset, SidebarProvider, SidebarTrigger } from "@is3a/design-system/sidebar";
+import { AlertCircle } from "lucide-react";
+import { isRouteErrorResponse, Outlet, redirect } from "react-router";
+
 import { createSimpleAuthServer } from "~/fragno/simple-auth-server";
 import { DashboardNavigationSidebar } from "~/routes/dashboard/dashboard-sidebar";
 

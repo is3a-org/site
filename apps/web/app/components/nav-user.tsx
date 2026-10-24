@@ -1,7 +1,4 @@
-import { ChevronsUpDown, LogOut } from "lucide-react";
-import { useNavigate } from "react-router";
-
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@is3a/design-system/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -9,13 +6,16 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from "@is3a/design-system/dropdown-menu";
 import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
   useSidebar,
-} from "@/components/ui/sidebar";
+} from "@is3a/design-system/sidebar";
+import { ChevronsUpDown, LogOut } from "lucide-react";
+import { useNavigate } from "react-router";
+
 import { simpleAuthClient } from "@/lib/simple-auth-client";
 
 export function NavUser({

@@ -12,6 +12,7 @@ export default defineConfig({
     ignorePatterns: [
       "**/dist/**",
       "**/build/**",
+      "**/storybook-static/**",
       "**/.react-router/**",
       "**/worker-configuration.d.ts",
       "pnpm-lock.yaml",
@@ -58,8 +59,8 @@ export default defineConfig({
       ],
     },
     sortTailwindcss: {
-      // Use the web app theme so custom utilities sort with the built-in ones.
-      stylesheet: "./apps/web/app/app.css",
+      // Match Storybook and application consumers of the shared theme.
+      stylesheet: "./packages/design-system/.storybook/storybook.css",
       functions: ["cn"],
     },
     sortPackageJson: true,
@@ -397,6 +398,7 @@ export default defineConfig({
     ignorePatterns: [
       "**/dist/**",
       "**/build/**",
+      "**/storybook-static/**",
       "**/node_modules/**",
       "**/.react-router/**",
       "**/.wrangler/**",

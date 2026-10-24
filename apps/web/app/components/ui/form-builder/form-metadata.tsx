@@ -1,12 +1,13 @@
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Input } from "@is3a/design-system/input";
+import { Label } from "@is3a/design-system/label";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from "@is3a/design-system/select";
+
 import { cn } from "@/lib/utils";
 
 export type FormStatus = "draft" | "open" | "closed";
