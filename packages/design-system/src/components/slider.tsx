@@ -18,8 +18,8 @@ export function Slider({
       {...props}
     >
       <Primitive.Control className="relative flex min-h-10 w-full touch-none items-center select-none data-[orientation=vertical]:h-48 data-[orientation=vertical]:w-10 data-[orientation=vertical]:justify-center">
-        <Primitive.Track className="h-1.5 w-full rounded-full bg-input data-[orientation=vertical]:h-full data-[orientation=vertical]:w-1.5">
-          <Primitive.Indicator className="rounded-full bg-primary" />
+        <Primitive.Track className="h-0.5 w-full bg-input data-[orientation=vertical]:h-full data-[orientation=vertical]:w-0.5">
+          <Primitive.Indicator className="bg-primary" />
           {(value ?? defaultValue).map((_, index) => (
             <Primitive.Thumb
               key={index}
@@ -28,7 +28,8 @@ export function Slider({
               aria-labelledby={props["aria-labelledby"]}
               aria-describedby={props["aria-describedby"]}
               className={cn(
-                "size-5 rounded-full border-2 border-primary bg-background shadow-sm",
+                // A caret-like bar, with a pseudo-element extending the hit area.
+                "relative h-6 w-2.5 rounded-[1px] bg-ink after:absolute after:-inset-x-4 after:-inset-y-2",
                 focus,
               )}
             />

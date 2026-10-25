@@ -292,8 +292,9 @@ function SidebarMenuButton({
       data-sidebar="menu-button"
       data-active={isActive}
       className={cn(
-        // Collapsed buttons keep only their leading icon or avatar.
-        "w-full justify-start overflow-hidden text-left font-medium text-sidebar-foreground group-data-[collapsible=icon]:size-10 group-data-[collapsible=icon]:min-h-10 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground data-[active=true]:bg-sidebar-accent data-[active=true]:text-sidebar-primary group-data-[collapsible=icon]:[&>:not(:first-child)]:hidden [&>span]:truncate",
+        // The current page is bracketed, like the logo's [ around the crosses. Collapsed buttons keep
+        // only their leading icon or avatar.
+        "relative w-full justify-start overflow-hidden text-left font-sans text-sm font-medium text-sidebar-foreground group-data-[collapsible=icon]:size-10 group-data-[collapsible=icon]:min-h-10 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground active:scale-100 aria-[current=page]:bracket aria-[current=page]:font-semibold aria-[current=page]:text-foreground data-[active=true]:bracket data-[active=true]:font-semibold data-[active=true]:text-foreground group-data-[collapsible=icon]:[&>:not(:first-child)]:hidden [&>span]:truncate",
         variant === "outline" && "border border-sidebar-border",
         className,
       )}
@@ -326,7 +327,7 @@ function SidebarMenuSubButton({
       ...props,
       "data-active": isActive,
       className: cn(
-        "flex min-h-10 items-center gap-2 rounded-md px-3 text-sidebar-foreground hover:bg-sidebar-accent data-[active=true]:text-sidebar-primary",
+        "relative flex min-h-10 items-center gap-2 rounded-md px-3 text-sidebar-foreground hover:bg-sidebar-accent aria-[current=page]:bracket aria-[current=page]:font-semibold aria-[current=page]:text-foreground data-[active=true]:bracket data-[active=true]:font-semibold data-[active=true]:text-foreground",
         size === "sm" ? "text-xs" : "text-sm",
         focus,
         className,
@@ -418,7 +419,7 @@ function SidebarGroupLabel({
   return (
     <div
       className={cn(
-        "px-3 py-2 text-xs font-semibold text-muted-foreground group-data-[collapsible=icon]:hidden",
+        "px-3 py-2 text-sm font-semibold font-display text-muted-foreground group-data-[collapsible=icon]:hidden",
         className,
       )}
       {...props}

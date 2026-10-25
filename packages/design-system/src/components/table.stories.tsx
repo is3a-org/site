@@ -34,14 +34,14 @@ export function Members(): ReactElement {
             <TableCell className="font-medium">Alex de Vries</TableCell>
             <TableCell>Full</TableCell>
             <TableCell>
-              <Badge>Active</Badge>
+              <Badge variant="success">Active</Badge>
             </TableCell>
           </TableRow>
           <TableRow>
             <TableCell className="font-medium">Sam Jansen</TableCell>
             <TableCell>Flex</TableCell>
             <TableCell>
-              <Badge variant="secondary">Pending</Badge>
+              <Badge variant="warning">Pending</Badge>
             </TableCell>
           </TableRow>
         </TableBody>

@@ -24,7 +24,7 @@ export function Membership(): ReactElement {
         <CardTitle>Your membership</CardTitle>
         <CardDescription>Manage your IS3A membership.</CardDescription>
         <CardAction>
-          <Badge variant="secondary">Active</Badge>
+          <Badge variant="success">Active</Badge>
         </CardAction>
       </CardHeader>
       <CardContent>

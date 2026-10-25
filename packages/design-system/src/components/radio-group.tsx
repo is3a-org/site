@@ -15,7 +15,7 @@ export function RadioGroupItem({
     <Radio.Root
       data-slot="radio-group-item"
       className={cn(
-        "relative flex size-5 shrink-0 items-center justify-center rounded-full border border-input after:absolute after:-inset-2 data-checked:border-primary data-disabled:opacity-50",
+        "relative flex size-5 shrink-0 items-center justify-center rounded-full border-2 border-input bg-background transition-colors after:absolute after:-inset-2 hover:border-foreground data-checked:border-primary data-disabled:opacity-50",
         focus,
         className,
       )}

@@ -18,7 +18,11 @@ export function FieldLegend({
 }: ComponentProps<"legend"> & { variant?: "legend" | "label" }): JSX.Element {
   return (
     <legend
-      className={cn("mb-4 font-semibold", variant === "label" ? "text-sm" : "text-base", className)}
+      className={cn(
+        "mb-4 font-semibold",
+        variant === "label" ? "text-sm" : "text-xl font-display",
+        className,
+      )}
       {...props}
     />
   );
