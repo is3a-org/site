@@ -1,4 +1,4 @@
-import { Button } from "@is3a/design-system/button";
+import { buttonVariants } from "@is3a/design-system/button";
 import {
   Card,
   CardContent,
@@ -6,10 +6,12 @@ import {
   CardHeader,
   CardTitle,
 } from "@is3a/design-system/card";
+import { CrossesLoader } from "@is3a/design-system/crosses";
 import { TriangleAlert } from "lucide-react";
 import type { JSX } from "react";
 import { redirect, Link } from "react-router";
 
+import { landingCardPage } from "~/components/landing/landing-styles";
 import { createOtpServer } from "~/fragno/otp-server";
 import type { ReadonlyRouteProps } from "~/fragno/readonly-route-props";
 import { createSimpleAuthServer } from "~/fragno/simple-auth-server";
@@ -101,18 +103,18 @@ export default function Verify({
 }: ReadonlyRouteProps<Route.ComponentProps>): JSX.Element {
   if (loaderData.error !== "") {
     return (
-      <div className="flex min-h-screen w-full items-center justify-center bg-gray-50 px-4">
+      <div className={landingCardPage}>
         <Card className="w-full max-w-md">
           <CardHeader className="text-center">
-            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-red-100">
-              <TriangleAlert className="h-6 w-6 text-red-600" />
+            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-md bg-destructive-muted">
+              <TriangleAlert className="h-6 w-6 text-destructive" />
             </div>
             <CardTitle className="text-xl">Sign-in Failed</CardTitle>
             <CardDescription>{loaderData.error}</CardDescription>
           </CardHeader>
           <CardContent className="text-center">
-            <Link to="/login">
-              <Button>Back to Login</Button>
+            <Link to="/login" className={buttonVariants()}>
+              Back to login
             </Link>
           </CardContent>
         </Card>
@@ -121,10 +123,10 @@ export default function Verify({
   }
 
   return (
-    <div className="flex min-h-screen w-full items-center justify-center bg-gray-50">
-      <div className="text-center">
-        <div className="mb-4 inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-gray-300 border-t-gray-900"></div>
-        <p className="text-gray-600">Verifying your login...</p>
+    <div className={landingCardPage}>
+      <div className="flex flex-col items-center gap-4 text-muted-foreground">
+        <CrossesLoader label="Verifying your login" className="[&_svg]:size-4" />
+        <p aria-hidden>Verifying your login…</p>
       </div>
     </div>
   );

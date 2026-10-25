@@ -1,6 +1,21 @@
-import type { JSX } from "react";
+import { Button } from "@is3a/design-system/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@is3a/design-system/card";
+import { FieldLegend, FieldSet } from "@is3a/design-system/field";
+import { Input } from "@is3a/design-system/input";
+import { Label } from "@is3a/design-system/label";
+import { RadioGroup, RadioGroupItem } from "@is3a/design-system/radio-group";
+import type { JSX, ReactNode } from "react";
 
+import { landingContainer, landingHeading, textLink } from "~/components/landing/landing-styles";
+import { PageIntro } from "~/components/landing/page-intro";
 import type { ReadonlyRouteProps } from "~/fragno/readonly-route-props";
+import { cn } from "~/lib/utils";
 
 import type { Route } from "./+types/join";
 
@@ -23,188 +38,138 @@ export function loader(): JoinLoaderData {
   return { currentYear: new Date().getFullYear() };
 }
 
+const benefits = [
+  {
+    term: "Networking",
+    detail: "Connect with fellow alumni working in tech across Amsterdam.",
+  },
+  {
+    term: "Knowledge sharing",
+    detail: "Learn from workshops, lectures, and peer experiences.",
+  },
+  {
+    term: "Quarterly events",
+    detail: "Attend exclusive drinks, talks, and social gatherings.",
+  },
+];
+
+const universities = [
+  { value: "UvA", label: "University of Amsterdam (UvA)" },
+  { value: "VU", label: "Vrije Universiteit (VU)" },
+];
+
+function TextField({
+  id,
+  label,
+  children,
+}: Readonly<{ id: string; label: string; children: ReactNode }>): JSX.Element {
+  return (
+    <div className="grid gap-2">
+      <Label htmlFor={id}>{label}</Label>
+      {children}
+    </div>
+  );
+}
+
 export default function Join({
   loaderData,
 }: ReadonlyRouteProps<Route.ComponentProps>): JSX.Element {
   return (
     <div className="w-full">
-      {/* Hero Section */}
-      <section className="bg-gradient-to-r from-red-800 to-red-700 px-4 py-20 text-white">
-        <div className="mx-auto max-w-4xl text-center">
-          <h1 className="mb-4 text-5xl font-bold">Join IS3A</h1>
-          <p className="text-xl">
-            Become part of Amsterdam's premier information sciences alumni network
-          </p>
+      <PageIntro title="Join IS3A">
+        Become part of Amsterdam's premier information sciences alumni network.
+      </PageIntro>
+
+      <section aria-labelledby="benefits-heading" className={cn(landingContainer, "pb-16")}>
+        <h2 id="benefits-heading" className="sr-only">
+          Membership benefits
+        </h2>
+        <dl className="grid gap-8 sm:grid-cols-3">
+          {benefits.map(({ term, detail }) => (
+            <div key={term} className="border-t-2 border-ink pt-4">
+              <dt className="text-2xl leading-tight font-semibold font-display">{term}</dt>
+              <dd className="mt-2 leading-relaxed text-pretty text-muted-foreground">{detail}</dd>
+            </div>
+          ))}
+        </dl>
+      </section>
+
+      <section className="bg-muted py-16">
+        <div className={cn(landingContainer, "max-w-2xl")}>
+          <Card className="gap-8 py-8">
+            <CardHeader className="px-6 md:px-8">
+              <CardTitle className="text-3xl">Membership application</CardTitle>
+              <CardDescription>
+                All fields are required unless marked optional. We'll review your application and
+                get back to you soon!
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="px-6 md:px-8">
+              <form className="grid gap-6">
+                <TextField id="name" label="Full name">
+                  <Input id="name" name="name" autoComplete="name" required />
+                </TextField>
+                <TextField id="email" label="Email address">
+                  <Input id="email" name="email" type="email" autoComplete="email" required />
+                </TextField>
+                <FieldSet className="gap-3">
+                  <FieldLegend variant="label" className="mb-3">
+                    University
+                  </FieldLegend>
+                  <RadioGroup name="university" required>
+                    {universities.map(({ value, label }) => (
+                      <Label key={value} className="flex items-center gap-3 font-normal">
+                        <RadioGroupItem value={value} />
+                        {label}
+                      </Label>
+                    ))}
+                  </RadioGroup>
+                </FieldSet>
+                <TextField id="degree" label="Degree program">
+                  <Input
+                    id="degree"
+                    name="degree"
+                    placeholder="e.g., Computer Science, Artificial Intelligence"
+                    required
+                  />
+                </TextField>
+                <TextField id="graduationYear" label="Graduation year">
+                  <Input
+                    id="graduationYear"
+                    name="graduationYear"
+                    type="number"
+                    inputMode="numeric"
+                    min="1950"
+                    max={loaderData.currentYear}
+                    className="w-32 tabular-nums"
+                    required
+                  />
+                </TextField>
+                <TextField id="linkedin" label="LinkedIn profile (optional)">
+                  <Input
+                    id="linkedin"
+                    name="linkedin"
+                    type="url"
+                    placeholder="https://linkedin.com/in/your-profile"
+                  />
+                </TextField>
+                <Button type="submit" size="lg" className="mt-2 w-full">
+                  Submit application
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
         </div>
       </section>
 
-      {/* Membership Benefits */}
-      <section className="px-4 py-16">
-        <div className="mx-auto max-w-4xl">
-          <h2 className="mb-12 text-center text-3xl font-bold text-gray-900">
-            Membership Benefits
-          </h2>
-
-          <div className="mb-12 grid gap-8 md:grid-cols-3">
-            <div className="text-center">
-              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-red-100">
-                <span className="text-3xl">🤝</span>
-              </div>
-              <h3 className="mb-2 text-xl font-semibold">Networking</h3>
-              <p className="text-gray-600">
-                Connect with fellow alumni working in tech across Amsterdam
-              </p>
-            </div>
-
-            <div className="text-center">
-              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-red-100">
-                <span className="text-3xl">📚</span>
-              </div>
-              <h3 className="mb-2 text-xl font-semibold">Knowledge Sharing</h3>
-              <p className="text-gray-600">Learn from workshops, lectures, and peer experiences</p>
-            </div>
-
-            <div className="text-center">
-              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-red-100">
-                <span className="text-3xl">🎉</span>
-              </div>
-              <h3 className="mb-2 text-xl font-semibold">Quarterly Events</h3>
-              <p className="text-gray-600">Attend exclusive drinks, talks, and social gatherings</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Membership Form Section */}
-      <section className="bg-gray-50 px-4 py-16">
-        <div className="mx-auto max-w-2xl">
-          <div className="rounded-lg bg-white p-8 shadow-lg">
-            <h2 className="mb-8 text-center text-3xl font-bold text-gray-900">
-              Membership Application
-            </h2>
-
-            <form className="space-y-6">
-              <div>
-                <label htmlFor="name" className="mb-2 block text-sm font-medium text-gray-700">
-                  Full Name *
-                </label>
-                <input
-                  type="text"
-                  id="name"
-                  name="name"
-                  required
-                  className="w-full rounded-md border border-gray-300 px-4 py-2 focus:border-transparent focus:ring-2 focus:ring-red-600"
-                />
-              </div>
-
-              <div>
-                <label htmlFor="email" className="mb-2 block text-sm font-medium text-gray-700">
-                  Email Address *
-                </label>
-                <input
-                  type="email"
-                  id="email"
-                  name="email"
-                  required
-                  className="w-full rounded-md border border-gray-300 px-4 py-2 focus:border-transparent focus:ring-2 focus:ring-red-600"
-                />
-              </div>
-
-              <div>
-                <label
-                  htmlFor="university"
-                  className="mb-2 block text-sm font-medium text-gray-700"
-                >
-                  University *
-                </label>
-                <select
-                  id="university"
-                  name="university"
-                  required
-                  className="w-full rounded-md border border-gray-300 px-4 py-2 focus:border-transparent focus:ring-2 focus:ring-red-600"
-                >
-                  <option value="">Select your university</option>
-                  <option value="uva">University of Amsterdam (UvA)</option>
-                  <option value="vu">Vrije Universiteit Amsterdam (VU)</option>
-                </select>
-              </div>
-
-              <div>
-                <label htmlFor="degree" className="mb-2 block text-sm font-medium text-gray-700">
-                  Degree Program *
-                </label>
-                <input
-                  type="text"
-                  id="degree"
-                  name="degree"
-                  placeholder="e.g., Computer Science, Artificial Intelligence"
-                  required
-                  className="w-full rounded-md border border-gray-300 px-4 py-2 focus:border-transparent focus:ring-2 focus:ring-red-600"
-                />
-              </div>
-
-              <div>
-                <label
-                  htmlFor="graduation"
-                  className="mb-2 block text-sm font-medium text-gray-700"
-                >
-                  Graduation Year *
-                </label>
-                <input
-                  type="number"
-                  id="graduation"
-                  name="graduation"
-                  min="1990"
-                  max={loaderData.currentYear}
-                  required
-                  className="w-full rounded-md border border-gray-300 px-4 py-2 focus:border-transparent focus:ring-2 focus:ring-red-600"
-                />
-              </div>
-
-              <div>
-                <label htmlFor="linkedin" className="mb-2 block text-sm font-medium text-gray-700">
-                  LinkedIn Profile (optional)
-                </label>
-                <input
-                  type="url"
-                  id="linkedin"
-                  name="linkedin"
-                  placeholder="https://linkedin.com/in/your-profile"
-                  className="w-full rounded-md border border-gray-300 px-4 py-2 focus:border-transparent focus:ring-2 focus:ring-red-600"
-                />
-              </div>
-
-              <div className="pt-4">
-                <button
-                  type="submit"
-                  className="w-full rounded-md bg-red-800 px-6 py-3 text-lg font-semibold text-white transition-colors hover:bg-red-700"
-                >
-                  Submit Application
-                </button>
-              </div>
-            </form>
-
-            <p className="mt-6 text-center text-sm text-gray-600">
-              * Required fields. We'll review your application and get back to you soon!
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* Contact Section */}
-      <section className="px-4 py-16">
-        <div className="mx-auto max-w-4xl text-center">
-          <h2 className="mb-4 text-2xl font-bold text-gray-900">Questions?</h2>
-          <p className="mb-6 text-gray-700">
-            Feel free to reach out if you have any questions about membership.
-          </p>
-          <a
-            href="mailto:contact@is3a.nl"
-            className="font-semibold text-red-800 hover:text-red-700"
-          >
+      <section className={cn(landingContainer, "py-16")}>
+        <h2 className={landingHeading}>Questions?</h2>
+        <p className="mt-4 max-w-xl text-lg leading-relaxed text-pretty">
+          Feel free to reach out if you have any questions about membership:{" "}
+          <a href="mailto:contact@is3a.nl" className={textLink}>
             contact@is3a.nl
           </a>
-        </div>
+        </p>
       </section>
     </div>
   );

@@ -74,7 +74,7 @@ Storybook's Foundations/Brand page.
   major sections. Never use a cross to mean close or remove.
 - **Type:** Archivo throughout. `font-display` condenses it to 72% width, echoing the logo's tall
   letters, for titles, buttons, tabs, table headings, and badges. Body text stays at normal width.
-  PT Sans and Merriweather remain available for the public site.
+  Public page titles go bold and uppercase, like the logo's IS3A.
 - **Color:** Amsterdam red `#bd1900` for brand and primary actions; ink (black, white in dark mode)
   for brackets, crosses, focus, and table rules; klinker grey for hover and muted surfaces; gracht
   green (`success`) for positive states. Red is the brand, so the destructive button is outlined
@@ -93,9 +93,10 @@ Storybook's Foundations/Brand page.
 ```
 
 The theme registers all shared utility sources, including `control-styles.ts`. Consumers load font
-files themselves. Add `dark` to the document element to switch themes. The app content root uses
-`isolation: isolate`, while portals render outside it. The body is positioned relatively so absolute
-modal backdrops cover the visual viewport on mobile Safari.
+files themselves. Add `dark` to the document element to switch themes; the web app does this from a
+stored system/light/dark choice before first paint. The app content root uses `isolation: isolate`,
+while portals render outside it. The body is positioned relatively so absolute modal backdrops cover
+the visual viewport on mobile Safari.
 
 ## Adding components
 

@@ -1,24 +1,43 @@
-import { Menu, X } from "lucide-react";
+import { buttonVariants } from "@is3a/design-system/button";
+import { ArrowUpRight, Menu, X } from "lucide-react";
 import type { JSX } from "react";
 import { useEffect, useState } from "react";
 import { Link, NavLink, Outlet } from "react-router";
 
-import { SiteColumn, SiteSection, siteText } from "~/components/landing/site-grid";
+import { IS3ALogo } from "~/components/icons/is3a";
+import { landingContainer, textLink } from "~/components/landing/landing-styles";
+import { ThemeSwitch } from "~/components/theme-switch";
 import { cn } from "~/lib/utils";
 
 const navLinks = [
   { to: "/", label: "Home" },
-  { to: "/login", label: "Login" },
   { to: "/team", label: "Team" },
+  { to: "/login", label: "Log in" },
 ];
 
-const navLinkClass = ({ isActive }: { readonly isActive: boolean }): string =>
-  cn(
-    "font-pt-sans text-base leading-[normal] transition-colors hover:text-black/80",
-    isActive ? "font-bold text-black/80" : "text-black/64",
-  );
+// The current page carries the IS3A bracket, as in the dashboard sidebar.
+const navLinkClass =
+  "relative flex min-h-10 items-center px-3 font-display text-[0.9375rem] font-semibold text-muted-foreground transition-colors hover:text-foreground aria-[current=page]:bracket aria-[current=page]:text-foreground";
 
-const footerLinkClass = "text-[#971400] underline";
+const calendarUrl =
+  "https://calendar.google.com/calendar/ical/c_ehjqad1bljvvebaed6gv2tb8vo%40group.calendar.google.com/public/basic.ics";
+
+function ExternalLink({
+  href,
+  children,
+}: Readonly<{ href: string; children: string }>): JSX.Element {
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      className={cn(textLink, "inline-flex items-center gap-1")}
+    >
+      {children}
+      <ArrowUpRight aria-hidden className="size-3.5" />
+    </a>
+  );
+}
 
 export default function LandingLayout(): JSX.Element {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -36,59 +55,61 @@ export default function LandingLayout(): JSX.Element {
   }, []);
 
   return (
-    <div className="flex min-h-screen flex-col bg-white">
-      {/* Header */}
+    <div className="flex min-h-screen flex-col bg-background">
       <header
         className={cn(
-          "fixed inset-x-0 top-0 z-20 border-b bg-white",
-          scrolled ? "border-[#ccc]" : "border-transparent",
+          "sticky top-0 z-20 border-b bg-background/90 backdrop-blur-md transition-colors",
+          scrolled || mobileMenuOpen ? "border-border" : "border-transparent",
         )}
       >
-        <nav className="-mb-px flex h-14 items-center pr-6 pl-[11px] md:pl-4">
+        <nav aria-label="Main" className={cn(landingContainer, "flex h-16 items-center gap-2")}>
           <button
-            className="-m-2 mr-[-7px] p-2 text-black/64 hover:text-black/80 md:hidden"
+            type="button"
+            className="-ml-2 grid size-10 place-items-center rounded-md text-muted-foreground hover:text-foreground md:hidden"
             onClick={() => {
               setMobileMenuOpen(!mobileMenuOpen);
             }}
+            aria-expanded={mobileMenuOpen}
+            aria-controls="landing-mobile-menu"
             aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
           >
-            {mobileMenuOpen ? <X /> : <Menu />}
+            {mobileMenuOpen ? <X className="size-5" /> : <Menu className="size-5" />}
           </button>
 
-          <Link to="/" className="flex items-center">
-            <img
-              src="/is3a.png"
-              alt="IS3A Logo"
-              className="h-14 w-28 object-contain pt-2 pr-1 pb-2 pl-3"
-            />
-            <span className="hidden px-3 font-pt-sans text-xl font-bold text-black/80 md:inline-block">
-              IS3A
-            </span>
+          <Link to="/" aria-label="IS3A home" className="mr-4 shrink-0">
+            <IS3ALogo className="h-8 w-auto" />
           </Link>
 
-          <div className="ml-auto hidden items-center gap-[26px] md:flex">
+          <div className="hidden items-center gap-1 md:flex">
             {navLinks.map(({ to, label }) => (
               <NavLink key={to} to={to} end className={navLinkClass}>
                 {label}
               </NavLink>
             ))}
           </div>
+
+          <ThemeSwitch className="ml-auto" />
+          <Link to="/join" className={buttonVariants({ className: "hidden sm:inline-flex" })}>
+            Become a member
+          </Link>
         </nav>
 
-        {/* Mobile Menu */}
         <div
-          className={`grid bg-white transition-all duration-300 ease-in-out md:hidden ${
-            mobileMenuOpen ? "grid-rows-[1fr] opacity-100 shadow-md" : "grid-rows-[0fr] opacity-0"
-          }`}
+          id="landing-mobile-menu"
+          inert={!mobileMenuOpen}
+          className={cn(
+            "grid transition-[grid-template-rows,opacity] duration-200 ease-out motion-reduce:transition-none md:hidden",
+            mobileMenuOpen ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0",
+          )}
         >
           <div className="overflow-hidden">
-            <div className="space-y-1 px-4 py-3">
-              {navLinks.map(({ to, label }) => (
+            <div className={cn(landingContainer, "flex flex-col items-start gap-1 pt-1 pb-4")}>
+              {[...navLinks, { to: "/join", label: "Become a member" }].map(({ to, label }) => (
                 <NavLink
                   key={to}
                   to={to}
                   end
-                  className={(state) => cn("block py-2", navLinkClass(state))}
+                  className={navLinkClass}
                   onClick={() => {
                     setMobileMenuOpen(false);
                   }}
@@ -101,53 +122,44 @@ export default function LandingLayout(): JSX.Element {
         </div>
       </header>
 
-      {/* Main Content */}
-      <main className="flex-1 pt-14">
+      <main className="flex-1">
         <Outlet />
       </main>
 
-      {/* Footer */}
-      <footer>
-        <SiteSection>
-          <SiteColumn>
-            <div className={cn(siteText, "p-2 text-center")}>
-              <p>
-                <a
-                  href="https://instagram.com/is3a.nl"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={footerLinkClass}
-                >
-                  🖼️ Instagram
-                </a>{" "}
-                |{" "}
-                <a
-                  href="https://www.linkedin.com/company/is3a/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={footerLinkClass}
-                >
-                  🧑‍💼 LinkedIn
-                </a>
-              </p>
-              <p className="mt-3">
-                E:{" "}
-                <a href="mailto:contact@is3a.nl" className={footerLinkClass}>
+      <footer className="border-t-2 border-ink">
+        <div className={cn(landingContainer, "grid gap-10 py-12 text-sm md:grid-cols-12")}>
+          <div className="space-y-3 md:col-span-6">
+            <IS3ALogo className="h-10 w-auto" />
+            <p className="max-w-xs text-muted-foreground">
+              Information Sciences Association for Amsterdam Alumni
+            </p>
+          </div>
+          <div className="space-y-3 md:col-span-3">
+            <h2 className="text-base font-semibold font-display">Follow</h2>
+            <ul className="space-y-2">
+              <li>
+                <ExternalLink href="https://instagram.com/is3a.nl">Instagram</ExternalLink>
+              </li>
+              <li>
+                <ExternalLink href="https://www.linkedin.com/company/is3a/">LinkedIn</ExternalLink>
+              </li>
+              <li>
+                <ExternalLink href={calendarUrl}>Events calendar (iCal)</ExternalLink>
+              </li>
+            </ul>
+          </div>
+          <div className="space-y-3 md:col-span-3">
+            <h2 className="text-base font-semibold font-display">Contact</h2>
+            <ul className="space-y-2">
+              <li>
+                <a href="mailto:contact@is3a.nl" className={textLink}>
                   contact@is3a.nl
-                </a>{" "}
-                | KvK: 84535849 |{" "}
-                <a
-                  href="https://calendar.google.com/calendar/ical/c_ehjqad1bljvvebaed6gv2tb8vo%40group.calendar.google.com/public/basic.ics"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={footerLinkClass}
-                >
-                  Events iCal
                 </a>
-              </p>
-            </div>
-          </SiteColumn>
-        </SiteSection>
+              </li>
+              <li className="text-muted-foreground tabular-nums">KvK 84535849</li>
+            </ul>
+          </div>
+        </div>
       </footer>
     </div>
   );
