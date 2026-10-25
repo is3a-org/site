@@ -35,6 +35,7 @@ import { cn } from "~/lib/utils";
 import { requestContext } from "~/request-context";
 
 import type { Route } from "./+types/membership";
+import { formatMembershipCancellationDate } from "./membership-billing";
 
 type StatusMeta = {
   label: string;
@@ -646,12 +647,7 @@ export default function DashboardSubscribe({
                   <p className="max-w-3xl text-muted-foreground">
                     Your membership is scheduled to cancel. You can renew your current plan or
                     choose a new plan after{" "}
-                    {new Date(cancelDate!).toLocaleDateString("en-US", {
-                      month: "long",
-                      day: "numeric",
-                      year: "numeric",
-                    })}
-                    .
+                    {formatMembershipCancellationDate(cancelDate, renewalDate)}.
                   </p>
                   <Button variant="default" onClick={handleUncancel} disabled={loading}>
                     {loading ? "Renewing..." : "Renew Membership"}
