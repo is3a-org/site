@@ -21,6 +21,9 @@ export const NewLocationSchema = LocationSchema.omit({ id: true });
 export type Location = z.infer<typeof LocationSchema>;
 export type NewLocation = z.infer<typeof NewLocationSchema>;
 
+/** Stored location rows always include the nullable contact fields. */
+export type StoredLocation = typeof location.$inferSelect;
+
 export class LocationRepo {
   #db: DrizzleDatabase;
 
@@ -32,7 +35,7 @@ export class LocationRepo {
     return await this.#db.select().from(location).orderBy(location.name);
   }
 
-  async createLocation(newLocation: NewLocation) {
+  async createLocation(newLocation: NewLocation): Promise<StoredLocation[]> {
     return await this.#db.insert(location).values(newLocation).returning();
   }
 

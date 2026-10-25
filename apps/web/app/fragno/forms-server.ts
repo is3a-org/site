@@ -1,3 +1,4 @@
+import type { AuthMeResponse } from "@fragno-dev/auth";
 import { createFormsFragment } from "@fragno-dev/forms";
 
 import { createPostgresPool, type PostgresPool } from "../db/postgres/is3a-postgres.ts";
@@ -10,7 +11,7 @@ export function createFormsServer(pool: PostgresPool | (() => PostgresPool)): Fo
   const resolvedPool = typeof pool === "function" ? pool() : pool;
   const auth = createSimpleAuthServer(resolvedPool);
 
-  const getSession = async (headers: Headers) => {
+  const getSession = async (headers: Headers): Promise<AuthMeResponse["user"] | null> => {
     const response = await auth.callRoute("GET", "/me", { headers });
     if (response.type === "json" && response.data) {
       return response.data.user;

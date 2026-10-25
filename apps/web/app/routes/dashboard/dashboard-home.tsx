@@ -8,7 +8,10 @@ import { cn } from "~/lib/utils";
 
 import type { Route } from "./+types/dashboard-home";
 
-export async function loader({ context: _context, request: _request }: Route.LoaderArgs) {
+export async function loader({
+  context: _context,
+  request: _request,
+}: Route.LoaderArgs): Promise<Record<string, never>> {
   return {};
 }
 

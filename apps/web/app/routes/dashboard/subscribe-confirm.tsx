@@ -21,7 +21,15 @@ import { requestContext } from "~/request-context";
 
 import type { Route } from "./+types/subscribe-confirm";
 
-export async function loader({ context, request }: Route.LoaderArgs) {
+interface SubscriptionConfirmationData {
+  status: "error" | "success";
+  message: string;
+}
+
+export async function loader({
+  context,
+  request,
+}: Route.LoaderArgs): Promise<SubscriptionConfirmationData> {
   const auth = createSimpleAuthServer(context.get(requestContext).pool);
   const response = await auth.callRoute("GET", "/me", {
     headers: request.headers,

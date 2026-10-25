@@ -1,6 +1,22 @@
-import { createClientBuilder, type FragnoPublicClientConfig } from "@fragno-dev/core/client";
+import type { NonGetHTTPMethod } from "@fragno-dev/core/api";
+import {
+  createClientBuilder,
+  type ExtractNonGetRoutePaths,
+  type ExtractRouteByPath,
+  type FragnoClientHookData,
+  type FragnoClientMutatorData,
+  type FragnoPublicClientConfig,
+} from "@fragno-dev/core/client";
+import type { RoutesWithInternal } from "@fragno-dev/core/fragment-instantiator";
+import type {
+  ExtractFragmentDeps,
+  ExtractFragmentHandlerThisContext,
+  ExtractFragmentServices,
+  ExtractFragmentServiceThisContext,
+  FlattenRouteFactories,
+} from "@fragno-dev/core/route";
 
-import { defineFragment, instantiate } from "@fragno-dev/core";
+import { defineFragment, instantiate, type FragnoInstantiatedFragment } from "@fragno-dev/core";
 import { withDatabase, type FragnoPublicConfigWithDatabase } from "@fragno-dev/db";
 
 import { ottRoutesFactory, type OttConfig, OttType } from "./ott/ott";
@@ -261,10 +277,56 @@ export const otpFragmentDefinition = defineFragment<OtpFragmentConfig>("one-time
   })
   .build();
 
+type OtpFragmentDefinition = typeof otpFragmentDefinition;
+type OtpRoutes = FlattenRouteFactories<[typeof ottRoutesFactory, typeof totpRoutesFactory]>;
+
+/** The one-time password fragment retains its exact routes and database services. */
+export type OtpFragment = FragnoInstantiatedFragment<
+  RoutesWithInternal<OtpRoutes, NonNullable<OtpFragmentDefinition["$internalRoutes"]>>,
+  ExtractFragmentDeps<OtpFragmentDefinition>,
+  ExtractFragmentServices<OtpFragmentDefinition>,
+  ExtractFragmentServiceThisContext<OtpFragmentDefinition>,
+  ExtractFragmentHandlerThisContext<OtpFragmentDefinition>,
+  NonNullable<OtpFragmentDefinition["$requestStorage"]>,
+  FragnoPublicConfigWithDatabase
+>;
+
+type OtpMutator<TPath extends ExtractNonGetRoutePaths<OtpRoutes>> = FragnoClientMutatorData<
+  NonGetHTTPMethod,
+  TPath,
+  ExtractRouteByPath<OtpRoutes, TPath>["inputSchema"],
+  ExtractRouteByPath<OtpRoutes, TPath>["outputSchema"],
+  NonNullable<ExtractRouteByPath<OtpRoutes, TPath>["errorCodes"]>[number],
+  NonNullable<ExtractRouteByPath<OtpRoutes, TPath>["queryParameters"]>[number]
+>;
+type OtpStatusRoute = ExtractRouteByPath<OtpRoutes, "/totp/status", "GET">;
+
+/** Framework adapters preserve the one-time password routes' inputs, outputs, and errors. */
+export interface OtpFragmentClients {
+  useGenerateToken: OtpMutator<"/ott/generate">;
+  useValidateToken: OtpMutator<"/ott/validate">;
+  useCleanupTokens: OtpMutator<"/ott/cleanup">;
+  useInvalidateTokens: OtpMutator<"/ott/invalidate">;
+  useEnableTotp: OtpMutator<"/totp/enable">;
+  useVerifyTotp: OtpMutator<"/totp/verify">;
+  useVerifyBackupCode: OtpMutator<"/totp/verify-backup">;
+  useDisableTotp: OtpMutator<"/totp/disable">;
+  useTotpStatus: FragnoClientHookData<
+    "GET",
+    "/totp/status",
+    NonNullable<OtpStatusRoute["outputSchema"]>,
+    NonNullable<OtpStatusRoute["errorCodes"]>[number],
+    NonNullable<OtpStatusRoute["queryParameters"]>[number]
+  >;
+}
+
+/** The mapped client object meets Fragno's record constraint without an open index signature. */
+export type OtpFragmentAdapterClients = Pick<OtpFragmentClients, keyof OtpFragmentClients>;
+
 export function createOtpFragment(
   config: OtpFragmentConfig = {},
   fragnoConfig: FragnoPublicConfigWithDatabase,
-) {
+): OtpFragment {
   return instantiate(otpFragmentDefinition)
     .withConfig(config)
     .withOptions(fragnoConfig)
@@ -272,7 +334,9 @@ export function createOtpFragment(
     .build();
 }
 
-export function createOtpFragmentClients(fragnoConfig: FragnoPublicClientConfig) {
+export function createOtpFragmentClients(
+  fragnoConfig: FragnoPublicClientConfig,
+): OtpFragmentClients {
   const b = createClientBuilder(otpFragmentDefinition, fragnoConfig, [
     ottRoutesFactory,
     totpRoutesFactory,

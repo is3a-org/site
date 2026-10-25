@@ -4,6 +4,31 @@ import { customer_stripe, user_auth, subscription_stripe } from "~/db/postgres/f
 import { type DrizzleDatabase } from "~/db/postgres/is3a-postgres";
 import { user_stripe } from "~/db/postgres/postgres.schema";
 
+/** User membership summary with nullable fields from the Stripe left joins. */
+export interface UserMembershipSummary extends Pick<
+  typeof user_auth.$inferSelect,
+  "id" | "email" | "createdAt"
+> {
+  stripeCustomerId: typeof user_stripe.$inferSelect.stripeCustomerId;
+  subscriptionId: typeof subscription_stripe.$inferSelect.id | null;
+  subscriptionStatus: typeof subscription_stripe.$inferSelect.status | null;
+  subscriptionStripePriceId: typeof subscription_stripe.$inferSelect.priceId | null;
+}
+
+/** User membership details include the current subscription billing period. */
+export interface UserMembershipDetails extends UserMembershipSummary {
+  periodStart: typeof subscription_stripe.$inferSelect.currentPeriodStart | null;
+  periodEnd: typeof subscription_stripe.$inferSelect.currentPeriodEnd | null;
+  cancelAt: typeof subscription_stripe.$inferSelect.cancelAt;
+  cancelAtPeriodEnd: typeof subscription_stripe.$inferSelect.cancelAtPeriodEnd | null;
+}
+
+/** Stripe customer link missing from the Stripe fragment's customer table. */
+export type UnlinkedStripeCustomer = Pick<
+  typeof user_stripe.$inferSelect,
+  "userId" | "stripeCustomerId"
+>;
+
 export class UserRepo {
   #db: DrizzleDatabase;
 
@@ -11,7 +36,7 @@ export class UserRepo {
     this.#db = db;
   }
 
-  async getAllUsers() {
+  async getAllUsers(): Promise<UserMembershipSummary[]> {
     return await this.#db
       .select({
         id: user_auth.id,
@@ -44,7 +69,7 @@ export class UserRepo {
   }
 
   /** Users linked to a Stripe customer that the Stripe fragment does not know about yet. */
-  async getUsersWithUnlinkedStripeCustomer() {
+  async getUsersWithUnlinkedStripeCustomer(): Promise<UnlinkedStripeCustomer[]> {
     return await this.#db
       .select({
         userId: user_stripe.userId,
@@ -55,7 +80,7 @@ export class UserRepo {
       .where(and(isNotNull(user_stripe.stripeCustomerId), isNull(customer_stripe.id)));
   }
 
-  async getUserById(id: string) {
+  async getUserById(id: string): Promise<UserMembershipDetails | null> {
     const user = await this.#db
       .select({
         id: user_auth.id,
@@ -79,7 +104,7 @@ export class UserRepo {
     return user.length === 1 ? user[0] : null;
   }
 
-  async getUserByEmail(email: string) {
+  async getUserByEmail(email: string): Promise<UserMembershipSummary | null> {
     const user = await this.#db
       .select({
         id: user_auth.id,
@@ -99,7 +124,7 @@ export class UserRepo {
     return user.length === 1 ? user[0] : null;
   }
 
-  async getUserByStripeCustomerId(stripeCustomerId: string) {
+  async getUserByStripeCustomerId(stripeCustomerId: string): Promise<UserMembershipSummary | null> {
     const user = await this.#db
       .select({
         id: user_auth.id,

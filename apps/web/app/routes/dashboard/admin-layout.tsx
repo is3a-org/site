@@ -6,7 +6,10 @@ import { requestContext } from "~/request-context";
 
 import type { Route } from "./+types/admin-layout";
 
-export async function loader({ context, request }: Route.LoaderArgs) {
+export async function loader({
+  context,
+  request,
+}: Route.LoaderArgs): Promise<Response | Record<string, never>> {
   const auth = createSimpleAuthServer(context.get(requestContext).pool);
 
   const response = await auth.callRoute("GET", "/me", {

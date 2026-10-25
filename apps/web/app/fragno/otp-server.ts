@@ -1,9 +1,9 @@
-import { createOtpFragment } from "@is3a/one-time-password-fragment";
+import { createOtpFragment, type OtpFragment } from "@is3a/one-time-password-fragment";
 
 import { createPostgresPool, type PostgresPool } from "../db/postgres/is3a-postgres.ts";
 import { createAdapter } from "./database-adapter.ts";
 
-export function createOtpServer(pool: PostgresPool | (() => PostgresPool)) {
+export function createOtpServer(pool: PostgresPool | (() => PostgresPool)): OtpFragment {
   return createOtpFragment(
     {
       sendEmail: async ({ to, subject, body }) => {

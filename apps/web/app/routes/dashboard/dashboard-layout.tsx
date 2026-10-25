@@ -19,17 +19,31 @@ import { AlertCircle } from "lucide-react";
 import type { JSX } from "react";
 import { isRouteErrorResponse, Outlet, redirect } from "react-router";
 
+import type { AuthMeResponse } from "@fragno-dev/auth";
+
 import { createSimpleAuthServer } from "~/fragno/simple-auth-server";
 import { requestContext } from "~/request-context";
 import { DashboardNavigationSidebar } from "~/routes/dashboard/dashboard-sidebar";
 
 import type { Route } from "./+types/dashboard-layout";
 
-export function meta(_: Route.MetaArgs) {
+export function meta(_: Route.MetaArgs): Route.MetaDescriptors {
   return [{ title: "Dashboard" }, { name: "description", content: "Dashboard" }];
 }
 
-export async function loader({ context, request }: Route.LoaderArgs) {
+interface DashboardLoaderData {
+  user: Pick<AuthMeResponse["user"], "email" | "role"> & {
+    name: string;
+    avatar: undefined;
+    isAdmin: boolean;
+    impersonatedBy: null;
+  };
+}
+
+export async function loader({
+  context,
+  request,
+}: Route.LoaderArgs): Promise<Response | DashboardLoaderData> {
   const auth = createSimpleAuthServer(context.get(requestContext).pool);
 
   const response = await auth.callRoute("GET", "/me", {

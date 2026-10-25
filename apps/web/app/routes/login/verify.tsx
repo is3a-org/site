@@ -16,14 +16,21 @@ import { requestContext } from "~/request-context";
 
 import type { Route } from "./+types/verify";
 
-export function meta(_: Route.MetaArgs) {
+export function meta(_: Route.MetaArgs): Route.MetaDescriptors {
   return [
     { title: "Verifying Login - IS3A" },
     { name: "description", content: "Verifying your magic link login." },
   ];
 }
 
-export async function loader({ request, context }: Route.LoaderArgs) {
+interface LoginVerificationError {
+  error: string;
+}
+
+export async function loader({
+  request,
+  context,
+}: Route.LoaderArgs): Promise<Response | LoginVerificationError> {
   const url = new URL(request.url);
   const token = url.searchParams.get("token");
   const email = url.searchParams.get("email");

@@ -16,18 +16,26 @@ import { requestContext } from "~/request-context";
 
 import type { Route } from "./+types/sign-up";
 
-export function meta(_: Route.MetaArgs) {
+export function meta(_: Route.MetaArgs): Route.MetaDescriptors {
   return [
     { title: "Sign Up - IS3A" },
     { name: "description", content: "Create your IS3A member account." },
   ];
 }
 
-export async function loader(_: Route.LoaderArgs) {
+export async function loader(_: Route.LoaderArgs): Promise<Record<string, never>> {
   return {};
 }
 
-export async function action({ request, context }: Route.ActionArgs) {
+interface SignUpActionError {
+  error: string;
+  email: string;
+}
+
+export async function action({
+  request,
+  context,
+}: Route.ActionArgs): Promise<Response | SignUpActionError> {
   const auth = createSimpleAuthServer(context.get(requestContext).pool);
 
   const formData = await request.formData();

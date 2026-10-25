@@ -1,4 +1,4 @@
-import { drizzle } from "drizzle-orm/node-postgres";
+import { drizzle, type NodePgDatabase } from "drizzle-orm/node-postgres";
 import { Pool } from "pg";
 
 import { schema } from "./postgres.schema.ts";
@@ -9,9 +9,11 @@ export function createPostgresPool(): Pool {
   });
 }
 
-export function createDrizzleDatabase(pool: Pool) {
+/** A PostgreSQL database bound to the application schema and its pool. */
+export type DrizzleDatabase = NodePgDatabase<typeof schema> & { $client: Pool };
+
+export function createDrizzleDatabase(pool: Pool): DrizzleDatabase {
   return drizzle({ client: pool, schema });
 }
 
-export type DrizzleDatabase = ReturnType<typeof createDrizzleDatabase>;
 export type PostgresPool = Pool;

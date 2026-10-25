@@ -20,7 +20,11 @@ import { formsClient } from "~/lib/forms-client";
 
 import type { Route } from "./+types/forms";
 
-export async function loader({ params }: Route.LoaderArgs) {
+interface PublicFormLoaderData {
+  slug: string;
+}
+
+export async function loader({ params }: Route.LoaderArgs): Promise<PublicFormLoaderData> {
   return { slug: params.slug };
 }
 

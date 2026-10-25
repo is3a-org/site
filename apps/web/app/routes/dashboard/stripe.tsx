@@ -14,13 +14,30 @@ import { requestContext } from "~/request-context";
 
 import type { Route } from "./+types/stripe";
 
-export async function loader({ context }: Route.LoaderArgs) {
+interface StripeCustomersLoaderData {
+  users: Awaited<ReturnType<UserRepo["getAllUsers"]>>;
+}
+
+type StripeCustomerActionResult =
+  | { success: false; error: string }
+  | { success: true; userId: string }
+  | {
+      success: true;
+      user: NonNullable<Awaited<ReturnType<UserRepo["getUserByEmail"]>>>;
+      matchType: "stripeCustomerId" | "email";
+    }
+  | { success: true; user: null; matchType: null };
+
+export async function loader({ context }: Route.LoaderArgs): Promise<StripeCustomersLoaderData> {
   const userRepo = new UserRepo(context.get(requestContext).db);
   const users = await userRepo.getAllUsers();
   return { users };
 }
 
-export async function action({ request, context }: Route.ActionArgs) {
+export async function action({
+  request,
+  context,
+}: Route.ActionArgs): Promise<StripeCustomerActionResult> {
   const formData = await request.formData();
   const intent = formData.get("intent") as string;
 

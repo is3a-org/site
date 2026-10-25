@@ -2,7 +2,7 @@ import type { JSX } from "react";
 
 import type { Route } from "./+types/join";
 
-export function meta(_: Route.MetaArgs) {
+export function meta(_: Route.MetaArgs): Route.MetaDescriptors {
   return [
     { title: "Join IS3A - Become a Member" },
     {

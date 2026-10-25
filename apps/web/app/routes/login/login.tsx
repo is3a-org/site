@@ -21,7 +21,7 @@ import { verifyTurnstile } from "~/lib/turnstile";
 import { requestContext } from "~/request-context";
 
 import type { Route } from "./+types/login";
-export function meta(_: Route.MetaArgs) {
+export function meta(_: Route.MetaArgs): Route.MetaDescriptors {
   return [
     { title: "Login - IS3A" },
     { name: "description", content: "Login to your IS3A member account." },
@@ -45,7 +45,24 @@ export async function loader({
 
 type ActionIntent = "magic-link" | "password";
 
-export async function action({ request, context }: Route.ActionArgs) {
+interface LoginActionError {
+  error: string;
+  email: string;
+  intent: ActionIntent;
+  success?: never;
+}
+
+interface MagicLinkActionSuccess {
+  success: true;
+  email: string;
+  intent: "magic-link";
+  error?: never;
+}
+
+export async function action({
+  request,
+  context,
+}: Route.ActionArgs): Promise<Response | LoginActionError | MagicLinkActionSuccess> {
   const auth = createSimpleAuthServer(context.get(requestContext).pool);
   const otp = createOtpServer(context.get(requestContext).pool);
 
