@@ -1,7 +1,11 @@
+import { Alert, AlertDescription, AlertTitle } from "@is3a/design-system/alert";
+import { buttonVariants } from "@is3a/design-system/button";
+import { CrossesDivider } from "@is3a/design-system/crosses";
+import { ArrowRight, GraduationCap } from "lucide-react";
 import type { JSX } from "react";
 import { Link } from "react-router";
 
-import { SiteColumn, SiteSection, siteHeading, siteText } from "~/components/landing/site-grid";
+import { landingContainer, landingHeading } from "~/components/landing/landing-styles";
 import { cn } from "~/lib/utils";
 
 import type { Route } from "./+types/home";
@@ -17,107 +21,207 @@ export function meta(): Route.MetaDescriptors {
   ];
 }
 
-const featureHeading =
-  "font-pt-sans px-2 py-3.5 text-[17.3333px] leading-[1.25] font-bold text-[#212121] md:text-[20px]";
+// The name spells the acronym: I and S, then three A's. Initials are set in brand red.
+const nameLines = [
+  { initial: "I", rest: "nformation" },
+  { initial: "S", rest: "ciences" },
+  { initial: "A", rest: "ssociation", joiner: "for" },
+  { initial: "A", rest: "msterdam" },
+  { initial: "A", rest: "lumni" },
+];
 
-function Spacer(): JSX.Element {
-  return <div aria-hidden className="h-[88px]" />;
-}
+const facts = [
+  {
+    term: "4× a year",
+    detail: "We come together for drinks, lectures, or workshops organized by our members.",
+  },
+  {
+    term: "UvA + VU",
+    detail: "For Bachelor and Master graduates of any information science study.",
+  },
+  {
+    term: "CS · IS · AI",
+    detail: "Computer science, information science, and artificial intelligence.",
+  },
+];
+
+const features = [
+  {
+    title: "Networking opportunities",
+    body: "Through our approachable activities we hope to bring you in contact with like-minded individuals working in the Amsterdam area.",
+    image: { src: "/networking.jpg", width: 539, height: 557 },
+  },
+  {
+    title: "Knowledge sharing",
+    body: "Be it technical knowledge or soft skills, we'll give you the opportunity to share and learn. Not sure how to start negotiating your salary? Learn from your peers at IS3A!",
+    image: { src: "/knowledge-sharing.jpg", width: 782, height: 808 },
+  },
+];
+
+const photo =
+  "w-full rounded-lg object-cover outline-1 -outline-offset-1 outline-black/10 dark:outline-white/10";
 
 export default function Home(): JSX.Element {
   return (
     <div className="w-full">
-      {/* Hero */}
-      <SiteSection
-        className="flex min-h-[344px] items-center bg-[#bd1900] bg-cover bg-center py-14 md:min-h-[464px]"
-        style={{
-          backgroundImage:
-            "linear-gradient(rgb(33 33 33 / 0.7), rgb(33 33 33 / 0.7)), url(/amsterdam-hero.jpg)",
-        }}
+      <section
+        className={cn(landingContainer, "grid gap-x-12 gap-y-8 pt-10 md:pt-16 lg:grid-cols-12")}
       >
-        <SiteColumn className="text-center">
-          <h1 className="px-2 py-3.5 font-pt-sans text-[25.3333px] leading-[1.1] text-white md:text-[33.3333px]">
-            Welcome to <span className="font-bold">IS3A</span>
-          </h1>
-          <p className={cn(siteText, "px-2 py-3.5 text-white italic")}>
-            Information Sciences Association for Amsterdam Alumni
+        <h1 className="text-[clamp(3.25rem,10vw,6.75rem)] leading-[0.86] font-bold font-display tracking-[-0.01em] uppercase lg:col-span-7">
+          {nameLines.map(({ initial, rest, joiner }) => (
+            <span key={rest} className="block">
+              <span className="text-primary">{initial}</span>
+              {rest}
+              {joiner !== undefined && (
+                <>
+                  {" "}
+                  <span className="align-top text-[0.28em] font-semibold tracking-normal text-muted-foreground normal-case">
+                    {joiner}
+                  </span>
+                </>
+              )}{" "}
+            </span>
+          ))}
+        </h1>
+        <div className="flex flex-col justify-end gap-6 lg:col-span-5 lg:pb-2">
+          <p className="max-w-md text-lg leading-relaxed text-pretty">
+            A community for graduates of computer science, information science, and artificial
+            intelligence in Amsterdam. Academic and commercial professionals who support each other
+            with career advice, networking, and knowledge sharing.
           </p>
-        </SiteColumn>
-      </SiteSection>
+          <div className="flex flex-wrap gap-3">
+            <Link to="/join" className={buttonVariants({ size: "lg" })}>
+              Become a member
+              <ArrowRight aria-hidden />
+            </Link>
+            <Link to="/team" className={buttonVariants({ size: "lg", variant: "outline" })}>
+              Meet the board
+            </Link>
+          </div>
+        </div>
+        <img
+          src="/amsterdam-hero.jpg"
+          alt="Canal houses along an Amsterdam canal"
+          width={1024}
+          height={411}
+          className={cn(photo, "mt-4 aspect-[1024/411] min-h-48 lg:col-span-12")}
+        />
+      </section>
 
-      <SiteSection>
-        <SiteColumn className="text-center">
-          <h2 className={cn(siteHeading, "px-2 py-3.5")}>IS3A in a nutshell</h2>
-          <p className={cn(siteText, "px-2 py-3.5")}>
-            The Information Sciences Association for Amsterdam Alumni (IS3A) is a new association
-            for graduates of computer science, information science, and artificial intelligence
-            studies located in Amsterdam. We are a community of both academic and commercial
-            professionals that support each other with career advice, networking opportunities, and
-            knowledge sharing. Four times a year we come together for drinks, lectures or workshops
-            organized by our members.
-          </p>
-        </SiteColumn>
-      </SiteSection>
+      <section aria-labelledby="facts-heading" className={cn(landingContainer, "py-16")}>
+        <h2 id="facts-heading" className="sr-only">
+          IS3A at a glance
+        </h2>
+        <dl className="grid gap-8 sm:grid-cols-3">
+          {facts.map(({ term, detail }) => (
+            <div key={term} className="border-t-2 border-ink pt-4">
+              <dt className="text-4xl leading-none font-semibold font-display md:text-5xl">
+                {term}
+              </dt>
+              <dd className="mt-3 max-w-xs leading-relaxed text-pretty text-muted-foreground">
+                {detail}
+              </dd>
+            </div>
+          ))}
+        </dl>
+      </section>
 
-      <SiteSection>
-        <SiteColumn className="text-center">
-          <h2 className={cn(siteHeading, "px-2 py-3.5")}>Who is IS3A for?</h2>
-          <p className={cn(siteText, "px-2 py-3.5")}>
+      <div className={landingContainer}>
+        <CrossesDivider />
+      </div>
+
+      <section className={cn(landingContainer, "grid gap-6 pt-16 pb-12 md:grid-cols-12")}>
+        <h2 className={cn(landingHeading, "md:col-span-4")}>IS3A in a nutshell</h2>
+        <p className="max-w-[65ch] text-lg leading-relaxed text-pretty md:col-span-8">
+          The Information Sciences Association for Amsterdam Alumni (IS3A) is a new association for
+          graduates of computer science, information science, and artificial intelligence studies
+          located in Amsterdam. We are a community of both academic and commercial professionals
+          that support each other with career advice, networking opportunities, and knowledge
+          sharing. Four times a year we come together for drinks, lectures or workshops organized by
+          our members.
+        </p>
+      </section>
+
+      <section className={cn(landingContainer, "grid gap-6 pt-4 pb-16 md:grid-cols-12")}>
+        <h2 className={cn(landingHeading, "md:col-span-4")}>Who is IS3A for?</h2>
+        <div className="max-w-[65ch] space-y-6 md:col-span-8">
+          <p className="text-lg leading-relaxed text-pretty">
             Bachelor and Master graduates of any information science study from either UvA or VU.
-            Please note that if you are still studying, this association might not be for you. Our
-            events are catered to people currently working in tech or with a postgraduate academic
-            career.
           </p>
-        </SiteColumn>
-      </SiteSection>
+          <Alert>
+            <GraduationCap />
+            <AlertTitle>Still studying?</AlertTitle>
+            <AlertDescription>
+              This association might not be for you yet. Our events are catered to people currently
+              working in tech or with a postgraduate academic career.
+            </AlertDescription>
+          </Alert>
+        </div>
+      </section>
 
-      <Spacer />
+      <section aria-labelledby="activities-heading" className={cn(landingContainer, "pb-20")}>
+        <h2 id="activities-heading" className={landingHeading}>
+          What we do
+        </h2>
+        <div className="mt-8 grid gap-x-8 gap-y-12 md:grid-cols-2">
+          {features.map(({ title, body, image }) => (
+            <article key={title}>
+              <img
+                src={image.src}
+                alt=""
+                width={image.width}
+                height={image.height}
+                loading="lazy"
+                className={cn(photo, "aspect-[4/3]")}
+              />
+              <h3 className="mt-5 text-2xl leading-tight font-semibold font-display">{title}</h3>
+              <p className="mt-2 max-w-prose leading-relaxed text-pretty text-muted-foreground">
+                {body}
+              </p>
+            </article>
+          ))}
+        </div>
+      </section>
 
-      {/* Features: image, text, image, text */}
-      <SiteSection className="pb-[42px]" gridClassName="gap-y-12 px-12 md:gap-y-0 md:px-0">
-        <SiteColumn className="md:col-span-3">
-          <img src="/networking.jpg" alt="" className="block h-auto w-full" />
-        </SiteColumn>
-        <SiteColumn className="md:col-span-3">
-          <h3 className={featureHeading}>Networking Opportunities</h3>
-          <p className={cn(siteText, "px-2 py-3.5")}>
-            Through our approachable activities we hope to bring you in contact with like-minded
-            individuals working in the Amsterdam area.
-          </p>
-        </SiteColumn>
-        <SiteColumn className="md:col-span-3">
-          <img src="/knowledge-sharing.jpg" alt="" className="block h-auto w-full" />
-        </SiteColumn>
-        <SiteColumn className="md:col-span-3">
-          <h3 className={featureHeading}>Knowledge Sharing</h3>
-          <p className={cn(siteText, "px-2 py-3.5")}>
-            Be it technical knowledge or soft skills. We'll give you the opportunity to share and
-            learn. Not sure how to start negotiating your salary? Learn from your peers at IS3A!
-          </p>
-        </SiteColumn>
-      </SiteSection>
-
-      <Spacer />
-
-      <SiteSection>
-        <SiteColumn className="text-center md:col-span-6 md:col-start-4">
-          <h2 className={cn(siteHeading, "px-2 py-3.5")}>Become a member!</h2>
-          <p className={cn(siteText, "px-2 py-3.5 italic")}>
-            Reap the benefits! Become a member now and get notified of all future activities.
-          </p>
-        </SiteColumn>
-      </SiteSection>
-
-      <SiteSection>
-        <SiteColumn className="md:col-span-4 md:col-start-5">
-          <Link
-            to="/join"
-            className="flex h-9 w-full items-center justify-center rounded bg-red-800 px-3 text-center font-merriweather text-[14.6667px] text-white transition-[filter] hover:brightness-110"
-          >
-            Become a member!
-          </Link>
-        </SiteColumn>
-      </SiteSection>
+      {/* Brand red in both themes: this band is the logo color, not the primary token. */}
+      <section aria-labelledby="join-heading" className="bg-red-800 text-white">
+        <div
+          className={cn(
+            landingContainer,
+            "flex flex-col gap-8 py-16 md:flex-row md:items-end md:justify-between md:py-20",
+          )}
+        >
+          <div className="max-w-xl space-y-4">
+            <h2
+              id="join-heading"
+              className="text-5xl leading-[0.9] font-bold font-display uppercase md:text-6xl"
+            >
+              Become a member
+            </h2>
+            <p className="text-lg leading-relaxed text-pretty text-white/85">
+              Reap the benefits! Become a member now and get notified of all future activities.
+            </p>
+          </div>
+          <div className="flex flex-wrap items-center gap-x-6 gap-y-4">
+            <Link
+              to="/join"
+              className={buttonVariants({
+                size: "lg",
+                className: "bg-white text-red-800 hover:bg-white/90",
+              })}
+            >
+              Join IS3A
+              <ArrowRight aria-hidden />
+            </Link>
+            <Link
+              to="/login"
+              className="font-medium underline decoration-white/50 decoration-2 underline-offset-4 transition-[text-decoration-color] hover:decoration-white"
+            >
+              Already a member? Log in
+            </Link>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }

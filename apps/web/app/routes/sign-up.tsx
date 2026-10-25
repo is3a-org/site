@@ -1,3 +1,4 @@
+import { Alert, AlertDescription } from "@is3a/design-system/alert";
 import { Button } from "@is3a/design-system/button";
 import {
   Card,
@@ -11,6 +12,7 @@ import { Label } from "@is3a/design-system/label";
 import type { JSX } from "react";
 import { redirect } from "react-router";
 
+import { landingCardPage } from "~/components/landing/landing-styles";
 import type { ReadonlyRouteProps } from "~/fragno/readonly-route-props";
 import { readFormText } from "~/fragno/request-form";
 import { createSimpleAuthServer } from "~/fragno/simple-auth-server";
@@ -97,7 +99,7 @@ export default function SignUp({
   actionData,
 }: ReadonlyRouteProps<Route.ComponentProps>): JSX.Element {
   return (
-    <div className="flex min-h-screen w-full items-center justify-center bg-gray-50 px-4 py-12">
+    <div className={landingCardPage}>
       <div className="flex w-full flex-col items-center">
         <Card className="w-full max-w-md">
           <CardHeader className="text-center">
@@ -107,9 +109,9 @@ export default function SignUp({
           <CardContent>
             <form method="post" className="space-y-6">
               {actionData?.error !== undefined && actionData.error !== "" && (
-                <div className="rounded-md bg-red-50 p-3 text-sm text-red-800">
-                  {actionData.error}
-                </div>
+                <Alert variant="destructive" role="alert">
+                  <AlertDescription>{actionData.error}</AlertDescription>
+                </Alert>
               )}
 
               <div className="space-y-2">
@@ -134,7 +136,7 @@ export default function SignUp({
                   required
                   minLength={8}
                 />
-                <p className="text-xs text-gray-500">Must be at least 8 characters</p>
+                <p className="text-xs text-muted-foreground">Must be at least 8 characters</p>
               </div>
 
               <div className="space-y-2">

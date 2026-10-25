@@ -1,3 +1,4 @@
+import { Alert, AlertDescription } from "@is3a/design-system/alert";
 import { Button } from "@is3a/design-system/button";
 import {
   Card,
@@ -14,6 +15,7 @@ import { redirect } from "react-router";
 
 import { Turnstile } from "@marsidev/react-turnstile";
 
+import { landingCardPage } from "~/components/landing/landing-styles";
 import { createOtpServer } from "~/fragno/otp-server";
 import type { ReadonlyRouteProps } from "~/fragno/readonly-route-props";
 import { readFormText } from "~/fragno/request-form";
@@ -177,7 +179,7 @@ export default function Login({
   // Show success message after magic link is sent
   if (actionData?.success === true) {
     return (
-      <div className="flex min-h-screen w-full items-center justify-center bg-gray-50 px-4 py-12">
+      <div className={landingCardPage}>
         <div className="flex w-full flex-col items-center">
           <Card className="w-full max-w-md">
             <CardHeader className="text-center">
@@ -204,17 +206,21 @@ export default function Login({
   }
 
   return (
-    <div className="flex min-h-screen w-full items-center justify-center bg-gray-50 px-4 py-12">
+    <div className={landingCardPage}>
       <div className="flex w-full flex-col items-center">
         <Card className="w-full max-w-md">
           <CardHeader className="text-center">
             <CardTitle className="text-3xl">Member Login</CardTitle>
             <CardDescription>Sign in to your IS3A member account</CardDescription>
-            <p className="rounded-md bg-amber-50 px-3 py-2 text-sm text-amber-800">
-              This website is under construction: this login is for developers only.
-            </p>
+            <Alert variant="warning" className="mt-3 text-left">
+              <AlertDescription>
+                This website is under construction: this login is for developers only.
+              </AlertDescription>
+            </Alert>
             {turnstileError !== undefined && turnstileError !== "" && (
-              <div className="rounded-md bg-red-50 p-3 text-sm text-red-800">{turnstileError}</div>
+              <Alert variant="destructive" role="alert" className="text-left">
+                <AlertDescription>{turnstileError}</AlertDescription>
+              </Alert>
             )}
           </CardHeader>
           <CardContent>
@@ -228,9 +234,9 @@ export default function Login({
                   {actionData?.error !== undefined &&
                     actionData.error !== "" &&
                     actionData.intent === "magic-link" && (
-                      <div className="rounded-md bg-red-50 p-3 text-sm text-red-800">
-                        {actionData.error}
-                      </div>
+                      <Alert variant="destructive" role="alert">
+                        <AlertDescription>{actionData.error}</AlertDescription>
+                      </Alert>
                     )}
 
                   <div className="space-y-2">
@@ -259,7 +265,7 @@ export default function Login({
                     <span className="w-full border-t" />
                   </div>
                   <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-background px-2 text-muted-foreground">or</span>
+                    <span className="bg-card px-2 text-muted-foreground">or</span>
                   </div>
                 </div>
 
@@ -284,9 +290,9 @@ export default function Login({
                   {actionData?.error !== undefined &&
                     actionData.error !== "" &&
                     actionData.intent === "password" && (
-                      <div className="rounded-md bg-red-50 p-3 text-sm text-red-800">
-                        {actionData.error}
-                      </div>
+                      <Alert variant="destructive" role="alert">
+                        <AlertDescription>{actionData.error}</AlertDescription>
+                      </Alert>
                     )}
 
                   <div className="space-y-2">
@@ -326,7 +332,7 @@ export default function Login({
                     <span className="w-full border-t" />
                   </div>
                   <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-background px-2 text-muted-foreground">or</span>
+                    <span className="bg-card px-2 text-muted-foreground">or</span>
                   </div>
                 </div>
 
