@@ -7,13 +7,13 @@ import { cn } from "../cn";
 
 function DropdownMenu({
   ...props
-}: React.ComponentProps<typeof DropdownMenuPrimitive.Root>): React.JSX.Element {
+}: Readonly<React.ComponentProps<typeof DropdownMenuPrimitive.Root>>): React.JSX.Element {
   return <DropdownMenuPrimitive.Root data-slot="dropdown-menu" {...props} />;
 }
 
 function DropdownMenuPortal({
   ...props
-}: React.ComponentProps<typeof DropdownMenuPrimitive.Portal>): React.JSX.Element {
+}: Readonly<React.ComponentProps<typeof DropdownMenuPrimitive.Portal>>): React.JSX.Element {
   return <DropdownMenuPrimitive.Portal data-slot="dropdown-menu-portal" {...props} />;
 }
 
@@ -173,7 +173,7 @@ function DropdownMenuShortcut({
 
 function DropdownMenuSub({
   ...props
-}: React.ComponentProps<typeof DropdownMenuPrimitive.Sub>): React.JSX.Element {
+}: Readonly<React.ComponentProps<typeof DropdownMenuPrimitive.Sub>>): React.JSX.Element {
   return <DropdownMenuPrimitive.Sub data-slot="dropdown-menu-sub" {...props} />;
 }
 

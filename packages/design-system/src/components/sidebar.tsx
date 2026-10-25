@@ -20,7 +20,13 @@ const SIDEBAR_WIDTH_MOBILE = "18rem";
 const SIDEBAR_WIDTH_ICON = "3rem";
 const SIDEBAR_KEYBOARD_SHORTCUT = "b";
 
-type SidebarContextProps = {
+interface SidebarCSSProperties extends React.CSSProperties {
+  "--sidebar-width"?: string;
+  "--sidebar-width-icon"?: string;
+  "--skeleton-width"?: string;
+}
+
+interface SidebarContextProps {
   state: "expanded" | "collapsed";
   open: boolean;
   setOpen: (open: boolean) => void;
@@ -28,13 +34,13 @@ type SidebarContextProps = {
   setOpenMobile: (open: boolean) => void;
   isMobile: boolean;
   toggleSidebar: () => void;
-};
+}
 
-const SidebarContext = React.createContext<SidebarContextProps | null>(null);
+const SidebarContext = React.createContext<SidebarContextProps | undefined>(undefined);
 
 function useSidebar(): SidebarContextProps {
   const context = React.useContext(SidebarContext);
-  if (!context) {
+  if (context === undefined) {
     throw new Error("useSidebar must be used within a SidebarProvider.");
   }
 
@@ -63,6 +69,7 @@ function SidebarProvider({
   const open = openProp ?? _open;
   const setOpen = React.useCallback(
     (value: boolean | ((value: boolean) => boolean)) => {
+      // oxlint-disable-next-line anti-slop/no-runtime-typeof -- COMPATIBILITY: React state setters accept a boolean or an updater callback; resolve both before notifying the controlled parent.
       const openState = typeof value === "function" ? value(open) : value;
       if (setOpenProp) {
         setOpenProp(openState);
@@ -71,6 +78,7 @@ function SidebarProvider({
       }
 
       // This sets the cookie to keep the sidebar state.
+      // oxlint-disable-next-line unicorn/no-document-cookie -- COMPATIBILITY: Sidebar updates synchronously persist the existing boolean cookie with Path=/ and a seven-day Max-Age, including browsers without CookieStore.
       document.cookie = `${SIDEBAR_COOKIE_NAME}=${openState}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`;
     },
     [setOpenProp, open],
@@ -78,7 +86,11 @@ function SidebarProvider({
 
   // Helper to toggle the sidebar.
   const toggleSidebar = React.useCallback(() => {
-    return isMobile ? setOpenMobile((open) => !open) : setOpen((open) => !open);
+    if (isMobile) {
+      setOpenMobile((open) => !open);
+    } else {
+      setOpen((open) => !open);
+    }
   }, [isMobile, setOpen, setOpenMobile]);
 
   // Adds a keyboard shortcut to toggle the sidebar.
@@ -90,8 +102,10 @@ function SidebarProvider({
       }
     };
 
-    window.addEventListener("keydown", handleKeyDown);
-    return (): void => window.removeEventListener("keydown", handleKeyDown);
+    globalThis.addEventListener("keydown", handleKeyDown);
+    return (): void => {
+      globalThis.removeEventListener("keydown", handleKeyDown);
+    };
   }, [toggleSidebar]);
 
   // We add a state so that we can do data-state="expanded" or "collapsed".
@@ -110,19 +124,18 @@ function SidebarProvider({
     }),
     [state, open, setOpen, isMobile, openMobile, setOpenMobile, toggleSidebar],
   );
+  const sidebarStyle: SidebarCSSProperties = {
+    "--sidebar-width": SIDEBAR_WIDTH,
+    "--sidebar-width-icon": SIDEBAR_WIDTH_ICON,
+    ...style,
+  };
 
   return (
     <SidebarContext.Provider value={contextValue}>
       <TooltipProvider delayDuration={0}>
         <div
           data-slot="sidebar-wrapper"
-          style={
-            {
-              "--sidebar-width": SIDEBAR_WIDTH,
-              "--sidebar-width-icon": SIDEBAR_WIDTH_ICON,
-              ...style,
-            } as React.CSSProperties
-          }
+          style={sidebarStyle}
           className={cn(
             "group/sidebar-wrapper flex min-h-svh w-full has-data-[variant=inset]:bg-sidebar",
             className,
@@ -166,6 +179,10 @@ function Sidebar({
   }
 
   if (isMobile) {
+    const sidebarStyle: SidebarCSSProperties = {
+      "--sidebar-width": SIDEBAR_WIDTH_MOBILE,
+    };
+
     return (
       <Sheet open={openMobile} onOpenChange={setOpenMobile} {...props}>
         <SheetContent
@@ -173,11 +190,7 @@ function Sidebar({
           data-slot="sidebar"
           data-mobile="true"
           className="w-(--sidebar-width) bg-sidebar p-0 text-sidebar-foreground [&>button]:hidden"
-          style={
-            {
-              "--sidebar-width": SIDEBAR_WIDTH_MOBILE,
-            } as React.CSSProperties
-          }
+          style={sidebarStyle}
           side={side}
         >
           <SheetHeader className="sr-only">
@@ -507,10 +520,11 @@ function SidebarMenuButton({
     />
   );
 
-  if (!tooltip) {
+  if (tooltip === undefined || tooltip === "") {
     return button;
   }
 
+  // oxlint-disable-next-line anti-slop/no-runtime-typeof -- COMPATIBILITY: The public tooltip prop accepts either text or TooltipContent props; retain both forms and preserve every supplied content prop.
   if (typeof tooltip === "string") {
     tooltip = {
       children: tooltip,
@@ -589,9 +603,10 @@ function SidebarMenuSkeleton({
   showIcon?: boolean;
 }): React.JSX.Element {
   // Random width between 50 to 90%.
-  const width = React.useMemo(() => {
+  const [width] = React.useState(() => {
     return `${Math.floor(Math.random() * 40) + 50}%`;
-  }, []);
+  });
+  const skeletonStyle: SidebarCSSProperties = { "--skeleton-width": width };
 
   return (
     <div
@@ -604,11 +619,7 @@ function SidebarMenuSkeleton({
       <Skeleton
         className="h-4 max-w-(--skeleton-width) flex-1"
         data-sidebar="menu-skeleton-text"
-        style={
-          {
-            "--skeleton-width": width,
-          } as React.CSSProperties
-        }
+        style={skeletonStyle}
       />
     </div>
   );

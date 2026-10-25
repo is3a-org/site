@@ -5,7 +5,9 @@ import * as SheetPrimitive from "@radix-ui/react-dialog";
 
 import { cn } from "../cn";
 
-function Sheet({ ...props }: React.ComponentProps<typeof SheetPrimitive.Root>): React.JSX.Element {
+function Sheet({
+  ...props
+}: Readonly<React.ComponentProps<typeof SheetPrimitive.Root>>): React.JSX.Element {
   return <SheetPrimitive.Root data-slot="sheet" {...props} />;
 }
 
@@ -23,7 +25,7 @@ function SheetClose({
 
 function SheetPortal({
   ...props
-}: React.ComponentProps<typeof SheetPrimitive.Portal>): React.JSX.Element {
+}: Readonly<React.ComponentProps<typeof SheetPrimitive.Portal>>): React.JSX.Element {
   return <SheetPrimitive.Portal data-slot="sheet-portal" {...props} />;
 }
 

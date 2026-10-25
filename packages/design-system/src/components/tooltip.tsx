@@ -9,7 +9,7 @@ import { cn } from "../cn";
 function TooltipProvider({
   delayDuration = 0,
   ...props
-}: React.ComponentProps<typeof TooltipPrimitive.Provider>): React.JSX.Element {
+}: Readonly<React.ComponentProps<typeof TooltipPrimitive.Provider>>): React.JSX.Element {
   return (
     <TooltipPrimitive.Provider
       data-slot="tooltip-provider"
@@ -21,7 +21,7 @@ function TooltipProvider({
 
 function Tooltip({
   ...props
-}: React.ComponentProps<typeof TooltipPrimitive.Root>): React.JSX.Element {
+}: Readonly<React.ComponentProps<typeof TooltipPrimitive.Root>>): React.JSX.Element {
   return (
     <TooltipProvider>
       <TooltipPrimitive.Root data-slot="tooltip" {...props} />
