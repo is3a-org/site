@@ -35,7 +35,10 @@ import { simpleAuthClient } from "~/lib/simple-auth-client";
 
 import type { Route } from "./+types/users";
 
-export async function loader({ context: _context, request: _request }: Route.LoaderArgs) {
+export async function loader({
+  context: _context,
+  request: _request,
+}: Route.LoaderArgs): Promise<Record<string, never>> {
   return {};
 }
 

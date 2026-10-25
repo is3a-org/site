@@ -1,3 +1,4 @@
+import type { AuthMeResponse } from "@fragno-dev/auth";
 import { createStripeFragment } from "@fragno-dev/stripe";
 
 import { UserRepo } from "~/db/repo/user.ts";
@@ -34,7 +35,7 @@ export function createStripeServer(pool: PostgresPool | (() => PostgresPool)): S
   const db = createDrizzleDatabase(resolvedPool);
   const userRepo = new UserRepo(db);
 
-  const getSession = async (headers: Headers) => {
+  const getSession = async (headers: Headers): Promise<AuthMeResponse["user"] | null> => {
     const response = await auth.callRoute("GET", "/me", { headers });
 
     if (response.type === "json" && response.data) {

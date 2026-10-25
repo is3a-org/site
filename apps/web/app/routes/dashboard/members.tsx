@@ -18,7 +18,11 @@ import { requestContext } from "~/request-context";
 
 import type { Route } from "./+types/members";
 
-export async function loader({ context }: Route.LoaderArgs) {
+interface MembersLoaderData {
+  members: Awaited<ReturnType<UserRepo["getAllUsers"]>>;
+}
+
+export async function loader({ context }: Route.LoaderArgs): Promise<MembersLoaderData> {
   const userRepo = new UserRepo(context.get(requestContext).db);
   return { members: await userRepo.getAllUsers() };
 }

@@ -32,17 +32,33 @@ import { useState, useEffect } from "react";
 import { Form, useNavigation } from "react-router";
 
 import { DashboardBreadcrumb } from "~/components/dashboard-breadcrumb";
-import { LocationRepo, NewLocationSchema, type Location } from "~/db/repo/locations";
+import {
+  LocationRepo,
+  NewLocationSchema,
+  type Location,
+  type NewLocation,
+} from "~/db/repo/locations";
 import { requestContext } from "~/request-context";
 
 import type { Route } from "./+types/locations";
 
-export async function loader({ context }: Route.LoaderArgs) {
+interface LocationsLoaderData {
+  locations: Awaited<ReturnType<LocationRepo["getAllLocations"]>>;
+}
+
+type LocationActionResult =
+  | { success: true; errors?: never }
+  | { success: false; errors?: Partial<Record<keyof NewLocation, string[]>> };
+
+export async function loader({ context }: Route.LoaderArgs): Promise<LocationsLoaderData> {
   const locations = await new LocationRepo(context.get(requestContext).db).getAllLocations();
   return { locations };
 }
 
-export async function action({ request, context }: Route.ActionArgs) {
+export async function action({
+  request,
+  context,
+}: Route.ActionArgs): Promise<LocationActionResult> {
   const formData = await request.formData();
   const intent = formData.get("intent");
   const repo = new LocationRepo(context.get(requestContext).db);

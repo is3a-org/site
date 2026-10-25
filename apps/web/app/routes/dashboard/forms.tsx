@@ -47,7 +47,7 @@ import { formsClient } from "~/lib/forms-client";
 
 import type { Route } from "./+types/forms";
 
-export async function loader(_args: Route.LoaderArgs) {
+export async function loader(_args: Route.LoaderArgs): Promise<Record<string, never>> {
   return {};
 }
 

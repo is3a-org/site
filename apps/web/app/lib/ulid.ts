@@ -4,6 +4,18 @@
 // deno-lint-ignore deno-style-guide/naming-convention
 export type ULID = (seedTime?: number) => string;
 
+/** Monotonic ULID state retains the latest timestamp and encoded randomness. */
+export interface MonotonicUlidState {
+  lastTime: number;
+  lastRandom: string;
+}
+
+/** Monotonic ULID generator exposes state for persistence between requests. */
+export interface MonotonicUlidGenerator {
+  ulid: ULID;
+  getState: () => MonotonicUlidState;
+}
+
 // These values should NEVER change. If
 // they do, we're no longer making ulids!
 export const ENCODING = "0123456789ABCDEFGHJKMNPQRSTVWXYZ"; // Crockford's Base32
@@ -101,11 +113,8 @@ export function incrementBase32(str: string): string {
 // Modified Deno method to return the state
 export function monotonicFactoryWithState(
   encodeRand = encodeRandom,
-  initialState?: { lastTime?: number; lastRandom?: string },
-): {
-  ulid: ULID;
-  getState: () => { lastTime: number; lastRandom: string };
-} {
+  initialState?: Partial<MonotonicUlidState>,
+): MonotonicUlidGenerator {
   let lastTime = initialState?.lastTime ?? 0;
   let lastRandom = initialState?.lastRandom ?? "";
 
@@ -119,7 +128,7 @@ export function monotonicFactoryWithState(
     return encodeTime(seedTime) + newRandom;
   };
 
-  const getState = () => ({ lastTime, lastRandom });
+  const getState = (): MonotonicUlidState => ({ lastTime, lastRandom });
 
   return { ulid, getState };
 }

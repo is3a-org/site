@@ -23,7 +23,20 @@ export interface UseFormBuilderOptions {
   onChange?: (schemas: GeneratedSchemas) => void;
 }
 
-export function useFormBuilder(options: UseFormBuilderOptions = {}) {
+/** Form builder state, generated schemas, and operations for editing fields. */
+export interface FormBuilderController {
+  state: FormBuilderState;
+  schemas: GeneratedSchemas;
+  addField: (fieldType?: FieldType) => string;
+  updateField: (id: string, updates: Readonly<Partial<Omit<FormField, "id">>>) => void;
+  deleteField: (id: string) => void;
+  moveField: (fromIndex: number, toIndex: number) => void;
+  duplicateField: (id: string) => string | undefined;
+  updateFieldNameFromLabel: (id: string, label: string) => void;
+}
+
+/** Manages form builder fields and calls onChange with regenerated schemas. */
+export function useFormBuilder(options: UseFormBuilderOptions = {}): FormBuilderController {
   const { initialState, initialSchemas, onChange } = options;
   const [state, setState] = useState<FormBuilderState>(() => {
     if (initialState?.fields?.length) {

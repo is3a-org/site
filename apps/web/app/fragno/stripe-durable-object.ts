@@ -13,7 +13,14 @@ import { createFormsServer } from "./forms-server";
 import { createSimpleAuthServer } from "./simple-auth-server";
 import { createStripeServer } from "./stripe-server";
 
-function createRuntime() {
+interface StripeFragmentRuntime {
+  userRepo: UserRepo;
+  stripe: ReturnType<typeof createStripeServer>;
+  auth: ReturnType<typeof createSimpleAuthServer>;
+  forms: ReturnType<typeof createFormsServer>;
+}
+
+function createRuntime(): StripeFragmentRuntime {
   const pool = createPostgresPool();
   return {
     userRepo: new UserRepo(createDrizzleDatabase(pool)),
@@ -25,8 +32,6 @@ function createRuntime() {
   };
 }
 
-type Runtime = ReturnType<typeof createRuntime>;
-
 /**
  * Hosts the Stripe fragment and the durable hook dispatcher that processes its webhook events.
  *
@@ -34,13 +39,13 @@ type Runtime = ReturnType<typeof createRuntime>;
  * every Stripe service call that writes must go through this object. Use `getStripeFragment()`.
  */
 export class StripeFragmentDurableObject extends DurableObject<CloudflareEnv> {
-  #host: FragmentDurableObjectHost<void, Runtime>;
-  #runtime!: Runtime;
+  #host: FragmentDurableObjectHost<void, StripeFragmentRuntime>;
+  #runtime!: StripeFragmentRuntime;
 
   constructor(ctx: DurableObjectState, env: CloudflareEnv) {
     super(ctx, env);
 
-    this.#host = createFragmentDurableObjectHost<CloudflareEnv, void, Runtime>({
+    this.#host = createFragmentDurableObjectHost<CloudflareEnv, void, StripeFragmentRuntime>({
       name: "stripe",
       state: ctx,
       env,
@@ -52,7 +57,9 @@ export class StripeFragmentDurableObject extends DurableObject<CloudflareEnv> {
         ...runtime,
         stripe: hostFragment(runtime.stripe),
       }),
-      mounts: [{ id: "stripe", target: (runtime) => runtime.stripe }],
+      mounts: [
+        { id: "stripe", target: (runtime): StripeFragmentRuntime["stripe"] => runtime.stripe },
+      ],
     });
 
     void ctx.blockConcurrencyWhile(async () => {

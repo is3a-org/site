@@ -6,11 +6,18 @@ export const formsClient: ReturnType<typeof createFormsClient> = createFormsClie
 type SubmissionsPage = NonNullable<ReturnType<typeof formsClient.useSubmissions>["data"]>;
 export type FormSubmission = SubmissionsPage["submissions"][number];
 
+/** Form submissions remain undefined until the first complete load succeeds. */
+export interface FormSubmissionsState {
+  data: FormSubmission[] | undefined;
+  loading: boolean;
+  error: Error | undefined;
+}
+
 /**
  * Loads every submission of a form. The submissions route is paginated, so this follows its
  * cursor until the last page.
  */
-export function useAllSubmissions(formId: string) {
+export function useAllSubmissions(formId: string): FormSubmissionsState {
   const [data, setData] = useState<FormSubmission[] | undefined>(undefined);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | undefined>(undefined);
@@ -18,7 +25,7 @@ export function useAllSubmissions(formId: string) {
   useEffect(() => {
     let cancelled = false;
 
-    async function load() {
+    async function load(): Promise<FormSubmission[]> {
       const submissions: FormSubmission[] = [];
       let cursor: string | null = null;
 

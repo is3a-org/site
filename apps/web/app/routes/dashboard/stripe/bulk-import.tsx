@@ -5,6 +5,7 @@ import {
   BreadcrumbSeparator,
 } from "@is3a/design-system/breadcrumb";
 import type { JSX } from "react";
+import type Stripe from "stripe";
 
 import { BulkImportWizard } from "~/components/bulk-import-wizard";
 import { DashboardBreadcrumb } from "~/components/dashboard-breadcrumb";
@@ -16,7 +17,28 @@ import { requestContext } from "~/request-context";
 
 import type { Route } from "./+types/bulk-import";
 
-export async function loader({ context }: Route.LoaderArgs) {
+interface StripeBulkImportLoaderData {
+  users: Awaited<ReturnType<UserRepo["getAllUsers"]>>;
+  stripeCustomers: Pick<Stripe.Customer, "id" | "email" | "name" | "created">[];
+}
+
+interface StripeCustomerImportResult {
+  customerId: string;
+  status: "success" | "error";
+  userId?: string;
+  error?: string;
+}
+
+type StripeBulkImportActionResult =
+  | {
+      success: false;
+      error: string;
+      results?: StripeCustomerImportResult[];
+      customerId?: string;
+    }
+  | { success: true; results: StripeCustomerImportResult[]; message: string };
+
+export async function loader({ context }: Route.LoaderArgs): Promise<StripeBulkImportLoaderData> {
   const userRepo = new UserRepo(context.get(requestContext).db);
 
   // Fetch existing users for matching
@@ -37,7 +59,10 @@ export async function loader({ context }: Route.LoaderArgs) {
   };
 }
 
-export async function action({ request, context }: Route.ActionArgs) {
+export async function action({
+  request,
+  context,
+}: Route.ActionArgs): Promise<StripeBulkImportActionResult> {
   const formData = await request.formData();
   const intent = formData.get("intent") as string;
 
@@ -49,12 +74,7 @@ export async function action({ request, context }: Route.ActionArgs) {
     const auth = createSimpleAuthServer(context.get(requestContext).pool);
     const stripeClient = createStripeClient();
 
-    const results: Array<{
-      customerId: string;
-      status: "success" | "error";
-      userId?: string;
-      error?: string;
-    }> = [];
+    const results: StripeCustomerImportResult[] = [];
 
     // Process each customer sequentially, stopping on first error
     for (const customerId of customerIds) {

@@ -22,6 +22,8 @@ import {
 import type { JSX } from "react";
 import { useState } from "react";
 
+import type { Subscription } from "@fragno-dev/stripe";
+
 import { DashboardBreadcrumb } from "~/components/dashboard-breadcrumb";
 import { MembershipPlans } from "~/components/membership-plans";
 import { createSimpleAuthServer } from "~/fragno/simple-auth-server";
@@ -176,7 +178,13 @@ const describeStatus = ({
   }
 };
 
-const getPaymentWarningConfig = (status?: string) => {
+interface PaymentWarningConfig {
+  title: string;
+  message: string;
+  variant: "destructive" | "default";
+}
+
+const getPaymentWarningConfig = (status?: string): PaymentWarningConfig | null => {
   switch (status) {
     case "past_due":
       return {
@@ -217,7 +225,14 @@ const ErrorAlert = ({ message }: { message: string }): JSX.Element => (
   </div>
 );
 
-export async function loader({ context, request }: Route.LoaderArgs) {
+interface MembershipLoaderData {
+  subscription: Subscription | null;
+}
+
+export async function loader({
+  context,
+  request,
+}: Route.LoaderArgs): Promise<MembershipLoaderData> {
   const auth = createSimpleAuthServer(context.get(requestContext).pool);
   const response = await auth.callRoute("GET", "/me", {
     headers: request.headers,
