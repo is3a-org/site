@@ -292,7 +292,8 @@ function SidebarMenuButton({
       data-sidebar="menu-button"
       data-active={isActive}
       className={cn(
-        "w-full justify-start overflow-hidden text-left font-medium text-sidebar-foreground group-data-[collapsible=icon]:size-10 group-data-[collapsible=icon]:px-3 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground data-[active=true]:bg-sidebar-accent data-[active=true]:text-sidebar-primary [&>span]:truncate group-data-[collapsible=icon]:[&>span]:hidden",
+        // Collapsed buttons keep only their leading icon or avatar.
+        "w-full justify-start overflow-hidden text-left font-medium text-sidebar-foreground group-data-[collapsible=icon]:size-10 group-data-[collapsible=icon]:min-h-10 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground data-[active=true]:bg-sidebar-accent data-[active=true]:text-sidebar-primary group-data-[collapsible=icon]:[&>:not(:first-child)]:hidden [&>span]:truncate",
         variant === "outline" && "border border-sidebar-border",
         className,
       )}
@@ -398,7 +399,16 @@ function SidebarContent({ className, ...props }: React.ComponentProps<"div">): R
 }
 
 function SidebarGroup({ className, ...props }: React.ComponentProps<"div">): React.JSX.Element {
-  return <div className={cn("relative flex flex-col gap-2 p-2", className)} {...props} />;
+  return (
+    <div
+      className={cn(
+        // Collapsed groups lose their labels, so a rule keeps the grouping visible.
+        "relative flex flex-col gap-2 p-2 group-data-[collapsible=icon]:not-first:border-t group-data-[collapsible=icon]:not-first:border-sidebar-border",
+        className,
+      )}
+      {...props}
+    />
+  );
 }
 
 function SidebarGroupLabel({
