@@ -23,7 +23,7 @@ describe("TOTP (Time-based One-Time Password)", async () => {
     await test.cleanup();
   });
 
-  describe("Full TOTP flow", async () => {
+  describe("Full TOTP flow", () => {
     let userId: string;
     let backupCodes: string[];
 
@@ -43,11 +43,9 @@ describe("TOTP (Time-based One-Time Password)", async () => {
         body: { userId },
       });
       assert(response.type === "json");
-      expect(response.data).toMatchObject({
-        secret: expect.any(String),
-        qrCodeUrl: expect.stringContaining("otpauth://totp/"),
-        backupCodes: expect.any(Array),
-      });
+      expect(response.data.secret).toEqual(expect.any(String));
+      expect(response.data.qrCodeUrl).toContain("otpauth://totp/");
+      expect(response.data.backupCodes).toEqual(expect.any(Array));
       expect(response.data.backupCodes).toHaveLength(10);
 
       // Check in the db it actually got created
@@ -64,7 +62,7 @@ describe("TOTP (Time-based One-Time Password)", async () => {
       expect(secret?.secret).toBe(response.data.secret);
 
       backupCodes = response.data.backupCodes;
-    }, 20000);
+    }, 20_000);
 
     it("/totp/status - check TOTP enabled after setup", async () => {
       const response = await fragment.callRoute("GET", "/totp/status", {
@@ -80,7 +78,7 @@ describe("TOTP (Time-based One-Time Password)", async () => {
       });
       assert(response.type === "error");
       expect(response.error.code).toBe("totp_already_enabled");
-    }, 20000);
+    }, 20_000);
 
     it("/totp/verify - reject invalid TOTP code", async () => {
       const response = await fragment.callRoute("POST", "/totp/verify", {

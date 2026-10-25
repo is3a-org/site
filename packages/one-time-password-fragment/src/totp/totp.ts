@@ -10,14 +10,15 @@ export interface TotpConfig {
 
 // Base32 encoding/decoding utilities
 const BASE32_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
+const backupCodeListSchema = z.array(z.string());
 
-export function base32Encode(buffer: Uint8Array): string {
+export function base32Encode(buffer: Readonly<Uint8Array>): string {
   let bits = 0;
   let value = 0;
   let output = "";
 
-  for (let i = 0; i < buffer.length; i++) {
-    value = (value << 8) | buffer[i];
+  for (const byte of buffer) {
+    value = (value << 8) | byte;
     bits += 8;
 
     while (bits >= 5) {
@@ -40,8 +41,8 @@ function base32Decode(encoded: string): Uint8Array {
   let index = 0;
   const output = new Uint8Array(Math.floor((cleanedInput.length * 5) / 8));
 
-  for (let i = 0; i < cleanedInput.length; i++) {
-    const charIndex = BASE32_CHARS.indexOf(cleanedInput[i]);
+  for (const character of cleanedInput) {
+    const charIndex = BASE32_CHARS.indexOf(character);
     if (charIndex === -1) {
       throw new Error("Invalid base32 character");
     }
@@ -58,20 +59,12 @@ function base32Decode(encoded: string): Uint8Array {
   return output;
 }
 
-export async function generateTOTP(
-  secret: string,
-  timeStep: number = 30,
-  digits: number = 6,
-): Promise<string> {
+export async function generateTOTP(secret: string, timeStep = 30, digits = 6): Promise<string> {
   const counter = Math.floor(Date.now() / 1000 / timeStep);
-  return await generateHOTP(secret, counter, digits);
+  return generateHOTP(secret, counter, digits);
 }
 
-export async function generateHOTP(
-  secret: string,
-  counter: number,
-  digits: number = 6,
-): Promise<string> {
+export async function generateHOTP(secret: string, counter: number, digits = 6): Promise<string> {
   const secretBytes = base32Decode(secret);
 
   // Convert counter to 8-byte buffer (big-endian)
@@ -80,11 +73,11 @@ export async function generateHOTP(
   counterView.setBigUint64(0, BigInt(counter), false);
 
   // Import key for HMAC-SHA1
-  // Ensure we have a clean ArrayBuffer by slicing
-  const secretBuffer = secretBytes.slice();
+  // Copy into an owned ArrayBuffer for the Web Crypto key import.
+  const secretBuffer = new Uint8Array(secretBytes);
   const key = await crypto.subtle.importKey(
     "raw",
-    secretBuffer.buffer as ArrayBuffer,
+    secretBuffer.buffer,
     { name: "HMAC", hash: "SHA-1" },
     false,
     ["sign"],
@@ -95,22 +88,22 @@ export async function generateHOTP(
   const hmac = new Uint8Array(signature);
 
   // Dynamic truncation
-  const offset = hmac[hmac.length - 1] & 0x0f;
+  const lastByte = hmac.at(-1);
+  if (lastByte === undefined) {
+    throw new Error("HOTP HMAC signature is empty");
+  }
+  const offset = lastByte & 15;
   const binaryCode =
-    ((hmac[offset] & 0x7f) << 24) |
-    ((hmac[offset + 1] & 0xff) << 16) |
-    ((hmac[offset + 2] & 0xff) << 8) |
-    (hmac[offset + 3] & 0xff);
+    ((hmac[offset] & 127) << 24) |
+    ((hmac[offset + 1] & 255) << 16) |
+    ((hmac[offset + 2] & 255) << 8) |
+    (hmac[offset + 3] & 255);
 
   const otp = binaryCode % Math.pow(10, digits);
   return otp.toString().padStart(digits, "0");
 }
 
-export async function verifyTOTP(
-  secret: string,
-  token: string,
-  window: number = 1,
-): Promise<boolean> {
+export async function verifyTOTP(secret: string, token: string, window = 1): Promise<boolean> {
   const timeStep = 30;
   const currentCounter = Math.floor(Date.now() / 1000 / timeStep);
 
@@ -130,7 +123,7 @@ export async function verifyTOTP(
 export async function hashBackupCode(code: string): Promise<string> {
   const encoder = new TextEncoder();
   const salt = crypto.getRandomValues(new Uint8Array(16));
-  const iterations = 100000;
+  const iterations = 100_000;
 
   const keyMaterial = await crypto.subtle.importKey("raw", encoder.encode(code), "PBKDF2", false, [
     "deriveBits",
@@ -147,20 +140,23 @@ export async function hashBackupCode(code: string): Promise<string> {
     256,
   );
 
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  const saltArray = Array.from(salt);
+  const hashArray = [...new Uint8Array(hashBuffer)];
+  const saltArray = [...salt];
 
   return `${saltArray.map((b) => b.toString(16).padStart(2, "0")).join("")}:${iterations}:${hashArray.map((b) => b.toString(16).padStart(2, "0")).join("")}`;
 }
 
 export async function verifyBackupCode(code: string, storedHash: string): Promise<boolean> {
   const [saltHex, iterationsStr, hashHex] = storedHash.split(":");
-  const iterations = parseInt(iterationsStr, 10);
+  const iterations = Math.trunc(Number(iterationsStr));
 
-  const salt = new Uint8Array(saltHex.match(/.{1,2}/g)!.map((byte) => parseInt(byte, 16)));
-  const storedHashBytes = new Uint8Array(
-    hashHex.match(/.{1,2}/g)!.map((byte) => parseInt(byte, 16)),
-  );
+  const saltHexBytes = saltHex.match(/.{1,2}/g);
+  const hashHexBytes = hashHex.match(/.{1,2}/g);
+  if (saltHexBytes === null || hashHexBytes === null) {
+    throw new Error("Backup code hash is missing salt or digest bytes");
+  }
+  const salt = new Uint8Array(saltHexBytes.map((byte) => Number.parseInt(byte, 16)));
+  const storedHashBytes = new Uint8Array(hashHexBytes.map((byte) => Number.parseInt(byte, 16)));
 
   const encoder = new TextEncoder();
   const keyMaterial = await crypto.subtle.importKey("raw", encoder.encode(code), "PBKDF2", false, [
@@ -197,7 +193,8 @@ export function generateBackupCode(): string {
   // Generate 8-character alphanumeric code
   const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
   let code = "";
-  const randomBytes = crypto.getRandomValues(new Uint8Array(8));
+  const randomByteBuffer = new Uint8Array(8);
+  const randomBytes = crypto.getRandomValues(randomByteBuffer);
   for (let i = 0; i < 8; i++) {
     code += chars[randomBytes[i] % chars.length];
   }
@@ -216,7 +213,7 @@ export const totpRoutesFactory = defineRoutes<typeof otpFragmentDefinition>().cr
         outputSchema: z.object({
           secret: z.string(),
           qrCodeUrl: z.string(),
-          backupCodes: z.array(z.string()),
+          backupCodes: backupCodeListSchema,
         }),
         errorCodes: ["totp_already_enabled"],
         handler: async function ({ input }, { json, error }) {
@@ -228,7 +225,7 @@ export const totpRoutesFactory = defineRoutes<typeof otpFragmentDefinition>().cr
             backupCodes.push(generateBackupCode());
           }
           const hashedBackupCodes = await Promise.all(
-            backupCodes.map((code) => hashBackupCode(code)),
+            backupCodes.map(async (code) => hashBackupCode(code)),
           );
 
           try {
@@ -236,11 +233,11 @@ export const totpRoutesFactory = defineRoutes<typeof otpFragmentDefinition>().cr
               .withServiceCalls(() => [services.enableTotp(userId, hashedBackupCodes)])
               .execute();
             return json({ ...result, backupCodes });
-          } catch (err) {
-            if (err instanceof Error && err.message.includes("already enabled")) {
+          } catch (error_) {
+            if (error_ instanceof Error && error_.message.includes("already enabled")) {
               return error({ message: "TOTP already enabled", code: "totp_already_enabled" }, 400);
             }
-            throw err;
+            throw error_;
           }
         },
       }),
@@ -333,7 +330,7 @@ export const totpRoutesFactory = defineRoutes<typeof otpFragmentDefinition>().cr
         handler: async function ({ query }, { json }) {
           const userId = query.get("userId");
 
-          if (!userId) {
+          if (userId === null || userId === "") {
             return json({ enabled: false });
           }
 
