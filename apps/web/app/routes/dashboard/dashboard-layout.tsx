@@ -1,11 +1,4 @@
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "@is3a/design-system/breadcrumb";
+import { BreadcrumbItem, BreadcrumbPage } from "@is3a/design-system/breadcrumb";
 import {
   Card,
   CardContent,
@@ -13,14 +6,14 @@ import {
   CardHeader,
   CardTitle,
 } from "@is3a/design-system/card";
-import { Separator } from "@is3a/design-system/separator";
-import { SidebarInset, SidebarProvider, SidebarTrigger } from "@is3a/design-system/sidebar";
+import { SidebarInset, SidebarProvider } from "@is3a/design-system/sidebar";
 import { AlertCircle } from "lucide-react";
 import type { JSX } from "react";
 import { isRouteErrorResponse, Outlet, redirect } from "react-router";
 
 import type { AuthMeResponse } from "@fragno-dev/auth";
 
+import { DashboardBreadcrumb } from "~/components/dashboard-breadcrumb";
 import type { ReadonlyRouteProps } from "~/fragno/readonly-route-props";
 import { createSimpleAuthServer } from "~/fragno/simple-auth-server";
 import { requestContext } from "~/request-context";
@@ -136,23 +129,11 @@ export function ErrorBoundary({
     <SidebarProvider>
       <DashboardNavigationSidebar user={user} />
       <SidebarInset>
-        <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
-          <div className="flex items-center gap-2 px-4">
-            <SidebarTrigger className="-ml-1" />
-            <Separator orientation="vertical" className="mr-2 data-[orientation=vertical]:h-4" />
-            <Breadcrumb>
-              <BreadcrumbList>
-                <BreadcrumbItem className="hidden md:block">
-                  <BreadcrumbLink href="/dashboard">Dashboard</BreadcrumbLink>
-                </BreadcrumbItem>
-                <BreadcrumbSeparator className="hidden md:block" />
-                <BreadcrumbItem>
-                  <BreadcrumbPage>Error</BreadcrumbPage>
-                </BreadcrumbItem>
-              </BreadcrumbList>
-            </Breadcrumb>
-          </div>
-        </header>
+        <DashboardBreadcrumb>
+          <BreadcrumbItem>
+            <BreadcrumbPage>Error</BreadcrumbPage>
+          </BreadcrumbItem>
+        </DashboardBreadcrumb>
         {errorContent}
       </SidebarInset>
     </SidebarProvider>
