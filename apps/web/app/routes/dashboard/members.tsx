@@ -13,11 +13,12 @@ import { DashboardBreadcrumb } from "~/components/dashboard-breadcrumb";
 import { UserRepo } from "~/db/repo/user";
 import { getMembershipByPriceId } from "~/lib/memberships";
 import { cn } from "~/lib/utils";
+import { requestContext } from "~/request-context";
 
 import type { Route } from "./+types/members";
 
 export async function loader({ context }: Route.LoaderArgs) {
-  const userRepo = new UserRepo(context.db);
+  const userRepo = new UserRepo(context.get(requestContext).db);
   return { members: await userRepo.getAllUsers() };
 }
 

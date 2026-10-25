@@ -9,11 +9,12 @@ import { UserRepo } from "~/db/repo/user";
 import { createSimpleAuthServer } from "~/fragno/simple-auth-server";
 import { linkStripeCustomer } from "~/fragno/stripe-durable-object";
 import { cn } from "~/lib/utils";
+import { requestContext } from "~/request-context";
 
 import type { Route } from "./+types/stripe";
 
 export async function loader({ context }: Route.LoaderArgs) {
-  const userRepo = new UserRepo(context.db);
+  const userRepo = new UserRepo(context.get(requestContext).db);
   const users = await userRepo.getAllUsers();
   return { users };
 }
@@ -28,8 +29,8 @@ export async function action({ request, context }: Route.ActionArgs) {
     const createNewUser = formData.get("createNewUser") === "true";
     const newUserEmail = formData.get("newUserEmail") as string | null;
 
-    const userRepo = new UserRepo(context.db);
-    const auth = createSimpleAuthServer(context.pool);
+    const userRepo = new UserRepo(context.get(requestContext).db);
+    const auth = createSimpleAuthServer(context.get(requestContext).pool);
 
     try {
       let targetUserId: string;
@@ -73,10 +74,14 @@ export async function action({ request, context }: Route.ActionArgs) {
       }
 
       // Link user to Stripe customer and sync their subscription from Stripe
-      const linkError = await linkStripeCustomer(context.cloudflare.env, userRepo, {
-        customerId: stripeCustomerId,
-        referenceId: targetUserId,
-      });
+      const linkError = await linkStripeCustomer(
+        context.get(requestContext).cloudflare.env,
+        userRepo,
+        {
+          customerId: stripeCustomerId,
+          referenceId: targetUserId,
+        },
+      );
       if (linkError) {
         return { success: false, error: linkError };
       }
@@ -95,7 +100,7 @@ export async function action({ request, context }: Route.ActionArgs) {
     const stripeCustomerId = formData.get("stripeCustomerId") as string;
     const stripeCustomerEmail = formData.get("stripeCustomerEmail") as string;
 
-    const userRepo = new UserRepo(context.db);
+    const userRepo = new UserRepo(context.get(requestContext).db);
 
     // Check by Stripe customer ID
     const userByStripeId = await userRepo.getUserByStripeCustomerId(stripeCustomerId);

@@ -1,24 +1,9 @@
-import type { Pool } from "pg";
-import { createRequestHandler } from "react-router";
+import { createRequestHandler, RouterContextProvider } from "react-router";
 
-import {
-  createDrizzleDatabase,
-  createPostgresPool,
-  type DrizzleDatabase,
-} from "~/db/postgres/is3a-postgres";
+import { createDrizzleDatabase, createPostgresPool } from "~/db/postgres/is3a-postgres";
+import { requestContext } from "~/request-context";
 
 export { StripeFragmentDurableObject } from "~/fragno/stripe-durable-object";
-
-declare module "react-router" {
-  export interface AppLoadContext {
-    cloudflare: {
-      env: CloudflareEnv;
-      ctx: ExecutionContext;
-    };
-    pool: Pool;
-    db: DrizzleDatabase;
-  }
-}
 
 const requestHandler = createRequestHandler(
   () => import("virtual:react-router/server-build"),
@@ -31,11 +16,14 @@ export default {
     try {
       const db = createDrizzleDatabase(pool);
 
-      return await requestHandler(request, {
+      const context = new RouterContextProvider();
+      context.set(requestContext, {
         cloudflare: { env, ctx },
         pool,
         db,
       });
+
+      return await requestHandler(request, context);
     } catch (error) {
       console.error("Error fetching request", error);
       return new Response("Internal Server Error", { status: 500 });

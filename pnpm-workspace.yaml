@@ -4,3 +4,28 @@ packages:
 catalog:
   vite: npm:@voidzero-dev/vite-plus-core@1.4.0
   vite-plus: 1.4.0
+
+overrides:
+  "vite@*": npm:@voidzero-dev/vite-plus-core@1.4.0
+peerDependencyRules:
+  allowAny:
+    - vite
+  allowedVersions:
+    vite: "*"
+patchedDependencies:
+  "@fragno-dev/unplugin-fragno@0.0.9": patches/@fragno-dev__unplugin-fragno@0.0.9.patch
+
+allowBuilds:
+  better-sqlite3@12.6.2: true
+  esbuild@0.18.20 || 0.25.12 || 0.28.2: true
+  workerd@1.20261019.1: true
+
+minimumReleaseAgeExclude:
+  - "@fragno-dev/auth@0.0.0-canary-40098233613-1-20261024132858"
+  - "@fragno-dev/cli@0.0.0-canary-40098233613-1-20261024132858"
+  - "@fragno-dev/core@0.0.0-canary-40098233613-1-20261024132858"
+  - "@fragno-dev/db@0.0.0-canary-40098233613-1-20261024132858"
+  - "@fragno-dev/forms@0.0.0-canary-40098233613-1-20261024132858"
+  - "@fragno-dev/jsonforms-shadcn-renderers@0.0.0-canary-40098233613-1-20261024132858"
+  - "@fragno-dev/stripe@0.0.0-canary-40098233613-1-20261024132858"
+  - "@fragno-dev/test@0.0.0-canary-40098233613-1-20261024132858"

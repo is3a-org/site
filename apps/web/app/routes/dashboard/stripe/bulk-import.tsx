@@ -11,11 +11,12 @@ import { UserRepo } from "~/db/repo/user";
 import { createSimpleAuthServer } from "~/fragno/simple-auth-server";
 import { linkStripeCustomer } from "~/fragno/stripe-durable-object";
 import { createStripeClient } from "~/lib/stripe.server";
+import { requestContext } from "~/request-context";
 
 import type { Route } from "./+types/bulk-import";
 
 export async function loader({ context }: Route.LoaderArgs) {
-  const userRepo = new UserRepo(context.db);
+  const userRepo = new UserRepo(context.get(requestContext).db);
 
   // Fetch existing users for matching
   const users = await userRepo.getAllUsers();
@@ -43,8 +44,8 @@ export async function action({ request, context }: Route.ActionArgs) {
     const customerIdsJson = formData.get("customerIds") as string;
     const customerIds = JSON.parse(customerIdsJson) as string[];
 
-    const userRepo = new UserRepo(context.db);
-    const auth = createSimpleAuthServer(context.pool);
+    const userRepo = new UserRepo(context.get(requestContext).db);
+    const auth = createSimpleAuthServer(context.get(requestContext).pool);
     const stripeClient = createStripeClient();
 
     const results: Array<{
@@ -151,10 +152,14 @@ export async function action({ request, context }: Route.ActionArgs) {
         }
 
         // Link user to Stripe customer and sync their subscription from Stripe
-        const linkError = await linkStripeCustomer(context.cloudflare.env, userRepo, {
-          customerId,
-          referenceId: targetUserId,
-        });
+        const linkError = await linkStripeCustomer(
+          context.get(requestContext).cloudflare.env,
+          userRepo,
+          {
+            customerId,
+            referenceId: targetUserId,
+          },
+        );
         if (linkError) {
           return { success: false, error: linkError, results };
         }

@@ -11,6 +11,7 @@ import { Label } from "@is3a/design-system/label";
 import { redirect } from "react-router";
 
 import { createSimpleAuthServer } from "~/fragno/simple-auth-server";
+import { requestContext } from "~/request-context";
 
 import type { Route } from "./+types/sign-up";
 
@@ -26,7 +27,7 @@ export async function loader(_: Route.LoaderArgs) {
 }
 
 export async function action({ request, context }: Route.ActionArgs) {
-  const auth = createSimpleAuthServer(context.pool);
+  const auth = createSimpleAuthServer(context.get(requestContext).pool);
 
   const formData = await request.formData();
   const email = formData.get("email") as string;
