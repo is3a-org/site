@@ -39,7 +39,7 @@ function BreadcrumbLink({
 }: React.ComponentProps<"a"> & {
   asChild?: boolean;
 }): React.JSX.Element {
-  const Comp = asChild ? Slot : "a";
+  const Comp = asChild === true ? Slot : "a";
 
   return (
     <Comp
@@ -54,8 +54,6 @@ function BreadcrumbPage({ className, ...props }: React.ComponentProps<"span">): 
   return (
     <span
       data-slot="breadcrumb-page"
-      role="link"
-      aria-disabled="true"
       aria-current="page"
       className={cn("font-normal text-foreground", className)}
       {...props}

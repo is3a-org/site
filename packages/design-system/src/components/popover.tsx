@@ -6,7 +6,7 @@ import { cn } from "../cn";
 
 function Popover({
   ...props
-}: React.ComponentProps<typeof PopoverPrimitive.Root>): React.JSX.Element {
+}: Readonly<React.ComponentProps<typeof PopoverPrimitive.Root>>): React.JSX.Element {
   return <PopoverPrimitive.Root data-slot="popover" {...props} />;
 }
 
