@@ -8,6 +8,7 @@ import {
 } from "@is3a/design-system/card";
 import { Input } from "@is3a/design-system/input";
 import { Label } from "@is3a/design-system/label";
+import type { JSX } from "react";
 import { useState } from "react";
 import { redirect } from "react-router";
 
@@ -27,7 +28,10 @@ export function meta(_: Route.MetaArgs) {
   ];
 }
 
-export async function loader({ request, context }: Route.LoaderArgs) {
+export async function loader({
+  request,
+  context,
+}: Route.LoaderArgs): Promise<Response | undefined> {
   const auth = createSimpleAuthServer(context.get(requestContext).pool);
 
   const response = await auth.callRoute("GET", "/me", {
@@ -138,7 +142,7 @@ export async function action({ request, context }: Route.ActionArgs) {
   }
 }
 
-export default function Login({ actionData }: Route.ComponentProps) {
+export default function Login({ actionData }: Route.ComponentProps): JSX.Element {
   const [showMagicLinkForm, setShowMagicLinkForm] = useState(actionData?.intent === "magic-link");
   const [email, setEmail] = useState(actionData?.email || "");
   const [turnstileToken, setTurnstileToken] = useState("");

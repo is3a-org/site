@@ -1,3 +1,4 @@
+import type { JSX } from "react";
 import type { ReactNode } from "react";
 
 // Apparently inline css is the way to go for emails
@@ -32,7 +33,13 @@ const styles = {
   },
 } as const;
 
-export function EmailLayout({ title, children }: { title: string; children: ReactNode }) {
+export function EmailLayout({
+  title,
+  children,
+}: {
+  title: string;
+  children: ReactNode;
+}): JSX.Element {
   return (
     <html>
       <head>

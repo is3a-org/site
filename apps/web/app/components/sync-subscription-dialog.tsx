@@ -19,6 +19,7 @@ import {
   SelectValue,
 } from "@is3a/design-system/select";
 import { AlertCircle, CheckCircle2, Loader2 } from "lucide-react";
+import type { JSX } from "react";
 import { useState, useEffect } from "react";
 import { useFetcher } from "react-router";
 
@@ -49,7 +50,7 @@ export function SyncSubscriptionDialog({
   onOpenChange,
   customer,
   allUsers,
-}: SyncSubscriptionDialogProps) {
+}: SyncSubscriptionDialogProps): JSX.Element {
   const [step, setStep] = useState<Step>("select-user");
   const [selectedUserId, setSelectedUserId] = useState<string>("");
   const [createNew, setCreateNew] = useState(false);
@@ -96,7 +97,7 @@ export function SyncSubscriptionDialog({
     }
   }, [fetcher.data, isSubmitting, onOpenChange]);
 
-  const handleNext = () => {
+  const handleNext = (): void => {
     if (step === "select-user") {
       if (createNew) {
         setStep("create-user");
@@ -108,7 +109,7 @@ export function SyncSubscriptionDialog({
     }
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = (): void => {
     const formData = new FormData();
     formData.append("intent", "sync-subscription");
     formData.append("stripeCustomerId", customer.id);
@@ -125,7 +126,7 @@ export function SyncSubscriptionDialog({
     fetcher.submit(formData, { method: "post" });
   };
 
-  const canProceed = () => {
+  const canProceed = (): string | boolean => {
     if (step === "select-user") {
       return createNew || selectedUserId;
     }

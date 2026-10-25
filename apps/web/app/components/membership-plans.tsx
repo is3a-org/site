@@ -8,18 +8,19 @@ import {
   CardTitle,
 } from "@is3a/design-system/card";
 import { Check, Users, MessageCircle, Calendar, Info } from "lucide-react";
+import type { JSX } from "react";
 
 import { MEMBERSHIPS } from "~/lib/memberships";
 import { stripeFragmentClient } from "~/lib/stripe-client";
 
-export function MembershipPlans() {
+export function MembershipPlans(): JSX.Element {
   const {
     mutate: upgradeSubscription,
     loading,
     error,
   } = stripeFragmentClient.upgradeSubscription();
 
-  const handleSubscribe = async (priceId: string) => {
+  const handleSubscribe = async (priceId: string): Promise<void> => {
     const response = await upgradeSubscription({
       body: {
         priceId,

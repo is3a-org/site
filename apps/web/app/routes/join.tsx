@@ -1,3 +1,5 @@
+import type { JSX } from "react";
+
 import type { Route } from "./+types/join";
 
 export function meta(_: Route.MetaArgs) {
@@ -11,7 +13,7 @@ export function meta(_: Route.MetaArgs) {
   ];
 }
 
-export default function Join() {
+export default function Join(): JSX.Element {
   return (
     <div className="w-full">
       {/* Hero Section */}

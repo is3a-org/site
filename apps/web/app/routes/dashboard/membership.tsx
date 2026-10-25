@@ -19,6 +19,7 @@ import {
   User,
   Lock,
 } from "lucide-react";
+import type { JSX } from "react";
 import { useState } from "react";
 
 import { DashboardBreadcrumb } from "~/components/dashboard-breadcrumb";
@@ -123,7 +124,7 @@ const getStatusMeta = (status?: string, isScheduledToCancel?: boolean): StatusMe
   };
 };
 
-const formatDate = (date?: string | number | Date | null) => {
+const formatDate = (date?: string | number | Date | null): string | null => {
   if (!date) {
     return null;
   }
@@ -146,7 +147,7 @@ const describeStatus = ({
   cancelDate?: string | number | Date | null;
   renewalDate?: string | number | Date | null;
   trialEndDate?: string | number | Date | null;
-}) => {
+}): string => {
   if (isScheduledToCancel) {
     return `Your membership is scheduled to cancel on ${
       formatDate(cancelDate) ?? "the end of your billing period"
@@ -203,13 +204,13 @@ const getPaymentWarningConfig = (status?: string) => {
   }
 };
 
-const redirectToStripe = (response?: { url?: string }) => {
+const redirectToStripe = (response?: { url?: string }): void => {
   if (response?.url) {
     window.location.href = response.url;
   }
 };
 
-const ErrorAlert = ({ message }: { message: string }) => (
+const ErrorAlert = ({ message }: { message: string }): JSX.Element => (
   <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-red-800">
     <p className="font-semibold">Error</p>
     <p className="text-sm">{message}</p>
@@ -240,7 +241,7 @@ export default function DashboardSubscribe({
   matches,
   className,
   ...props
-}: React.ComponentProps<"div"> & Route.ComponentProps) {
+}: React.ComponentProps<"div"> & Route.ComponentProps): JSX.Element {
   const { subscription } = loaderData;
 
   // User info
@@ -256,7 +257,7 @@ export default function DashboardSubscribe({
   const { mutate: changePassword, loading: changePasswordLoading } =
     simpleAuthClient.useChangePassword();
 
-  const handleChangePassword = async (e: React.FormEvent) => {
+  const handleChangePassword = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault();
     setPasswordError(null);
     setPasswordSuccess(false);
@@ -330,7 +331,7 @@ export default function DashboardSubscribe({
     "N/A";
   const errors = [cancelError, error, createPortalError].filter((err) => err != null);
 
-  const handleUncancel = async () => {
+  const handleUncancel = async (): Promise<void> => {
     if (!subscription?.priceId) {
       return;
     }
@@ -346,7 +347,7 @@ export default function DashboardSubscribe({
     redirectToStripe(response);
   };
 
-  const handleCancel = async () => {
+  const handleCancel = async (): Promise<void> => {
     const resp = await cancelSubscription({
       body: {
         returnUrl: `${window.location.origin}/dashboard/subscribe-confirm?sad=true`,
@@ -355,7 +356,7 @@ export default function DashboardSubscribe({
     redirectToStripe(resp);
   };
 
-  const handleUpdateBilling = async () => {
+  const handleUpdateBilling = async (): Promise<void> => {
     const resp = await createPortal({
       body: {
         returnUrl: `${window.location.origin}/dashboard/subscribe-confirm`,

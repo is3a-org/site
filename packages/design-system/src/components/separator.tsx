@@ -11,7 +11,7 @@ function Separator({
   orientation = "horizontal",
   decorative = true,
   ...props
-}: React.ComponentProps<typeof SeparatorPrimitive.Root>) {
+}: React.ComponentProps<typeof SeparatorPrimitive.Root>): React.JSX.Element {
   return (
     <SeparatorPrimitive.Root
       data-slot="separator"

@@ -3,7 +3,7 @@ import { Pool } from "pg";
 
 import { schema } from "./postgres.schema.ts";
 
-export function createPostgresPool() {
+export function createPostgresPool(): Pool {
   return new Pool({
     connectionString: process.env.PG_DATABASE_URL!,
   });

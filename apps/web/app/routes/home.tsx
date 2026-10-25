@@ -1,3 +1,4 @@
+import type { JSX } from "react";
 import { Link } from "react-router";
 
 import { SiteColumn, SiteSection, siteHeading, siteText } from "~/components/landing/site-grid";
@@ -19,11 +20,11 @@ export function meta(_: Route.MetaArgs) {
 const featureHeading =
   "font-pt-sans px-2 py-3.5 text-[17.3333px] leading-[1.25] font-bold text-[#212121] md:text-[20px]";
 
-function Spacer() {
+function Spacer(): JSX.Element {
   return <div aria-hidden className="h-[88px]" />;
 }
 
-export default function Home() {
+export default function Home(): JSX.Element {
   return (
     <div className="w-full">
       {/* Hero */}

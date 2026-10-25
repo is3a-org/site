@@ -1,3 +1,5 @@
+import type { JSX } from "react";
+
 import type { Route } from "./+types/team";
 
 export function meta(_: Route.MetaArgs) {
@@ -55,7 +57,7 @@ const teamMembers = [
   },
 ];
 
-export default function Team() {
+export default function Team(): JSX.Element {
   return (
     <div className="w-full">
       {/* Hero Section */}

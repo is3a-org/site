@@ -1,3 +1,4 @@
+import type { JSX } from "react";
 import { Outlet, redirect } from "react-router";
 
 import { createSimpleAuthServer } from "~/fragno/simple-auth-server";
@@ -29,6 +30,6 @@ export async function loader({ context, request }: Route.LoaderArgs) {
   return redirect("/login");
 }
 
-export default function AdminLayout() {
+export default function AdminLayout(): JSX.Element {
   return <Outlet />;
 }

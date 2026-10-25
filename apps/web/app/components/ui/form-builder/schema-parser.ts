@@ -169,7 +169,7 @@ export function parseSchemas(schemas: GeneratedSchemas): FormBuilderState {
   const usedLabelNames = new Set(Object.keys(dataSchema.properties));
   let labelIndex = 1;
 
-  const createLabelFieldName = () => {
+  const createLabelFieldName = (): string => {
     let candidate = `label_${labelIndex}`;
     while (usedLabelNames.has(candidate)) {
       labelIndex += 1;

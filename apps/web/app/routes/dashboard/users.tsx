@@ -25,6 +25,7 @@ import {
   TableRow,
 } from "@is3a/design-system/table";
 import { Search, ChevronLeft, ChevronRight, ArrowUpDown } from "lucide-react";
+import type { JSX } from "react";
 import { useState } from "react";
 
 import type { Role } from "@fragno-dev/auth";
@@ -38,7 +39,7 @@ export async function loader({ context: _context, request: _request }: Route.Loa
   return {};
 }
 
-export default function UsersPage() {
+export default function UsersPage(): JSX.Element {
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState<"email" | "createdAt">("createdAt");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
@@ -61,7 +62,7 @@ export default function UsersPage() {
 
   const { mutate: updateRole, loading: updateRoleLoading } = simpleAuthClient.useUpdateUserRole();
 
-  const handleRoleChange = async (userId: string, newRole: Role) => {
+  const handleRoleChange = async (userId: string, newRole: Role): Promise<void> => {
     await updateRole({
       path: { userId },
       body: { role: newRole },
@@ -69,13 +70,13 @@ export default function UsersPage() {
     setRefreshUser(refreshUser + 1);
   };
 
-  const handleSearch = (value: string) => {
+  const handleSearch = (value: string): void => {
     setSearch(value);
     setCursor(undefined); // Reset to first page on new search
     setCursorHistory([]); // Clear history
   };
 
-  const toggleSort = (column: "email" | "createdAt") => {
+  const toggleSort = (column: "email" | "createdAt"): void => {
     // When searching, only allow email sorting
     if (search && column === "createdAt") {
       return;
@@ -91,14 +92,14 @@ export default function UsersPage() {
     setCursorHistory([]); // Clear history
   };
 
-  const handleNextPage = () => {
+  const handleNextPage = (): void => {
     if (data?.cursor) {
       setCursorHistory([...cursorHistory, cursor]);
       setCursor(data.cursor);
     }
   };
 
-  const handlePreviousPage = () => {
+  const handlePreviousPage = (): void => {
     const newHistory = [...cursorHistory];
     const previousCursor = newHistory.pop();
     setCursorHistory(newHistory);

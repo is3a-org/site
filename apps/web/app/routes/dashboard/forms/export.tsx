@@ -31,6 +31,7 @@ import {
   TableRow,
 } from "@is3a/design-system/table";
 import { ArrowLeft, Download } from "lucide-react";
+import type { JSX } from "react";
 import { useState, useMemo, useEffect } from "react";
 import { Link } from "react-router";
 
@@ -68,7 +69,7 @@ function generateCSV(data: Record<string, unknown>[], columns: string[]): string
   return [header, ...rows].join("\n");
 }
 
-function downloadCSV(content: string, filename: string) {
+function downloadCSV(content: string, filename: string): void {
   const blob = new Blob([content], { type: "text/csv;charset=utf-8;" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
@@ -78,7 +79,7 @@ function downloadCSV(content: string, filename: string) {
   URL.revokeObjectURL(url);
 }
 
-export default function ExportSubmissionsPage({ params }: Route.ComponentProps) {
+export default function ExportSubmissionsPage({ params }: Route.ComponentProps): JSX.Element {
   const { data: form, loading: isLoadingForm } = formsClient.useFormById({
     path: { id: params.id },
   });
@@ -135,7 +136,7 @@ export default function ExportSubmissionsPage({ params }: Route.ComponentProps) 
     }
   }, [versions, selectedVersion]);
 
-  const toggleColumn = (column: string) => {
+  const toggleColumn = (column: string): void => {
     const newSelected = new Set(selectedColumns);
     if (newSelected.has(column)) {
       newSelected.delete(column);
@@ -145,10 +146,10 @@ export default function ExportSubmissionsPage({ params }: Route.ComponentProps) 
     setSelectedColumns(newSelected);
   };
 
-  const selectAll = () => setSelectedColumns(new Set(allColumns));
-  const deselectAll = () => setSelectedColumns(new Set());
+  const selectAll = (): void => setSelectedColumns(new Set(allColumns));
+  const deselectAll = (): void => setSelectedColumns(new Set());
 
-  const handleExport = () => {
+  const handleExport = (): void => {
     if (!form) {
       return;
     }

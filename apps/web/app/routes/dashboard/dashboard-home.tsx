@@ -1,6 +1,7 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@is3a/design-system/avatar";
 import { Badge } from "@is3a/design-system/badge";
 import { BreadcrumbItem, BreadcrumbPage } from "@is3a/design-system/breadcrumb";
+import type { JSX } from "react";
 
 import { DashboardBreadcrumb } from "~/components/dashboard-breadcrumb";
 import { cn } from "~/lib/utils";
@@ -15,7 +16,7 @@ export default function DashboardHome({
   matches,
   className,
   ...props
-}: React.ComponentProps<"div"> & Route.ComponentProps) {
+}: React.ComponentProps<"div"> & Route.ComponentProps): JSX.Element {
   // Get user data from parent route loader
   const parentData = matches[1].loaderData;
 

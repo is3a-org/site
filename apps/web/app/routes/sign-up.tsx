@@ -8,6 +8,7 @@ import {
 } from "@is3a/design-system/card";
 import { Input } from "@is3a/design-system/input";
 import { Label } from "@is3a/design-system/label";
+import type { JSX } from "react";
 import { redirect } from "react-router";
 
 import { createSimpleAuthServer } from "~/fragno/simple-auth-server";
@@ -82,7 +83,7 @@ export async function action({ request, context }: Route.ActionArgs) {
   }
 }
 
-export default function SignUp({ actionData }: Route.ComponentProps) {
+export default function SignUp({ actionData }: Route.ComponentProps): JSX.Element {
   return (
     <div className="flex min-h-screen w-full items-center justify-center bg-gray-50 px-4 py-12">
       <div className="flex w-full flex-col items-center">

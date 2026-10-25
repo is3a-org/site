@@ -8,6 +8,7 @@ import {
   CardTitle,
 } from "@is3a/design-system/card";
 import { CheckCircle2, XCircle, Loader2, HeartCrack } from "lucide-react";
+import type { JSX } from "react";
 import { useEffect } from "react";
 import { useSearchParams } from "react-router";
 import { useNavigate } from "react-router";
@@ -44,7 +45,7 @@ export default function DashboardSubscribeConfirm({
   matches,
   className,
   ...props
-}: React.ComponentProps<"div"> & Route.ComponentProps) {
+}: React.ComponentProps<"div"> & Route.ComponentProps): JSX.Element {
   const { status, message } = loaderData;
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -56,7 +57,7 @@ export default function DashboardSubscribeConfirm({
       const timer = setTimeout(() => {
         navigate("/dashboard/membership");
       }, 2000);
-      return () => clearTimeout(timer);
+      return (): void => clearTimeout(timer);
     }
   }, [status, navigate]);
 

@@ -4,7 +4,7 @@ import { NodePostgresDriverConfig } from "@fragno-dev/db/drivers";
 
 import type { PostgresPool } from "../db/postgres/is3a-postgres.ts";
 
-export function createAdapter(pool: PostgresPool | (() => PostgresPool)) {
+export function createAdapter(pool: PostgresPool | (() => PostgresPool)): SqlAdapter {
   const resolvedPool = typeof pool === "function" ? pool() : pool;
 
   if (typeof pool === "function") {

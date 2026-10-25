@@ -14,6 +14,7 @@ import {
   useSidebar,
 } from "@is3a/design-system/sidebar";
 import { ChevronsUpDown, LogOut } from "lucide-react";
+import type { JSX } from "react";
 import { useNavigate } from "react-router";
 
 import { simpleAuthClient } from "@/lib/simple-auth-client";
@@ -26,7 +27,7 @@ export function NavUser({
     email: string;
     avatar?: string;
   };
-}) {
+}): JSX.Element {
   const { isMobile, setOpenMobile } = useSidebar();
   const navigate = useNavigate();
 

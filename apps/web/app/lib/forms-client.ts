@@ -60,7 +60,7 @@ export function useAllSubmissions(formId: string) {
         }
       });
 
-    return () => {
+    return (): void => {
       cancelled = true;
     };
   }, [formId]);

@@ -15,6 +15,7 @@ import {
   ClipboardList,
   type LucideIcon,
 } from "lucide-react";
+import type { JSX } from "react";
 import { Link } from "react-router";
 
 import { IS3ALogo } from "~/components/icons/is3a";
@@ -77,7 +78,7 @@ interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
   };
 }
 
-function SidebarLogo() {
+function SidebarLogo(): JSX.Element {
   const { state } = useSidebar();
   const isCollapsed = state === "collapsed";
 
@@ -88,7 +89,7 @@ function SidebarLogo() {
   );
 }
 
-export function DashboardNavigationSidebar({ user, ...props }: AppSidebarProps) {
+export function DashboardNavigationSidebar({ user, ...props }: AppSidebarProps): JSX.Element {
   // Filter navigation items based on user role
   const filteredNavItems = navItems.filter((item) => !item.adminOnly || user.isAdmin);
 

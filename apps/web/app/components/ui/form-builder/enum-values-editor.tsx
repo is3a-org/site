@@ -1,6 +1,7 @@
 import { Button } from "@is3a/design-system/button";
 import { Input } from "@is3a/design-system/input";
 import { Plus, Trash2, ChevronUp, ChevronDown } from "lucide-react";
+import type { JSX } from "react";
 
 import { cn } from "@/lib/utils";
 
@@ -10,22 +11,26 @@ export interface EnumValuesEditorProps {
   className?: string;
 }
 
-export function EnumValuesEditor({ values, onChange, className }: EnumValuesEditorProps) {
-  const addOption = () => {
+export function EnumValuesEditor({
+  values,
+  onChange,
+  className,
+}: EnumValuesEditorProps): JSX.Element {
+  const addOption = (): void => {
     onChange([...values, `Option ${values.length + 1}`]);
   };
 
-  const updateOption = (index: number, value: string) => {
+  const updateOption = (index: number, value: string): void => {
     const newValues = [...values];
     newValues[index] = value;
     onChange(newValues);
   };
 
-  const deleteOption = (index: number) => {
+  const deleteOption = (index: number): void => {
     onChange(values.filter((_, i) => i !== index));
   };
 
-  const moveOption = (fromIndex: number, toIndex: number) => {
+  const moveOption = (fromIndex: number, toIndex: number): void => {
     if (toIndex < 0 || toIndex >= values.length) {
       return;
     }

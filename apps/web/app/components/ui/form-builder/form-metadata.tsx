@@ -7,6 +7,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@is3a/design-system/select";
+import type { JSX } from "react";
 
 import { cn } from "@/lib/utils";
 
@@ -30,8 +31,12 @@ const STATUS_OPTIONS: { value: FormStatus; label: string; description: string }[
   { value: "closed", label: "Closed", description: "No longer accepting submissions" },
 ];
 
-export function FormMetadataEditor({ value, onChange, className }: FormMetadataEditorProps) {
-  const updateField = <K extends keyof FormMetadata>(key: K, fieldValue: FormMetadata[K]) => {
+export function FormMetadataEditor({
+  value,
+  onChange,
+  className,
+}: FormMetadataEditorProps): JSX.Element {
+  const updateField = <K extends keyof FormMetadata>(key: K, fieldValue: FormMetadata[K]): void => {
     onChange({ ...value, [key]: fieldValue });
   };
 

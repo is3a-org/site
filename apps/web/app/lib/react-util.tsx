@@ -1,9 +1,9 @@
+import type { JSX } from "react";
 // FROM https://github.com/sergiodxa/remix-utils/blob/main/src/react/use-hydrated.ts (MIT)
-
 import { useSyncExternalStore } from "react";
 
 function subscribe() {
-  return () => {};
+  return (): void => {};
 }
 
 /**
@@ -23,7 +23,7 @@ function subscribe() {
  * );
  * ```
  */
-export function useHydrated() {
+export function useHydrated(): boolean {
   return useSyncExternalStore(
     subscribe,
     () => true,
@@ -56,6 +56,6 @@ type ClientOnlyProps = {
  * );
  * ```
  */
-export function ClientOnly({ children, fallback = null }: ClientOnlyProps) {
+export function ClientOnly({ children, fallback = null }: ClientOnlyProps): JSX.Element {
   return useHydrated() ? <>{children()}</> : <>{fallback}</>;
 }

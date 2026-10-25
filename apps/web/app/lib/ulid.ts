@@ -13,7 +13,7 @@ export const TIME_LEN = 10;
 export const RANDOM_LEN = 16;
 export const ULID_LEN = TIME_LEN + RANDOM_LEN;
 
-function replaceCharAt(str: string, index: number, char: string) {
+function replaceCharAt(str: string, index: number, char: string): string {
   return str.substring(0, index) + char + str.substring(index + 1);
 }
 

@@ -1,3 +1,4 @@
+import type { JSX } from "react";
 import { Link } from "react-router";
 
 import type { Route } from "./+types/login-error";
@@ -9,7 +10,7 @@ export function meta(_: Route.MetaArgs) {
   ];
 }
 
-export default function LoginError() {
+export default function LoginError(): JSX.Element {
   return (
     <div className="flex min-h-screen w-full items-center justify-center bg-gray-50 px-4 py-12">
       <div className="w-full max-w-md">
