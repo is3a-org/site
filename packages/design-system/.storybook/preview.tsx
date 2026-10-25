@@ -8,7 +8,15 @@ const preview: Preview = {
     layout: "padded",
     options: {
       storySort: {
-        order: ["Foundations", "Controls", "Forms", "Data display", "Navigation", "Overlays"],
+        order: [
+          "Foundations",
+          ["Brand", "Palette", "Typography", "Layout"],
+          "Controls",
+          "Forms",
+          "Data display",
+          "Navigation",
+          "Overlays",
+        ],
       },
     },
   },

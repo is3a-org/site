@@ -8,7 +8,7 @@ export function Avatar({ className, ...props }: StyledProps<Primitive.Root.Props
     <Primitive.Root
       data-slot="avatar"
       className={cn(
-        "relative inline-flex size-10 shrink-0 overflow-hidden rounded-full bg-secondary",
+        "relative inline-flex size-10 shrink-0 overflow-hidden rounded-md bg-secondary outline outline-1 -outline-offset-1 outline-black/10 dark:outline-white/10",
         className,
       )}
       {...props}
@@ -35,7 +35,7 @@ export function AvatarFallback({
     <Primitive.Fallback
       data-slot="avatar-fallback"
       className={cn(
-        "flex size-full items-center justify-center text-sm font-semibold text-secondary-foreground",
+        "flex size-full items-center justify-center text-base font-semibold font-display text-secondary-foreground",
         className,
       )}
       {...props}

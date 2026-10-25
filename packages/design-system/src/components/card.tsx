@@ -1,6 +1,7 @@
 import type { ComponentProps, JSX } from "react";
 
 import { cn } from "../cn";
+import { display } from "../control-styles";
 export function Card({ className, ...props }: ComponentProps<"div">): JSX.Element {
   return (
     <div
@@ -17,7 +18,11 @@ export function CardHeader({ className, ...props }: ComponentProps<"div">): JSX.
   return (
     <div
       data-slot="card-header"
-      className={cn("grid grid-cols-[1fr_auto] gap-x-4 gap-y-1 px-5", className)}
+      className={cn(
+        // A second column exists only for CardAction; everything else stacks in the first.
+        "grid gap-x-4 gap-y-1 px-5 has-data-[slot=card-action]:grid-cols-[1fr_auto] [&>:not([data-slot=card-action])]:col-start-1",
+        className,
+      )}
       {...props}
     />
   );
@@ -26,7 +31,7 @@ export function CardTitle({ className, ...props }: ComponentProps<"div">): JSX.E
   return (
     <div
       data-slot="card-title"
-      className={cn("text-base leading-6 font-semibold text-balance", className)}
+      className={cn("text-xl leading-6 text-balance", display, className)}
       {...props}
     />
   );

@@ -14,7 +14,7 @@ export function Checkbox({
       data-slot="checkbox"
       indeterminate={indeterminate}
       className={cn(
-        "peer relative flex size-5 shrink-0 items-center justify-center rounded border border-input bg-background text-primary-foreground after:absolute after:-inset-2 data-checked:border-primary data-checked:bg-primary data-disabled:opacity-50 data-indeterminate:border-primary data-indeterminate:bg-primary",
+        "peer relative flex size-5 shrink-0 items-center justify-center rounded-sm border-2 border-input bg-background text-primary-foreground transition-colors after:absolute after:-inset-2 hover:border-foreground data-checked:border-primary data-checked:bg-primary data-disabled:opacity-50 data-indeterminate:border-primary data-indeterminate:bg-primary",
         focus,
         className,
       )}

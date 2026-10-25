@@ -62,13 +62,29 @@ Native semantic elements handle cards, tables, labels, breadcrumbs, and textarea
 provides the calendar because Base UI does not currently provide one. Application-specific JSON
 Forms renderers live in `apps/web/app/components/forms/` and use this package's controls.
 
-## Visual language
+## Visual language: bracket and cross
 
-- White and charcoal surfaces, with IS3A logo red (`#bd1900`) for primary actions and selection.
-- Inter for application UI; PT Sans and Merriweather remain available for the public site.
-- Compact 8px surface corners, smaller control corners, structural borders, and overlay shadows.
-- Minimum 40px button/input height, visible focus rings, explicit disabled/invalid states.
-- Short, interruptible overlay transitions, disabled under reduced motion.
+Every pattern comes from the logo, a code bracket around Amsterdam's three St. Andrew's crosses. See
+Storybook's Foundations/Brand page.
+
+- **The bracket marks what is current.** The `bracket` utility draws ink `[ ]` around the current
+  page (`aria-current="page"` or `data-active`), the selected tab (the bracket slides between tabs),
+  and today's date. Only one item in a group carries it. Don't use it for decoration or hover.
+- **The crosses wait and divide.** `CrossesLoader` is the loading state, and `CrossesDivider` breaks
+  major sections. Never use a cross to mean close or remove.
+- **Type:** Archivo throughout. `font-display` condenses it to 72% width, echoing the logo's tall
+  letters, for titles, buttons, tabs, table headings, and badges. Body text stays at normal width.
+  PT Sans and Merriweather remain available for the public site.
+- **Color:** Amsterdam red `#bd1900` for brand and primary actions; ink (black, white in dark mode)
+  for brackets, crosses, focus, and table rules; klinker grey for hover and muted surfaces; gracht
+  green (`success`) for positive states. Red is the brand, so the destructive button is outlined
+  until hovered, and positive statuses are never red.
+- **Callouts:** `Alert` (default, `success`, `warning`, `destructive`) replaces hand-made colored
+  boxes. Add `role="alert"` when it appears in response to an action.
+- **Shape:** 2px control and 4px surface corners. Outline buttons, checkbox and radio borders, and
+  focus outlines share the bracket's 2px stroke. Keyboard focus is a square ink outline.
+- Minimum 40px button/input height, explicit disabled/invalid states, `scale(0.96)` button press.
+- Short, interruptible overlay transitions; motion is disabled under reduced motion.
 - Semantic light/dark tokens; no separate component theme implementation.
 
 ```css

@@ -10,11 +10,7 @@ export function Table({ className, ...props }: ComponentProps<"table">): JSX.Ele
 }
 export function TableHeader({ className, ...props }: ComponentProps<"thead">): JSX.Element {
   return (
-    <thead
-      data-slot="table-header"
-      className={cn("border-b-2 border-border", className)}
-      {...props}
-    />
+    <thead data-slot="table-header" className={cn("border-b-2 border-ink", className)} {...props} />
   );
 }
 export function TableBody({ className, ...props }: ComponentProps<"tbody">): JSX.Element {
@@ -35,10 +31,7 @@ export function TableRow({ className, ...props }: ComponentProps<"tr">): JSX.Ele
   return (
     <tr
       data-slot="table-row"
-      className={cn(
-        "hover:bg-muted/60 aria-selected:bg-accent data-[state=selected]:bg-accent",
-        className,
-      )}
+      className={cn("transition-colors hover:bg-muted aria-selected:bg-accent", className)}
       {...props}
     />
   );
@@ -47,7 +40,10 @@ export function TableHead({ className, ...props }: ComponentProps<"th">): JSX.El
   return (
     <th
       data-slot="table-head"
-      className={cn("h-11 px-4 text-left text-xs font-semibold text-muted-foreground", className)}
+      className={cn(
+        "h-11 px-4 text-left text-sm font-semibold font-display text-foreground",
+        className,
+      )}
       {...props}
     />
   );

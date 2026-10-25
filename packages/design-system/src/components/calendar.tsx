@@ -22,7 +22,8 @@ export function Calendar({
       classNames={{
         months: "relative flex flex-col gap-6 sm:flex-row",
         month: "space-y-3",
-        month_caption: "flex h-10 items-center justify-center px-12 text-sm font-semibold",
+        month_caption:
+          "flex h-10 items-center justify-center px-12 font-display text-base font-semibold",
         nav: "absolute inset-x-0 top-0 flex justify-between",
         button_previous: buttonVariants({ variant: buttonVariant, size: "icon" }),
         button_next: buttonVariants({ variant: buttonVariant, size: "icon" }),
@@ -31,9 +32,10 @@ export function Calendar({
         weekdays: "text-muted-foreground",
         weekday: "size-10 text-xs font-normal",
         day: "size-10 p-0 text-center text-sm",
-        day_button: cn(buttonVariants({ variant: "ghost", size: "icon" }), "font-normal"),
+        day_button: cn(buttonVariants({ variant: "ghost", size: "icon" }), "relative tabular-nums"),
         selected: "[&>button]:bg-primary [&>button]:text-primary-foreground",
-        today: "[&>button]:ring-1 [&>button]:ring-primary",
+        // Today carries the IS3A bracket: the current day, as the sidebar marks the current page.
+        today: "[&>button]:bracket",
         outside: "text-muted-foreground opacity-50",
         disabled: "opacity-30",
         hidden: "invisible",
