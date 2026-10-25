@@ -52,10 +52,7 @@ export async function loader(_args: Route.LoaderArgs) {
 
 export default function FormsPage() {
   const navigate = useNavigate();
-  const [formsRefresh, setFormsRefresh] = useState("0");
-  const { data: forms, loading: isLoading } = formsClient.useForms({
-    query: { refresh: formsRefresh },
-  });
+  const { data: forms, loading: isLoading, refetch: refetchForms } = formsClient.useForms();
   const { mutate: createForm, loading: isCreating } = formsClient.useCreateForm();
   const { mutate: deleteForm, loading: isDeleting } = formsClient.useDeleteForm();
 
@@ -107,7 +104,7 @@ export default function FormsPage() {
     setNewFormDescription("");
     setNewFormStatus("open");
 
-    setFormsRefresh((prev) => prev + 1);
+    refetchForms();
   };
 
   const handleDelete = async () => {
@@ -121,7 +118,8 @@ export default function FormsPage() {
 
     setIsDeleteDialogOpen(false);
     setSelectedFormId(null);
-    setFormsRefresh((prev) => prev + 1);
+    // The delete mutator invalidates form details, not the cached list.
+    refetchForms();
   };
 
   const openDeleteDialog = (formId: string) => {
