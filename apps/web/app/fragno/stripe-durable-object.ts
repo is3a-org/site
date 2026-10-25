@@ -90,7 +90,7 @@ export class StripeFragmentDurableObject extends DurableObject<CloudflareEnv> {
    * Links customers recorded in `user_stripe` that the Stripe fragment does not know about, such as
    * those linked before the fragment kept its own links. Linking syncs their subscriptions.
    */
-  async #linkStripeCustomers() {
+  async #linkStripeCustomers(): Promise<void> {
     try {
       const unlinked = await this.#runtime.userRepo.getUsersWithUnlinkedStripeCustomer();
       for (const { userId, stripeCustomerId } of unlinked) {
@@ -113,7 +113,9 @@ export class StripeFragmentDurableObject extends DurableObject<CloudflareEnv> {
   }
 }
 
-export function getStripeFragment(env: CloudflareEnv) {
+export function getStripeFragment(
+  env: CloudflareEnv,
+): DurableObjectStub<StripeFragmentDurableObject> {
   return env.STRIPE_FRAGMENT.getByName("stripe");
 }
 

@@ -10,6 +10,7 @@ import {
   TooltipTrigger,
 } from "@is3a/design-system/tooltip";
 import { ChevronUp, ChevronDown, Copy, Trash2 } from "lucide-react";
+import type { JSX } from "react";
 
 import { cn } from "@/lib/utils";
 
@@ -40,8 +41,8 @@ export function FieldCard({
   onMoveUp,
   onMoveDown,
   className,
-}: FieldCardProps) {
-  const handleTypeChange = (fieldType: FieldType) => {
+}: FieldCardProps): JSX.Element {
+  const handleTypeChange = (fieldType: FieldType): void => {
     const typeConfig = getFieldTypeConfig(fieldType);
     onUpdate({
       fieldType,

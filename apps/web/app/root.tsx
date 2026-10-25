@@ -1,5 +1,6 @@
 import "./app.css";
 
+import type { JSX } from "react";
 import {
   isRouteErrorResponse,
   Links,
@@ -29,7 +30,7 @@ export const links: Route.LinksFunction = () => [
   },
 ];
 
-export function Layout({ children }: { children: React.ReactNode }) {
+export function Layout({ children }: { children: React.ReactNode }): JSX.Element {
   return (
     <html lang="en">
       <head>
@@ -47,11 +48,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
   );
 }
 
-export default function App() {
+export default function App(): JSX.Element {
   return <Outlet />;
 }
 
-export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
+export function ErrorBoundary({ error }: Route.ErrorBoundaryProps): JSX.Element {
   let message = "Oops!";
   let details = "An unexpected error occurred.";
   let stack: string | undefined;

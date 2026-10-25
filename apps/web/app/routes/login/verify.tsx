@@ -7,6 +7,7 @@ import {
   CardTitle,
 } from "@is3a/design-system/card";
 import { TriangleAlert } from "lucide-react";
+import type { JSX } from "react";
 import { redirect, Link } from "react-router";
 
 import { createOtpServer } from "~/fragno/otp-server";
@@ -85,7 +86,7 @@ export async function loader({ request, context }: Route.LoaderArgs) {
   });
 }
 
-export default function Verify({ loaderData }: Route.ComponentProps) {
+export default function Verify({ loaderData }: Route.ComponentProps): JSX.Element {
   if (loaderData?.error) {
     return (
       <div className="flex min-h-screen w-full items-center justify-center bg-gray-50 px-4">

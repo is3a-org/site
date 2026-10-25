@@ -16,6 +16,7 @@ import {
 import { Separator } from "@is3a/design-system/separator";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@is3a/design-system/sidebar";
 import { AlertCircle } from "lucide-react";
+import type { JSX } from "react";
 import { isRouteErrorResponse, Outlet, redirect } from "react-router";
 
 import { createSimpleAuthServer } from "~/fragno/simple-auth-server";
@@ -53,7 +54,7 @@ export async function loader({ context, request }: Route.LoaderArgs) {
   return redirect("/login");
 }
 
-export function ErrorBoundary({ error, loaderData }: Route.ErrorBoundaryProps) {
+export function ErrorBoundary({ error, loaderData }: Route.ErrorBoundaryProps): JSX.Element {
   if (!loaderData) {
     return <div>Error</div>;
   }
@@ -132,7 +133,7 @@ export function ErrorBoundary({ error, loaderData }: Route.ErrorBoundaryProps) {
   );
 }
 
-export default function Page({ loaderData }: Route.ComponentProps) {
+export default function Page({ loaderData }: Route.ComponentProps): JSX.Element {
   const { user } = loaderData;
 
   return (

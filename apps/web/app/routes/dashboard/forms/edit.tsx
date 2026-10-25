@@ -18,6 +18,7 @@ import { Skeleton } from "@is3a/design-system/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@is3a/design-system/tabs";
 import { Textarea } from "@is3a/design-system/textarea";
 import { ArrowLeft, Save, Eye, Code, Hammer } from "lucide-react";
+import type { JSX } from "react";
 import { useState, useEffect } from "react";
 import { Link } from "react-router";
 
@@ -33,7 +34,7 @@ import { formsClient } from "~/lib/forms-client";
 
 import type { Route } from "./+types/edit";
 
-export default function FormEditPage({ params }: Route.ComponentProps) {
+export default function FormEditPage({ params }: Route.ComponentProps): JSX.Element {
   const { data: form, loading: isLoading } = formsClient.useFormById({ path: { id: params.id } });
   const { mutate: updateForm, loading: isUpdating } = formsClient.useUpdateForm();
 
@@ -65,7 +66,7 @@ export default function FormEditPage({ params }: Route.ComponentProps) {
     }
   }, [form]);
 
-  const handleSave = async () => {
+  const handleSave = async (): Promise<void> => {
     if (!form || !schemas) {
       return;
     }
@@ -85,7 +86,7 @@ export default function FormEditPage({ params }: Route.ComponentProps) {
     window.location.reload();
   };
 
-  const handleSchemasChange = (newSchemas: GeneratedSchemas) => {
+  const handleSchemasChange = (newSchemas: GeneratedSchemas): void => {
     setSchemas(newSchemas);
     setDataSchemaText(JSON.stringify(newSchemas.dataSchema, null, 2));
     setUiSchemaText(JSON.stringify(newSchemas.uiSchema, null, 2));

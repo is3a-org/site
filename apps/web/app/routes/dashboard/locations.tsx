@@ -27,6 +27,7 @@ import {
   TableRow,
 } from "@is3a/design-system/table";
 import { Plus, Pencil, Trash2, MapPin, Mail, Globe, Calendar } from "lucide-react";
+import type { JSX } from "react";
 import { useState, useEffect } from "react";
 import { Form, useNavigation } from "react-router";
 
@@ -111,7 +112,7 @@ export async function action({ request, context }: Route.ActionArgs) {
   return { success: false };
 }
 
-export default function LocationsPage({ loaderData }: Route.ComponentProps) {
+export default function LocationsPage({ loaderData }: Route.ComponentProps): JSX.Element {
   const { locations } = loaderData;
   const navigation = useNavigation();
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
@@ -133,12 +134,12 @@ export default function LocationsPage({ loaderData }: Route.ComponentProps) {
     }
   }, [navigation.state, wasSubmitting, isDeleteDialogOpen]);
 
-  const handleEdit = (location: Location) => {
+  const handleEdit = (location: Location): void => {
     setSelectedLocation(location);
     setIsEditDialogOpen(true);
   };
 
-  const handleDelete = (location: Location) => {
+  const handleDelete = (location: Location): void => {
     setSelectedLocation(location);
     setIsDeleteDialogOpen(true);
   };
@@ -226,7 +227,7 @@ export default function LocationsPage({ loaderData }: Route.ComponentProps) {
                         )}
                       </TableCell>
                       <TableCell>
-                        {(() => {
+                        {((): JSX.Element => {
                           const activeSeasons = [];
                           if (loc.seasonSummer) {
                             activeSeasons.push("Summer");
@@ -339,7 +340,7 @@ function LocationFormDialog({
   description: string;
   intent: "create" | "update";
   location?: Location;
-}) {
+}): JSX.Element {
   const navigation = useNavigation();
   const isSubmitting = navigation.state === "submitting";
 

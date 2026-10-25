@@ -1,6 +1,8 @@
+import type { JSX } from "react";
+
 import { cn } from "../cn";
 
-function Skeleton({ className, ...props }: React.ComponentProps<"div">) {
+function Skeleton({ className, ...props }: React.ComponentProps<"div">): JSX.Element {
   return (
     <div
       data-slot="skeleton"

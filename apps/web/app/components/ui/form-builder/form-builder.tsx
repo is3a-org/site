@@ -1,5 +1,6 @@
 import { Button } from "@is3a/design-system/button";
 import { Plus } from "lucide-react";
+import type { JSX } from "react";
 
 import { cn } from "@/lib/utils";
 
@@ -23,7 +24,7 @@ export function FormBuilder({
   defaultSchemas,
   onChange,
   className,
-}: FormBuilderProps) {
+}: FormBuilderProps): JSX.Element {
   const {
     state,
     addField,
@@ -34,7 +35,7 @@ export function FormBuilder({
     updateFieldNameFromLabel,
   } = useFormBuilder({ initialState: defaultValue, initialSchemas: defaultSchemas, onChange });
 
-  const handleAddField = (fieldType?: FieldType) => {
+  const handleAddField = (fieldType?: FieldType): void => {
     addField(fieldType);
   };
 
@@ -57,9 +58,11 @@ export function FormBuilder({
               onUpdateLabel={(label) => updateFieldNameFromLabel(field.id, label)}
               onDelete={() => deleteField(field.id)}
               onDuplicate={() => duplicateField(field.id)}
-              onMoveUp={index > 0 ? () => moveField(index, index - 1) : undefined}
+              onMoveUp={index > 0 ? (): void => moveField(index, index - 1) : undefined}
               onMoveDown={
-                index < state.fields.length - 1 ? () => moveField(index, index + 1) : undefined
+                index < state.fields.length - 1
+                  ? (): void => moveField(index, index + 1)
+                  : undefined
               }
             />
           ))}

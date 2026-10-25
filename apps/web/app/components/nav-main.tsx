@@ -15,6 +15,7 @@ import {
   useSidebar,
 } from "@is3a/design-system/sidebar";
 import { ChevronRight, type LucideIcon } from "lucide-react";
+import type { JSX } from "react";
 import { Link } from "react-router";
 
 export function NavMain({
@@ -31,14 +32,14 @@ export function NavMain({
       url: string;
     }[];
   }[];
-}) {
+}): JSX.Element {
   const { setOpenMobile } = useSidebar();
 
   // Split items into regular and admin sections
   const regularItems = items.filter((item) => !item.adminOnly);
   const adminItems = items.filter((item) => item.adminOnly);
 
-  const renderMenuItem = (item: (typeof items)[0]) =>
+  const renderMenuItem = (item: (typeof items)[0]): JSX.Element =>
     item.items?.length ? (
       <Collapsible
         key={item.title}

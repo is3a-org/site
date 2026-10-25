@@ -28,7 +28,7 @@ export class UserRepo {
       .orderBy(user_auth.email);
   }
 
-  async setStripeCustomerId(userId: string, stripeCustomerId: string) {
+  async setStripeCustomerId(userId: string, stripeCustomerId: string): Promise<void> {
     await this.#db
       .insert(user_stripe)
       .values({

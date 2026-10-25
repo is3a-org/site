@@ -1,3 +1,4 @@
+import type { JSX } from "react";
 import type { CSSProperties, ReactNode } from "react";
 
 import { cn } from "~/lib/utils";
@@ -12,7 +13,12 @@ interface SiteSectionProps {
   children: ReactNode;
 }
 
-export function SiteSection({ className, gridClassName, style, children }: SiteSectionProps) {
+export function SiteSection({
+  className,
+  gridClassName,
+  style,
+  children,
+}: SiteSectionProps): JSX.Element {
   return (
     <section className={cn("py-6", className)} style={style}>
       <div className="mx-auto w-full max-w-[1280px] px-2 md:px-12">
@@ -22,7 +28,13 @@ export function SiteSection({ className, gridClassName, style, children }: SiteS
   );
 }
 
-export function SiteColumn({ className, children }: { className?: string; children: ReactNode }) {
+export function SiteColumn({
+  className,
+  children,
+}: {
+  className?: string;
+  children: ReactNode;
+}): JSX.Element {
   return <div className={cn("col-span-12 px-[11.5px]", className)}>{children}</div>;
 }
 

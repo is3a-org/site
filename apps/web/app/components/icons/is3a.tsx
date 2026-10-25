@@ -1,10 +1,11 @@
+import type { JSX } from "react";
 import type { SVGProps } from "react";
 
 interface IS3ALogoProps extends SVGProps<SVGSVGElement> {
   variant?: "full" | "icon";
 }
 
-export function IS3ALogo({ variant = "full", ...props }: IS3ALogoProps) {
+export function IS3ALogo({ variant = "full", ...props }: IS3ALogoProps): JSX.Element {
   return (
     <svg viewBox="389 591 1518 622" xmlns="http://www.w3.org/2000/svg" {...props}>
       {/* IS3A */}

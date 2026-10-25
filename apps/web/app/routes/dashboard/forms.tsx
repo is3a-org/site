@@ -36,6 +36,7 @@ import {
 } from "@is3a/design-system/table";
 import { Textarea } from "@is3a/design-system/textarea";
 import { Plus, Pencil, FileText, Trash2, ClipboardList, ExternalLink } from "lucide-react";
+import type { JSX } from "react";
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router";
 
@@ -50,7 +51,7 @@ export async function loader(_args: Route.LoaderArgs) {
   return {};
 }
 
-export default function FormsPage() {
+export default function FormsPage(): JSX.Element {
   const navigate = useNavigate();
   const { data: forms, loading: isLoading, refetch: refetchForms } = formsClient.useForms();
   const { mutate: createForm, loading: isCreating } = formsClient.useCreateForm();
@@ -64,7 +65,7 @@ export default function FormsPage() {
   const [newFormDescription, setNewFormDescription] = useState("");
   const [newFormStatus, setNewFormStatus] = useState<FormStatus>("open");
 
-  const handleCreate = async () => {
+  const handleCreate = async (): Promise<void> => {
     if (!newFormTitle || !newFormSlug) {
       return;
     }
@@ -107,7 +108,7 @@ export default function FormsPage() {
     refetchForms();
   };
 
-  const handleDelete = async () => {
+  const handleDelete = async (): Promise<void> => {
     if (!selectedFormId) {
       return;
     }
@@ -122,7 +123,7 @@ export default function FormsPage() {
     refetchForms();
   };
 
-  const openDeleteDialog = (formId: string) => {
+  const openDeleteDialog = (formId: string): void => {
     setSelectedFormId(formId);
     setIsDeleteDialogOpen(true);
   };
@@ -138,7 +139,7 @@ export default function FormsPage() {
     }
   }, [newFormTitle]);
 
-  const getStatusBadge = (status: string) => {
+  const getStatusBadge = (status: string): JSX.Element => {
     switch (status) {
       case "open":
         return <Badge variant="default">Open</Badge>;

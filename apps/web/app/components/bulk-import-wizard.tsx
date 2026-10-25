@@ -19,6 +19,7 @@ import {
   TableRow,
 } from "@is3a/design-system/table";
 import { AlertCircle, CheckCircle2, Loader2, UserPlus, Users, XCircle } from "lucide-react";
+import type { JSX } from "react";
 import { useState } from "react";
 import { useFetcher } from "react-router";
 
@@ -54,7 +55,10 @@ type MatchResult = {
   alreadySynced: boolean;
 };
 
-export function BulkImportWizard({ stripeCustomers, existingUsers }: BulkImportWizardProps) {
+export function BulkImportWizard({
+  stripeCustomers,
+  existingUsers,
+}: BulkImportWizardProps): JSX.Element {
   const [step, setStep] = useState<Step>("select");
   const [selectedCustomerIds, setSelectedCustomerIds] = useState<Set<string>>(new Set());
   const [matchResults, setMatchResults] = useState<MatchResult[]>([]);
@@ -63,7 +67,7 @@ export function BulkImportWizard({ stripeCustomers, existingUsers }: BulkImportW
   const isExecuting = fetcher.state === "submitting";
 
   // Handle checkbox toggle for customer selection
-  const toggleCustomer = (customerId: string) => {
+  const toggleCustomer = (customerId: string): void => {
     const newSelection = new Set(selectedCustomerIds);
     if (newSelection.has(customerId)) {
       newSelection.delete(customerId);
@@ -74,7 +78,7 @@ export function BulkImportWizard({ stripeCustomers, existingUsers }: BulkImportW
   };
 
   // Select/deselect all
-  const toggleAll = () => {
+  const toggleAll = (): void => {
     if (selectedCustomerIds.size === stripeCustomers.length) {
       setSelectedCustomerIds(new Set());
     } else {
@@ -83,7 +87,7 @@ export function BulkImportWizard({ stripeCustomers, existingUsers }: BulkImportW
   };
 
   // Move to preview step
-  const handlePreview = () => {
+  const handlePreview = (): void => {
     const selectedCustomers = stripeCustomers.filter((c) => selectedCustomerIds.has(c.id));
     const results = selectedCustomers.map((customer) => {
       const { matchedUser, matchType, hasConflict, conflictReason, alreadySynced } =
@@ -103,7 +107,7 @@ export function BulkImportWizard({ stripeCustomers, existingUsers }: BulkImportW
   };
 
   // Execute bulk import (excluding customers with conflicts and already synced)
-  const handleExecute = () => {
+  const handleExecute = (): void => {
     setStep("execute");
     // Filter out customers with conflicts and customers already synced
     const validCustomerIds = matchResults
@@ -123,7 +127,7 @@ export function BulkImportWizard({ stripeCustomers, existingUsers }: BulkImportW
   }
 
   // Reset and start over
-  const handleReset = () => {
+  const handleReset = (): void => {
     setStep("select");
     setSelectedCustomerIds(new Set());
     setMatchResults([]);

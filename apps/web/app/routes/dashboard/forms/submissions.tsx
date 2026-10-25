@@ -30,6 +30,7 @@ import {
   TableRow,
 } from "@is3a/design-system/table";
 import { ArrowLeft, Trash2, Eye, ClipboardList, Download } from "lucide-react";
+import type { JSX } from "react";
 import { useState } from "react";
 import { Link } from "react-router";
 
@@ -38,7 +39,7 @@ import { formsClient, useAllSubmissions } from "~/lib/forms-client";
 
 import type { Route } from "./+types/submissions";
 
-export default function FormSubmissionsPage({ params }: Route.ComponentProps) {
+export default function FormSubmissionsPage({ params }: Route.ComponentProps): JSX.Element {
   const { data: form, loading: isLoadingForm } = formsClient.useFormById({
     path: { id: params.id },
   });
@@ -55,7 +56,7 @@ export default function FormSubmissionsPage({ params }: Route.ComponentProps) {
     unknown
   > | null>(null);
 
-  const handleDelete = async () => {
+  const handleDelete = async (): Promise<void> => {
     if (!selectedSubmissionId) {
       return;
     }
@@ -69,12 +70,12 @@ export default function FormSubmissionsPage({ params }: Route.ComponentProps) {
     window.location.reload();
   };
 
-  const openDeleteDialog = (submissionId: string) => {
+  const openDeleteDialog = (submissionId: string): void => {
     setSelectedSubmissionId(submissionId);
     setIsDeleteDialogOpen(true);
   };
 
-  const openViewDialog = (data: Record<string, unknown>) => {
+  const openViewDialog = (data: Record<string, unknown>): void => {
     setSelectedSubmissionData(data);
     setIsViewDialogOpen(true);
   };

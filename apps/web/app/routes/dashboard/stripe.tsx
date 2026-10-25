@@ -1,6 +1,7 @@
 import { BreadcrumbItem, BreadcrumbPage } from "@is3a/design-system/breadcrumb";
 import { Button } from "@is3a/design-system/button";
 import { Upload } from "lucide-react";
+import type { JSX } from "react";
 import { Link } from "react-router";
 
 import { DashboardBreadcrumb } from "~/components/dashboard-breadcrumb";
@@ -139,7 +140,7 @@ export default function DashboardStripe({
   params,
   className,
   ...props
-}: React.ComponentProps<"div"> & Route.ComponentProps) {
+}: React.ComponentProps<"div"> & Route.ComponentProps): JSX.Element {
   return (
     <>
       <DashboardBreadcrumb>

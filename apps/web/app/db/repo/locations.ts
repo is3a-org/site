@@ -36,11 +36,11 @@ export class LocationRepo {
     return await this.#db.insert(location).values(newLocation).returning();
   }
 
-  async updateLocation(id: number, data: Partial<NewLocation>) {
+  async updateLocation(id: number, data: Partial<NewLocation>): Promise<void> {
     await this.#db.update(location).set(data).where(eq(location.id, id));
   }
 
-  async deleteLocation(id: number) {
+  async deleteLocation(id: number): Promise<void> {
     await this.#db.delete(location).where(eq(location.id, id));
   }
 }

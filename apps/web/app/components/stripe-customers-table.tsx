@@ -16,6 +16,7 @@ import {
   TableRow,
 } from "@is3a/design-system/table";
 import { MoreHorizontal, RefreshCw } from "lucide-react";
+import type { JSX } from "react";
 import { useState } from "react";
 
 import { SyncSubscriptionDialog } from "~/components/sync-subscription-dialog";
@@ -40,7 +41,7 @@ type StripeCustomersTableProps = {
   users: User[];
 };
 
-export function StripeCustomersTable({ users }: StripeCustomersTableProps) {
+export function StripeCustomersTable({ users }: StripeCustomersTableProps): JSX.Element | null {
   const [currentCursor, setCurrentCursor] = useState<string | undefined>(undefined);
   const [pageHistory, setPageHistory] = useState<string[]>([]);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -53,7 +54,7 @@ export function StripeCustomersTable({ users }: StripeCustomersTableProps) {
     },
   });
 
-  const handleNextPage = () => {
+  const handleNextPage = (): void => {
     if (data?.customers && data.customers.length > 0) {
       const lastCustomerId = data.customers[data.customers.length - 1]?.id;
       if (lastCustomerId) {
@@ -65,7 +66,7 @@ export function StripeCustomersTable({ users }: StripeCustomersTableProps) {
     }
   };
 
-  const handlePreviousPage = () => {
+  const handlePreviousPage = (): void => {
     if (pageHistory.length > 0) {
       const previousCursor = pageHistory[pageHistory.length - 1];
       setCurrentCursor(previousCursor);
@@ -85,7 +86,7 @@ export function StripeCustomersTable({ users }: StripeCustomersTableProps) {
     return null;
   }
 
-  const handleOpenSyncDialog = (customer: StripeCustomer) => {
+  const handleOpenSyncDialog = (customer: StripeCustomer): void => {
     setSelectedCustomer(customer);
     setDialogOpen(true);
   };

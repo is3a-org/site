@@ -1,6 +1,7 @@
 import { Input } from "@is3a/design-system/input";
 import { Label } from "@is3a/design-system/label";
 import { Textarea } from "@is3a/design-system/textarea";
+import type { JSX } from "react";
 
 import { cn } from "@/lib/utils";
 
@@ -15,8 +16,16 @@ export interface FieldOptionsProps {
   className?: string;
 }
 
-export function FieldOptions({ fieldType, options, onChange, className }: FieldOptionsProps) {
-  const updateOption = <K extends keyof FieldOptionsType>(key: K, value: FieldOptionsType[K]) => {
+export function FieldOptions({
+  fieldType,
+  options,
+  onChange,
+  className,
+}: FieldOptionsProps): JSX.Element | null {
+  const updateOption = <K extends keyof FieldOptionsType>(
+    key: K,
+    value: FieldOptionsType[K],
+  ): void => {
     onChange({ ...options, [key]: value });
   };
 

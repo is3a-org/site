@@ -4,6 +4,7 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@is3a/design-system/breadcrumb";
+import type { JSX } from "react";
 
 import { BulkImportWizard } from "~/components/bulk-import-wizard";
 import { DashboardBreadcrumb } from "~/components/dashboard-breadcrumb";
@@ -191,7 +192,7 @@ export async function action({ request, context }: Route.ActionArgs) {
   return { success: false, error: "Invalid intent" };
 }
 
-export default function BulkImportPage({ loaderData }: Route.ComponentProps) {
+export default function BulkImportPage({ loaderData }: Route.ComponentProps): JSX.Element {
   return (
     <>
       <DashboardBreadcrumb>

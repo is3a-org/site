@@ -5,6 +5,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@is3a/design-system/select";
+import type { JSX } from "react";
 
 import { FIELD_TYPES } from "./constants";
 import type { FieldType } from "./types";
@@ -14,7 +15,7 @@ export interface FieldTypeSelectorProps {
   onChange: (type: FieldType) => void;
 }
 
-export function FieldTypeSelector({ value, onChange }: FieldTypeSelectorProps) {
+export function FieldTypeSelector({ value, onChange }: FieldTypeSelectorProps): JSX.Element {
   return (
     // Cast is safe: select options are constrained to FieldType values
     <Select value={value} onValueChange={(v) => onChange(v as FieldType)}>

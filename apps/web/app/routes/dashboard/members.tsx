@@ -8,6 +8,7 @@ import {
   TableHeader,
   TableRow,
 } from "@is3a/design-system/table";
+import type { JSX } from "react";
 
 import { DashboardBreadcrumb } from "~/components/dashboard-breadcrumb";
 import { UserRepo } from "~/db/repo/user";
@@ -33,7 +34,7 @@ export default function DashboardMembers({
   params,
   className,
   ...props
-}: React.ComponentProps<"div"> & Route.ComponentProps) {
+}: React.ComponentProps<"div"> & Route.ComponentProps): JSX.Element {
   const { members } = loaderData;
 
   return (

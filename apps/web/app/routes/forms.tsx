@@ -8,6 +8,7 @@ import {
 } from "@is3a/design-system/card";
 import { Skeleton } from "@is3a/design-system/skeleton";
 import { CheckCircle2, XCircle, AlertTriangle } from "lucide-react";
+import type { JSX } from "react";
 import type { ReactNode } from "react";
 import { useState } from "react";
 
@@ -31,7 +32,7 @@ function PageWrapper({
   children: ReactNode;
   wide?: boolean;
   noCard?: boolean;
-}) {
+}): JSX.Element {
   const widthClass = wide ? "w-full max-w-2xl" : "w-full max-w-md";
 
   return (
@@ -55,7 +56,7 @@ function StatusPage({
   title: string;
   message: string;
   action?: ReactNode;
-}) {
+}): JSX.Element {
   return (
     <PageWrapper>
       <CardHeader>
@@ -68,7 +69,7 @@ function StatusPage({
   );
 }
 
-export default function PublicFormPage({ loaderData }: Route.ComponentProps) {
+export default function PublicFormPage({ loaderData }: Route.ComponentProps): JSX.Element {
   const { slug } = loaderData;
 
   const {
@@ -88,7 +89,7 @@ export default function PublicFormPage({ loaderData }: Route.ComponentProps) {
   const [formData, setFormData] = useState<Record<string, unknown>>({});
   const [formErrors, setFormErrors] = useState<unknown[]>([]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault();
     await submitForm({
       path: { slug },

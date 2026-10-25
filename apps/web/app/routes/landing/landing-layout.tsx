@@ -1,4 +1,5 @@
 import { Menu, X } from "lucide-react";
+import type { JSX } from "react";
 import { useEffect, useState } from "react";
 import { Link, NavLink, Outlet } from "react-router";
 
@@ -11,7 +12,7 @@ const navLinks = [
   { to: "/team", label: "Team" },
 ];
 
-const navLinkClass = ({ isActive }: { isActive: boolean }) =>
+const navLinkClass = ({ isActive }: { isActive: boolean }): string =>
   cn(
     "font-pt-sans text-base leading-[normal] transition-colors hover:text-black/80",
     isActive ? "font-bold text-black/80" : "text-black/64",
@@ -19,15 +20,15 @@ const navLinkClass = ({ isActive }: { isActive: boolean }) =>
 
 const footerLinkClass = "text-[#971400] underline";
 
-export default function LandingLayout() {
+export default function LandingLayout(): JSX.Element {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 0);
+    const onScroll = (): void => setScrolled(window.scrollY > 0);
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+    return (): void => window.removeEventListener("scroll", onScroll);
   }, []);
 
   return (
