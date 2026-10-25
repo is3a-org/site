@@ -10,7 +10,8 @@
     "db:postgres:push": "drizzle-kit push --config postgres.drizzle.config.ts",
     "db:postgres:generate": "drizzle-kit generate --config postgres.drizzle.config.ts",
     "db:postgres:migrate": "drizzle-kit migrate --config postgres.drizzle.config.ts",
-    "stripe:webhook": "stripe listen --forward-to localhost:5173/api/stripe/webhook"
+    "stripe": "node --env-file-if-exists=.env ../../tooling/stripe.mjs",
+    "stripe:webhook": "node --env-file=.env ../../tooling/stripe.mjs listen --all-snapshot"
   },
   "dependencies": {
     "@fragno-dev/auth": "0.0.0-canary-40098233613-1-20261024132858",
@@ -43,6 +44,7 @@
     "@cloudflare/vite-plugin": "^1.65.0",
     "@fragno-dev/cli": "0.0.0-canary-40098233613-1-20261024132858",
     "@react-router/dev": "^8.5.0",
+    "@stripe/cli": "1.55.1",
     "@tailwindcss/vite": "^4.3.3",
     "@types/node": "^26.6.5",
     "@types/react": "^19.3.0",

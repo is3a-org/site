@@ -43,8 +43,10 @@ vp run check        # Build dependencies/generate types, then run all static che
 vp run ready        # Full validation: static checks, tests, and production build
 vp lint             # Lint codebase with Oxlint
 vp fmt              # Format code with Oxfmt (including Tailwind class sorting)
-vp run test         # Build the library and run its tests
+vp run test         # Build the library, run its tests, and check Stripe CLI guardrails
 vp test run         # Run all configured test projects directly
+vp run stripe -- version # Run the repo-local, sandbox-only Stripe CLI
+vp run stripe:webhook # Forward sandbox webhooks to the development server
 ```
 
 ## Development
@@ -72,6 +74,35 @@ also be run directly, e.g. `vp run @is3a/web#build` or `vp run @is3a/web#preview
   on save. Root lint/format settings apply across workspace packages.
 - **Configuration**: Shared lint/format rules live in the root `vite.config.ts`; the library's
   `pack` configuration preserves its browser/server exports and Fragno code splitting.
+
+### Local Stripe sandbox
+
+The official `@stripe/cli` is installed as a web-app dev dependency by `vp install`; no global
+installation or `stripe login` is needed. Put a sandbox `STRIPE_SECRET_KEY` in `apps/web/.env`,
+alongside the sandbox `VITE_STRIPE_PRICE_ID_FULL` and `VITE_STRIPE_PRICE_ID_FLEX` price IDs.
+
+```bash
+# Terminal 1: start the app on the default development port, 5173
+vp run dev
+
+# Terminal 2: forward Stripe sandbox events to /api/stripe/webhook
+vp run stripe:webhook
+
+# Or target a preview/server running on a different port
+vp run stripe:webhook -- --forward-to http://localhost:4174/api/stripe/webhook
+```
+
+The webhook command requests snapshot events, as required by the installed Fragno integration. The
+repo wrapper passes the API key through the child process environment, rejects live keys and
+`--live`/`--api-key` overrides, and saves the listener's signing secret directly to `apps/web/.env`
+as `STRIPE_WEBHOOK_SECRET` without printing it. Restart the app after the listener saves a new
+secret. If using a built preview, rebuild after changing either `VITE_` price ID. Keep the listener
+running while testing. Local runtime files under `.stripe/` are ignored by Git.
+
+Other CLI commands are available with `vp run stripe -- <command>`, for example
+`vp run stripe -- listen --help`. Commands such as `trigger` and API writes can create sandbox
+records; do not use them against existing customer or subscription data without reviewing their
+effects. This local listener secret is not a production webhook secret.
 
 ### Design system and Storybook
 
