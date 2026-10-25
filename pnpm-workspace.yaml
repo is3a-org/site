@@ -16,6 +16,7 @@ patchedDependencies:
   "@fragno-dev/unplugin-fragno@0.0.9": patches/@fragno-dev__unplugin-fragno@0.0.9.patch
 
 allowBuilds:
+  "@stripe/cli@1.55.1": true
   better-sqlite3@12.6.2: true
   esbuild@0.18.20 || 0.25.12 || 0.28.2: true
   workerd@1.20261019.1: true
