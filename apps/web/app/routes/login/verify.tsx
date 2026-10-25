@@ -65,17 +65,21 @@ export async function loader({ request, context }: Route.LoaderArgs) {
   }
 
   // Create session for the user
-  const session = await auth.inContext(async function () {
+  const issued = await auth.inContext(async function () {
     const [result] = await this.handlerTx()
-      .withServiceCalls(() => [auth.services.createSession(user.id)] as const)
+      .withServiceCalls(() => [auth.services.issueCredential(user.id)] as const)
       .execute();
     return result;
   });
 
+  if (!issued.ok) {
+    return { error: "This account cannot sign in right now." };
+  }
+
   // Redirect to dashboard with session cookie
   return redirect("/dashboard/membership", {
     headers: {
-      "Set-Cookie": auth.services.buildSessionCookie(session.id),
+      "Set-Cookie": auth.services.buildAuthCookie(issued.credential.id),
     },
   });
 }

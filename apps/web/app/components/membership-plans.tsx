@@ -32,7 +32,7 @@ export function MembershipPlans() {
       console.error("Subscription error:", response);
       return;
     }
-    if (response.redirect && response.url) {
+    if (response.url) {
       window.location.href = response.url;
     }
   };

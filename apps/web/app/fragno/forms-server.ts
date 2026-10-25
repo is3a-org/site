@@ -13,7 +13,7 @@ export function createFormsServer(pool: PostgresPool | (() => PostgresPool)): Fo
   const getSession = async (headers: Headers) => {
     const response = await auth.callRoute("GET", "/me", { headers });
     if (response.type === "json" && response.data) {
-      return response.data;
+      return response.data.user;
     }
     return null;
   };

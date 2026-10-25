@@ -7,7 +7,7 @@ import { DashboardBreadcrumb } from "~/components/dashboard-breadcrumb";
 import { StripeCustomersTable } from "~/components/stripe-customers-table";
 import { UserRepo } from "~/db/repo/user";
 import { createSimpleAuthServer } from "~/fragno/simple-auth-server";
-import { createStripeServer } from "~/fragno/stripe-server";
+import { linkStripeCustomer } from "~/fragno/stripe-durable-object";
 import { cn } from "~/lib/utils";
 
 import type { Route } from "./+types/stripe";
@@ -30,7 +30,6 @@ export async function action({ request, context }: Route.ActionArgs) {
 
     const userRepo = new UserRepo(context.db);
     const auth = createSimpleAuthServer(context.pool);
-    const stripe = createStripeServer(context.pool);
 
     try {
       let targetUserId: string;
@@ -73,11 +72,14 @@ export async function action({ request, context }: Route.ActionArgs) {
         };
       }
 
-      // Link user to Stripe customer
-      await userRepo.setStripeCustomerId(targetUserId, stripeCustomerId);
-
-      // Sync subscription from Stripe
-      await stripe.services.syncStripeSubscriptions(targetUserId, stripeCustomerId);
+      // Link user to Stripe customer and sync their subscription from Stripe
+      const linkError = await linkStripeCustomer(context.cloudflare.env, userRepo, {
+        customerId: stripeCustomerId,
+        referenceId: targetUserId,
+      });
+      if (linkError) {
+        return { success: false, error: linkError };
+      }
 
       return { success: true, userId: targetUserId };
     } catch (error) {

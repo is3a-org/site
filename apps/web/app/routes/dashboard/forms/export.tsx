@@ -35,7 +35,7 @@ import { useState, useMemo, useEffect } from "react";
 import { Link } from "react-router";
 
 import { DashboardBreadcrumb } from "~/components/dashboard-breadcrumb";
-import { formsClient } from "~/lib/forms-client";
+import { formsClient, useAllSubmissions } from "~/lib/forms-client";
 
 import type { Route } from "./+types/export";
 
@@ -82,9 +82,7 @@ export default function ExportSubmissionsPage({ params }: Route.ComponentProps) 
   const { data: form, loading: isLoadingForm } = formsClient.useFormById({
     path: { id: params.id },
   });
-  const { data: submissions, loading: isLoadingSubmissions } = formsClient.useSubmissions({
-    path: { id: params.id },
-  });
+  const { data: submissions, loading: isLoadingSubmissions } = useAllSubmissions(params.id);
   const isLoading = isLoadingForm || isLoadingSubmissions;
 
   const [selectedVersion, setSelectedVersion] = useState<string>("");

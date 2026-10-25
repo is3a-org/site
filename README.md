@@ -60,7 +60,7 @@ also be run directly, e.g. `vp run @is3a/web#build` or `vp run @is3a/web#preview
 - **Linting**: Uses the TypeScript/Unicorn rules and vendored `anti-slop` plugin from
   `brand-intelligence`, with rule violations reported as warnings while the backlog is addressed.
   Formatting and compiler errors still block checks and commits; type-aware linting remains enabled.
-- **Dependency patch**: `patches/@fragno-dev__unplugin-fragno@0.0.8.patch` corrects the Rollup
+- **Dependency patch**: `patches/@fragno-dev__unplugin-fragno@0.0.9.patch` corrects the Rollup
   integration’s declaration export to the file actually shipped in that release. This keeps native
   type checking enabled without suppressing the missing declaration error.
 - **Formatting**: Imports, package manifests, and Tailwind classes are sorted. Workspace imports use
@@ -111,6 +111,9 @@ Pushing to `main` deploys `apps/web` as the `site` Cloudflare Worker (IS3A accou
 
 - **Database**: [Neon](https://neon.tech) Postgres. The `IS3A_D1` binding is unused.
 - **Migrations** run before the new Worker goes live, so keep them compatible with the old code.
+- **Stripe** runs in the `StripeFragmentDurableObject` Durable Object, which processes webhook
+  events with Fragno durable hooks. Route Stripe fragment requests and writes through
+  `getStripeFragment()`.
 - **Secrets** live in two places; keep both `PG_DATABASE_URL`s pointing at the same database:
   - GitHub Actions: `PG_DATABASE_URL`, `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`
   - Worker (`wrangler secret put`): `PG_DATABASE_URL`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`,

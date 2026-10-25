@@ -1,6 +1,6 @@
-import { eq } from "drizzle-orm";
+import { and, eq, isNotNull, isNull } from "drizzle-orm";
 
-import { user_auth, subscription_stripe } from "~/db/postgres/fragno-schema";
+import { customer_stripe, user_auth, subscription_stripe } from "~/db/postgres/fragno-schema";
 import { type DrizzleDatabase } from "~/db/postgres/is3a-postgres";
 import { user_stripe } from "~/db/postgres/postgres.schema";
 
@@ -20,7 +20,7 @@ export class UserRepo {
         stripeCustomerId: user_stripe.stripeCustomerId,
         subscriptionId: subscription_stripe.id,
         subscriptionStatus: subscription_stripe.status,
-        subscriptionStripePriceId: subscription_stripe.stripePriceId,
+        subscriptionStripePriceId: subscription_stripe.priceId,
       })
       .from(user_auth)
       .leftJoin(user_stripe, eq(user_stripe.userId, user_auth.id))
@@ -43,6 +43,18 @@ export class UserRepo {
       });
   }
 
+  /** Users linked to a Stripe customer that the Stripe fragment does not know about yet. */
+  async getUsersWithUnlinkedStripeCustomer() {
+    return await this.#db
+      .select({
+        userId: user_stripe.userId,
+        stripeCustomerId: user_stripe.stripeCustomerId,
+      })
+      .from(user_stripe)
+      .leftJoin(customer_stripe, eq(customer_stripe.referenceId, user_stripe.userId))
+      .where(and(isNotNull(user_stripe.stripeCustomerId), isNull(customer_stripe.id)));
+  }
+
   async getUserById(id: string) {
     const user = await this.#db
       .select({
@@ -52,9 +64,9 @@ export class UserRepo {
         stripeCustomerId: user_stripe.stripeCustomerId,
         subscriptionId: subscription_stripe.id,
         subscriptionStatus: subscription_stripe.status,
-        subscriptionStripePriceId: subscription_stripe.stripePriceId,
-        periodStart: subscription_stripe.periodStart,
-        periodEnd: subscription_stripe.periodEnd,
+        subscriptionStripePriceId: subscription_stripe.priceId,
+        periodStart: subscription_stripe.currentPeriodStart,
+        periodEnd: subscription_stripe.currentPeriodEnd,
         cancelAt: subscription_stripe.cancelAt,
         cancelAtPeriodEnd: subscription_stripe.cancelAtPeriodEnd,
       })
@@ -76,12 +88,13 @@ export class UserRepo {
         stripeCustomerId: user_stripe.stripeCustomerId,
         subscriptionId: subscription_stripe.id,
         subscriptionStatus: subscription_stripe.status,
-        subscriptionStripePriceId: subscription_stripe.stripePriceId,
+        subscriptionStripePriceId: subscription_stripe.priceId,
       })
       .from(user_auth)
       .leftJoin(user_stripe, eq(user_stripe.userId, user_auth.id))
       .leftJoin(subscription_stripe, eq(subscription_stripe.referenceId, user_auth.id))
-      .where(eq(user_auth.email, email))
+      // Auth stores emails trimmed and lowercased
+      .where(eq(user_auth.email, email.trim().toLowerCase()))
       .limit(1);
     return user.length === 1 ? user[0] : null;
   }
@@ -95,7 +108,7 @@ export class UserRepo {
         stripeCustomerId: user_stripe.stripeCustomerId,
         subscriptionId: subscription_stripe.id,
         subscriptionStatus: subscription_stripe.status,
-        subscriptionStripePriceId: subscription_stripe.stripePriceId,
+        subscriptionStripePriceId: subscription_stripe.priceId,
       })
       .from(user_auth)
       .leftJoin(user_stripe, eq(user_stripe.userId, user_auth.id))

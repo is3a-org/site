@@ -7,6 +7,8 @@ import {
   type DrizzleDatabase,
 } from "~/db/postgres/is3a-postgres";
 
+export { StripeFragmentDurableObject } from "~/fragno/stripe-durable-object";
+
 declare module "react-router" {
   export interface AppLoadContext {
     cloudflare: {

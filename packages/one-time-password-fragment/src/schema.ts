@@ -7,7 +7,7 @@ export const otpSchema = schema("otp", (s) => {
         .addColumn("id", idColumn())
         .addColumn("userId", column("string"))
         .addColumn("secret", column("string"))
-        .addColumn("backupCodes", column("string"))
+        .addColumn("backupCodes", column("text"))
         .addColumn(
           "createdAt",
           column("timestamp").defaultTo((b) => b.now()),

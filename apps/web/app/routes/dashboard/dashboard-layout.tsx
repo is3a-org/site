@@ -31,12 +31,11 @@ export async function loader({ context, request }: Route.LoaderArgs) {
   const auth = createSimpleAuthServer(context.pool);
 
   const response = await auth.callRoute("GET", "/me", {
-    query: { sessionId: request.url.split("?")[1] },
     headers: request.headers,
   });
 
   if (response.type === "json") {
-    const { email, role } = response.data;
+    const { email, role } = response.data.user;
 
     return {
       user: {
