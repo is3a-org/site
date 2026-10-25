@@ -21,6 +21,12 @@ import { useState } from "react";
 
 import { SyncSubscriptionDialog } from "~/components/sync-subscription-dialog";
 
+import {
+  advanceStripeCustomerPage,
+  rewindStripeCustomerPage,
+  type StripeCustomerPagination,
+} from "./stripe-customer-pagination";
+
 const PAGE_LIMIT = 40;
 const { useCustomers } = createStripeFragmentClient();
 
@@ -42,8 +48,8 @@ type StripeCustomersTableProps = {
 };
 
 export function StripeCustomersTable({ users }: StripeCustomersTableProps): JSX.Element | null {
-  const [currentCursor, setCurrentCursor] = useState<string | undefined>(undefined);
-  const [pageHistory, setPageHistory] = useState<string[]>([]);
+  const [pagination, setPagination] = useState<StripeCustomerPagination>({ pageHistory: [] });
+  const { currentCursor, pageHistory } = pagination;
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState<StripeCustomer | null>(null);
 
@@ -56,21 +62,16 @@ export function StripeCustomersTable({ users }: StripeCustomersTableProps): JSX.
 
   const handleNextPage = (): void => {
     if (data?.customers && data.customers.length > 0) {
-      const lastCustomerId = data.customers[data.customers.length - 1]?.id;
-      if (lastCustomerId) {
-        if (currentCursor) {
-          setPageHistory([...pageHistory, currentCursor]);
-        }
-        setCurrentCursor(lastCustomerId);
+      const lastCustomerId = data.customers.at(-1)?.id;
+      if (lastCustomerId !== undefined && lastCustomerId !== "") {
+        setPagination((previous) => advanceStripeCustomerPage(previous, lastCustomerId));
       }
     }
   };
 
   const handlePreviousPage = (): void => {
     if (pageHistory.length > 0) {
-      const previousCursor = pageHistory[pageHistory.length - 1];
-      setCurrentCursor(previousCursor);
-      setPageHistory(pageHistory.slice(0, -1));
+      setPagination((previous) => rewindStripeCustomerPage(previous));
     }
   };
 
