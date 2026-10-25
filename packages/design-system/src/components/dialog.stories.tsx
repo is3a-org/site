@@ -20,9 +20,7 @@ export default meta;
 export function Confirmation(): ReactElement {
   return (
     <Dialog>
-      <DialogTrigger asChild>
-        <Button variant="outline">Review membership</Button>
-      </DialogTrigger>
+      <DialogTrigger render={<Button variant="outline" />}>Review membership</DialogTrigger>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Confirm membership change</DialogTitle>
@@ -31,12 +29,8 @@ export function Confirmation(): ReactElement {
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>
-          <DialogClose asChild>
-            <Button variant="outline">Cancel</Button>
-          </DialogClose>
-          <DialogClose asChild>
-            <Button>Confirm change</Button>
-          </DialogClose>
+          <DialogClose render={<Button variant="outline" />}>Cancel</DialogClose>
+          <DialogClose render={<Button />}>Confirm change</DialogClose>
         </DialogFooter>
       </DialogContent>
     </Dialog>

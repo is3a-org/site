@@ -192,20 +192,29 @@ export default function FormsPage(): JSX.Element {
                       <TableCell>{getStatusBadge(form.status)}</TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-2">
-                          <Button variant="ghost" size="icon" asChild>
-                            <Link to={`/forms/${form.slug}`} target="_blank">
-                              <ExternalLink className="h-4 w-4" />
-                            </Link>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            render={<Link to={`/forms/${form.slug}`} target="_blank" />}
+                            nativeButton={false}
+                          >
+                            <ExternalLink className="h-4 w-4" />
                           </Button>
-                          <Button variant="ghost" size="icon" asChild>
-                            <Link to={`/dashboard/admin/forms/${form.id}/edit`}>
-                              <Pencil className="h-4 w-4" />
-                            </Link>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            render={<Link to={`/dashboard/admin/forms/${form.id}/edit`} />}
+                            nativeButton={false}
+                          >
+                            <Pencil className="h-4 w-4" />
                           </Button>
-                          <Button variant="ghost" size="icon" asChild>
-                            <Link to={`/dashboard/admin/forms/${form.id}/submissions`}>
-                              <ClipboardList className="h-4 w-4" />
-                            </Link>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            render={<Link to={`/dashboard/admin/forms/${form.id}/submissions`} />}
+                            nativeButton={false}
+                          >
+                            <ClipboardList className="h-4 w-4" />
                           </Button>
                           <Button
                             variant="ghost"
@@ -288,6 +297,7 @@ export default function FormsPage(): JSX.Element {
             <div className="space-y-2">
               <Label htmlFor="status">Status</Label>
               <Select
+                items={{ draft: "Draft", open: "Open", closed: "Closed" }}
                 value={newFormStatus}
                 onValueChange={(value) => {
                   if (
@@ -300,7 +310,7 @@ export default function FormsPage(): JSX.Element {
                   }
                 }}
               >
-                <SelectTrigger>
+                <SelectTrigger aria-label="Form status">
                   <SelectValue placeholder="Select status" />
                 </SelectTrigger>
                 <SelectContent>

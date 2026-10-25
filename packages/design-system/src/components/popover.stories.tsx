@@ -13,9 +13,7 @@ export default meta;
 export function Filters(): ReactElement {
   return (
     <Popover>
-      <PopoverTrigger asChild>
-        <Button variant="outline">Filter members</Button>
-      </PopoverTrigger>
+      <PopoverTrigger render={<Button variant="outline" />}>Filter members</PopoverTrigger>
       <PopoverContent className="grid gap-3">
         <h2 className="text-sm font-semibold">Search members</h2>
         <Label htmlFor="member-filter">Name or email</Label>

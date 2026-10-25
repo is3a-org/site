@@ -21,8 +21,8 @@ export function MemberActions(): ReactElement {
   const [updates, setUpdates] = useState(true);
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="outline">Member actions</Button>
+      <DropdownMenuTrigger render={<Button variant="outline" />}>
+        Member actions
       </DropdownMenuTrigger>
       <DropdownMenuContent>
         <DropdownMenuLabel>Alex de Vries</DropdownMenuLabel>

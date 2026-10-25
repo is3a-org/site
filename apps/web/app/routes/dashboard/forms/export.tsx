@@ -148,16 +148,14 @@ export default function ExportSubmissionsPage({
     <>
       <DashboardBreadcrumb>
         <BreadcrumbItem>
-          <BreadcrumbLink asChild>
-            <Link to="/dashboard/admin/forms">Forms</Link>
-          </BreadcrumbLink>
+          <BreadcrumbLink render={<Link to="/dashboard/admin/forms" />}>Forms</BreadcrumbLink>
         </BreadcrumbItem>
         <BreadcrumbSeparator />
         <BreadcrumbItem>
           {isLoading && <Skeleton className="h-4 w-24" />}
           {!isLoading && form && (
-            <BreadcrumbLink asChild>
-              <Link to={`/dashboard/admin/forms/${form.id}/edit`}>{form.title}</Link>
+            <BreadcrumbLink render={<Link to={`/dashboard/admin/forms/${form.id}/edit`} />}>
+              {form.title}
             </BreadcrumbLink>
           )}
           {!isLoading && !form && <BreadcrumbPage>Not Found</BreadcrumbPage>}
@@ -166,8 +164,8 @@ export default function ExportSubmissionsPage({
         <BreadcrumbItem>
           {isLoading && <Skeleton className="h-4 w-20" />}
           {!isLoading && form && (
-            <BreadcrumbLink asChild>
-              <Link to={`/dashboard/admin/forms/${form.id}/submissions`}>Submissions</Link>
+            <BreadcrumbLink render={<Link to={`/dashboard/admin/forms/${form.id}/submissions`} />}>
+              Submissions
             </BreadcrumbLink>
           )}
         </BreadcrumbItem>
@@ -180,20 +178,22 @@ export default function ExportSubmissionsPage({
       {!isLoading && !form ? (
         <div className="flex flex-1 flex-col items-center justify-center gap-4 p-4">
           <p className="text-muted-foreground">Form not found</p>
-          <Button asChild>
-            <Link to="/dashboard/admin/forms">
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to Forms
-            </Link>
+          <Button render={<Link to="/dashboard/admin/forms" />} nativeButton={false}>
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back to Forms
           </Button>
         </div>
       ) : (
         <div className="flex flex-1 flex-col gap-6 p-4">
           <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" asChild disabled={isLoading}>
-              <Link to={form ? `/dashboard/admin/forms/${form.id}/submissions` : "#"}>
-                <ArrowLeft className="h-4 w-4" />
-              </Link>
+            <Button
+              variant="ghost"
+              size="icon"
+              disabled={isLoading}
+              render={<Link to={form ? `/dashboard/admin/forms/${form.id}/submissions` : "#"} />}
+              nativeButton={false}
+            >
+              <ArrowLeft className="h-4 w-4" />
             </Button>
             <div>
               <h1 className="text-2xl font-bold">Export Submissions</h1>
@@ -213,9 +213,20 @@ export default function ExportSubmissionsPage({
             <CardContent className="space-y-6">
               {/* Version selector */}
               <div className="space-y-2">
-                <Label>Form Version</Label>
-                <Select value={selectedVersion} onValueChange={setSelectedVersion}>
-                  <SelectTrigger className="w-48">
+                <Label htmlFor="export-version">Form Version</Label>
+                <Select
+                  items={versions.map((version) => ({
+                    value: String(version),
+                    label: `Version ${version}`,
+                  }))}
+                  value={selectedVersion}
+                  onValueChange={(value) => {
+                    if (value !== null) {
+                      setSelectedVersion(value);
+                    }
+                  }}
+                >
+                  <SelectTrigger id="export-version" className="w-48">
                     <SelectValue placeholder="Select version" />
                   </SelectTrigger>
                   <SelectContent>
@@ -311,10 +322,14 @@ export default function ExportSubmissionsPage({
               )}
 
               <div className="flex justify-end gap-2">
-                <Button variant="outline" asChild>
-                  <Link to={form ? `/dashboard/admin/forms/${form.id}/submissions` : "#"}>
-                    Cancel
-                  </Link>
+                <Button
+                  variant="outline"
+                  render={
+                    <Link to={form ? `/dashboard/admin/forms/${form.id}/submissions` : "#"} />
+                  }
+                  nativeButton={false}
+                >
+                  Cancel
                 </Button>
                 <Button
                   onClick={handleExport}

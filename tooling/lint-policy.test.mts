@@ -142,6 +142,7 @@ interface CompatibilityManifest {
 const approvedCompatibilityManifest = {
   byRule: {
     "unicorn/no-null": {
+      "apps/web/app/components/forms/renderers.tsx": 1,
       "apps/web/app/db/repo/location-form.ts": 3,
       "apps/web/app/db/repo/user.ts": 3,
       "apps/web/app/fragno/forms-server.ts": 1,
@@ -165,7 +166,9 @@ const approvedCompatibilityManifest = {
       "apps/web/app/routes/dashboard/forms/submission-export.ts": 1,
       "packages/design-system/src/components/sidebar.tsx": 2,
     },
-    "jsx-a11y/prefer-tag-over-role": { "packages/design-system/src/components/field.tsx": 1 },
+    "typescript/prefer-readonly-parameter-types": {
+      "apps/web/app/components/forms/renderers.test.tsx": 1,
+    },
     "unicorn/no-document-cookie": { "packages/design-system/src/components/sidebar.tsx": 1 },
     "typescript/require-await": { "apps/web/app/fragno/otp-server.ts": 1 },
     "no-redeclare": { "packages/one-time-password-fragment/src/ott/ott.ts": 1 },

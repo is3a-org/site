@@ -22,10 +22,10 @@ import type { JSX } from "react";
 import { useMemo, useState } from "react";
 import { Link } from "react-router";
 
-import { shadcnRenderers, shadcnCells } from "@fragno-dev/jsonforms-shadcn-renderers";
 import { JsonForms } from "@jsonforms/react";
 
 import { DashboardBreadcrumb } from "~/components/dashboard-breadcrumb";
+import { formRenderers } from "~/components/forms/renderers";
 import { FormBuilder, FormMetadataEditor } from "~/components/ui/form-builder";
 import type { GeneratedSchemas, FormMetadata } from "~/components/ui/form-builder";
 import {
@@ -121,9 +121,7 @@ export default function FormEditPage({
     <>
       <DashboardBreadcrumb>
         <BreadcrumbItem>
-          <BreadcrumbLink asChild>
-            <Link to="/dashboard/admin/forms">Forms</Link>
-          </BreadcrumbLink>
+          <BreadcrumbLink render={<Link to="/dashboard/admin/forms" />}>Forms</BreadcrumbLink>
         </BreadcrumbItem>
         <BreadcrumbSeparator />
         <BreadcrumbItem>
@@ -138,21 +136,22 @@ export default function FormEditPage({
       {!isLoading && !form ? (
         <div className="flex flex-1 flex-col items-center justify-center gap-4 p-4">
           <p className="text-muted-foreground">Form not found</p>
-          <Button asChild>
-            <Link to="/dashboard/admin/forms">
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to Forms
-            </Link>
+          <Button render={<Link to="/dashboard/admin/forms" />} nativeButton={false}>
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back to Forms
           </Button>
         </div>
       ) : (
         <div className="flex flex-1 flex-col gap-6 p-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <Button variant="ghost" size="icon" asChild>
-                <Link to="/dashboard/admin/forms">
-                  <ArrowLeft className="h-4 w-4" />
-                </Link>
+              <Button
+                variant="ghost"
+                size="icon"
+                render={<Link to="/dashboard/admin/forms" />}
+                nativeButton={false}
+              >
+                <ArrowLeft className="h-4 w-4" />
               </Button>
               <div>
                 <h1 className="text-2xl font-bold">Edit Form</h1>
@@ -164,10 +163,13 @@ export default function FormEditPage({
               </div>
             </div>
             <div className="flex gap-2">
-              <Button variant="outline" asChild disabled={isLoading}>
-                <Link to={form ? `/forms/${encodeURIComponent(form.slug)}` : "#"}>
-                  To form submit page
-                </Link>
+              <Button
+                variant="outline"
+                disabled={isLoading}
+                render={<Link to={form ? `/forms/${encodeURIComponent(form.slug)}` : "#"} />}
+                nativeButton={false}
+              >
+                To form submit page
               </Button>
               <Button
                 onClick={() => {
@@ -237,8 +239,8 @@ export default function FormEditPage({
                       schema={renderedSchemas?.dataSchema}
                       uischema={renderedSchemas?.uiSchema}
                       data={previewData}
-                      renderers={shadcnRenderers}
-                      cells={shadcnCells}
+                      renderers={formRenderers}
+
                       onChange={({ data }) => {
                         setPreviewData(formRenderDataSchema.parse(data ?? {}));
                       }}

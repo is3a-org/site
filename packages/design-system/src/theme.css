@@ -1,6 +1,5 @@
 /* Import after Tailwind. The source directive includes shared component utilities in consumers. */
-@import "tw-animate-css";
-@source "./components";
+@source "./";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -63,79 +62,80 @@
 }
 
 :root {
-  --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --radius: 0.5rem;
+  --background: #ffffff;
+  --foreground: #252525;
+  --card: #ffffff;
+  --card-foreground: #252525;
+  --popover: #ffffff;
+  --popover-foreground: #252525;
+  --primary: #bd1900;
+  --primary-foreground: #ffffff;
+  --secondary: #f1f2f3;
+  --secondary-foreground: #343434;
+  --muted: #f5f5f5;
+  --muted-foreground: #666666;
+  --accent: #fff1ef;
+  --accent-foreground: #941b08;
+  --destructive: #b42318;
+  --border: #e2e2e2;
+  --input: #c8c8c8;
+  --ring: #bd1900;
+  --chart-1: #bd1900;
+  --chart-2: #256d68;
+  --chart-3: #315c85;
+  --chart-4: #9b6a10;
+  --chart-5: #72569b;
+  --sidebar: #fafafa;
+  --sidebar-foreground: #343434;
+  --sidebar-primary: #bd1900;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #fff1ef;
+  --sidebar-accent-foreground: #941b08;
+  --sidebar-border: #e2e2e2;
+  --sidebar-ring: #bd1900;
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  --background: #181818;
+  --foreground: #f5f5f5;
+  --card: #222222;
+  --card-foreground: #f5f5f5;
+  --popover: #272727;
+  --popover-foreground: #f5f5f5;
+  --primary: #ff8c7b;
+  --primary-foreground: #520b00;
+  --secondary: #303030;
+  --secondary-foreground: #f5f5f5;
+  --muted: #292929;
+  --muted-foreground: #aaaaaa;
+  --accent: #43231e;
+  --accent-foreground: #ffb4a8;
+  --destructive: #ff9389;
+  --border: #3b3b3b;
+  --input: #5c5c5c;
+  --ring: #ff8c7b;
+  --sidebar: #202020;
+  --sidebar-foreground: #eeeeee;
+  --sidebar-primary: #ff8c7b;
+  --sidebar-primary-foreground: #520b00;
+  --sidebar-accent: #43231e;
+  --sidebar-accent-foreground: #ffb4a8;
+  --sidebar-border: #3b3b3b;
+  --sidebar-ring: #ff8c7b;
+  color-scheme: dark;
 }
 
 @layer base {
   * {
-    @apply border-border outline-ring/50;
+    @apply border-border;
   }
   body {
-    @apply bg-background text-foreground;
+    position: relative;
+    @apply bg-background text-foreground antialiased;
+  }
+  .is3a-root,
+  .sb-show-main #storybook-root {
+    isolation: isolate;
   }
 }

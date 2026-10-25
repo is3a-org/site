@@ -1,47 +1,28 @@
-import * as React from "react";
-
-import * as PopoverPrimitive from "@radix-ui/react-popover";
+import { Popover as Primitive } from "@base-ui/react/popover";
+import type { JSX } from "react";
 
 import { cn } from "../cn";
-
-function Popover({
-  ...props
-}: Readonly<React.ComponentProps<typeof PopoverPrimitive.Root>>): React.JSX.Element {
-  return <PopoverPrimitive.Root data-slot="popover" {...props} />;
-}
-
-function PopoverTrigger({
-  ...props
-}: React.ComponentProps<typeof PopoverPrimitive.Trigger>): React.JSX.Element {
-  return <PopoverPrimitive.Trigger data-slot="popover-trigger" {...props} />;
-}
-
-function PopoverContent({
+import { popup, type StyledProps } from "../control-styles";
+export const Popover = Primitive.Root;
+export const PopoverTrigger = Primitive.Trigger;
+export const PopoverClose = Primitive.Close;
+export function PopoverContent({
   className,
+  side = "bottom",
   align = "center",
-  sideOffset = 4,
+  sideOffset = 8,
   ...props
-}: React.ComponentProps<typeof PopoverPrimitive.Content>): React.JSX.Element {
+}: StyledProps<Primitive.Popup.Props> &
+  Pick<Primitive.Positioner.Props, "side" | "align" | "sideOffset">): JSX.Element {
   return (
-    <PopoverPrimitive.Portal>
-      <PopoverPrimitive.Content
-        data-slot="popover-content"
-        align={align}
-        sideOffset={sideOffset}
-        className={cn(
-          "z-50 w-72 origin-(--radix-popover-content-transform-origin) rounded-md border bg-popover p-4 text-popover-foreground shadow-md outline-hidden data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95",
-          className,
-        )}
-        {...props}
-      />
-    </PopoverPrimitive.Portal>
+    <Primitive.Portal>
+      <Primitive.Positioner side={side} align={align} sideOffset={sideOffset} className="z-50">
+        <Primitive.Popup
+          data-slot="popover-content"
+          className={cn("w-80 max-w-(--available-width) p-4", popup, className)}
+          {...props}
+        />
+      </Primitive.Positioner>
+    </Primitive.Portal>
   );
 }
-
-function PopoverAnchor({
-  ...props
-}: React.ComponentProps<typeof PopoverPrimitive.Anchor>): React.JSX.Element {
-  return <PopoverPrimitive.Anchor data-slot="popover-anchor" {...props} />;
-}
-
-export { Popover, PopoverTrigger, PopoverContent, PopoverAnchor };
