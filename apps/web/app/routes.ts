@@ -24,6 +24,7 @@ export default [
     index("routes/home.tsx"),
     route("join", "routes/join.tsx"),
     route("team", "routes/team.tsx"),
+    route("former-speakers", "routes/former-speakers.tsx"),
     ...prefix("login", [
       route("", "routes/login/login.tsx"),
       route("verify", "routes/login/verify.tsx"),

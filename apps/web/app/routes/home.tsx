@@ -5,7 +5,12 @@ import { ArrowRight, GraduationCap } from "lucide-react";
 import type { JSX } from "react";
 import { Link } from "react-router";
 
-import { landingContainer, landingHeading } from "~/components/landing/landing-styles";
+import {
+  landingContainer,
+  landingHeading,
+  landingPhoto,
+  textLink,
+} from "~/components/landing/landing-styles";
 import { cn } from "~/lib/utils";
 
 import type { Route } from "./+types/home";
@@ -55,11 +60,9 @@ const features = [
     title: "Knowledge sharing",
     body: "Be it technical knowledge or soft skills, we'll give you the opportunity to share and learn. Not sure how to start negotiating your salary? Learn from your peers at IS3A!",
     image: { src: "/knowledge-sharing.jpg", width: 782, height: 808 },
+    link: { to: "/former-speakers", label: "See past talks" },
   },
 ];
-
-const photo =
-  "w-full rounded-lg object-cover outline-1 -outline-offset-1 outline-black/10 dark:outline-white/10";
 
 export default function Home(): JSX.Element {
   return (
@@ -104,7 +107,7 @@ export default function Home(): JSX.Element {
           alt="Canal houses along an Amsterdam canal"
           width={1024}
           height={411}
-          className={cn(photo, "mt-4 aspect-[1024/411] min-h-48 lg:col-span-12")}
+          className={cn(landingPhoto, "mt-4 aspect-[1024/411] min-h-48 lg:col-span-12")}
         />
       </section>
 
@@ -164,7 +167,7 @@ export default function Home(): JSX.Element {
           What we do
         </h2>
         <div className="mt-8 grid gap-x-8 gap-y-12 md:grid-cols-2">
-          {features.map(({ title, body, image }) => (
+          {features.map(({ title, body, image, link }) => (
             <article key={title}>
               <img
                 src={image.src}
@@ -172,12 +175,21 @@ export default function Home(): JSX.Element {
                 width={image.width}
                 height={image.height}
                 loading="lazy"
-                className={cn(photo, "aspect-[4/3]")}
+                className={cn(landingPhoto, "aspect-[4/3]")}
               />
               <h3 className="mt-5 text-2xl leading-tight font-semibold font-display">{title}</h3>
               <p className="mt-2 max-w-prose leading-relaxed text-pretty text-muted-foreground">
                 {body}
               </p>
+              {link !== undefined && (
+                <Link
+                  to={link.to}
+                  className={cn(textLink, "mt-4 inline-flex items-center gap-1.5")}
+                >
+                  {link.label}
+                  <ArrowRight aria-hidden className="size-4" />
+                </Link>
+              )}
             </article>
           ))}
         </div>
