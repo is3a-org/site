@@ -45,7 +45,8 @@ function getMemberships(): MembershipCatalog {
 export function getMembershipByPriceId(
   priceId: string | null | undefined,
 ): MembershipPlan | null | undefined {
-  if (!priceId) {
+  if (priceId === null || priceId === undefined || priceId.length === 0) {
+    // oxlint-disable-next-line unicorn/no-null -- COMPATIBILITY: Missing price input returns null; an unknown configured price returns undefined.
     return null;
   }
   return Object.values(MEMBERSHIPS).find((m) => m.priceId === priceId);

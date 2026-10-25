@@ -31,15 +31,15 @@ export function useHydrated(): boolean {
   );
 }
 
-type ClientOnlyProps = {
+interface ClientOnlyProps {
   /**
    * You are encouraged to add a fallback that is the same dimensions
    * as the client rendered children. This will avoid content layout
    * shift which is disgusting
    */
-  children(): React.ReactNode;
-  fallback?: React.ReactNode;
-};
+  readonly children: () => React.ReactNode;
+  readonly fallback?: React.ReactNode;
+}
 
 /**
  * Render the children only after the JS has loaded client-side. Use an optional
@@ -56,6 +56,6 @@ type ClientOnlyProps = {
  * );
  * ```
  */
-export function ClientOnly({ children, fallback = null }: ClientOnlyProps): JSX.Element {
+export function ClientOnly({ children, fallback }: ClientOnlyProps): JSX.Element {
   return useHydrated() ? <>{children()}</> : <>{fallback}</>;
 }

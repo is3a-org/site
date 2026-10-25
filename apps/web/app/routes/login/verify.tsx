@@ -11,12 +11,13 @@ import type { JSX } from "react";
 import { redirect, Link } from "react-router";
 
 import { createOtpServer } from "~/fragno/otp-server";
+import type { ReadonlyRouteProps } from "~/fragno/readonly-route-props";
 import { createSimpleAuthServer } from "~/fragno/simple-auth-server";
 import { requestContext } from "~/request-context";
 
 import type { Route } from "./+types/verify";
 
-export function meta(_: Route.MetaArgs): Route.MetaDescriptors {
+export function meta(): Route.MetaDescriptors {
   return [
     { title: "Verifying Login - IS3A" },
     { name: "description", content: "Verifying your magic link login." },
@@ -30,12 +31,12 @@ interface LoginVerificationError {
 export async function loader({
   request,
   context,
-}: Route.LoaderArgs): Promise<Response | LoginVerificationError> {
+}: Readonly<Route.LoaderArgs>): Promise<Response | LoginVerificationError> {
   const url = new URL(request.url);
   const token = url.searchParams.get("token");
   const email = url.searchParams.get("email");
 
-  if (!token || !email) {
+  if (token === null || token === "" || email === null || email === "") {
     return { error: "Invalid link. The sign-in link is missing required parameters." };
   }
 
@@ -62,12 +63,14 @@ export async function loader({
     let msg = "This sign-in link has expired or has already been used.";
 
     switch (response.error.code) {
-      case "token_invalid":
+      case "token_invalid": {
         msg = "This sign-in link is invalid.";
         break;
-      case "token_expired":
+      }
+      case "token_expired": {
         msg = "This sign-in link has expired.";
         break;
+      }
     }
 
     return { error: msg };
@@ -93,8 +96,10 @@ export async function loader({
   });
 }
 
-export default function Verify({ loaderData }: Route.ComponentProps): JSX.Element {
-  if (loaderData?.error) {
+export default function Verify({
+  loaderData,
+}: ReadonlyRouteProps<Route.ComponentProps>): JSX.Element {
+  if (loaderData.error !== "") {
     return (
       <div className="flex min-h-screen w-full items-center justify-center bg-gray-50 px-4">
         <Card className="w-full max-w-md">

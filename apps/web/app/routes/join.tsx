@@ -1,8 +1,10 @@
 import type { JSX } from "react";
 
+import type { ReadonlyRouteProps } from "~/fragno/readonly-route-props";
+
 import type { Route } from "./+types/join";
 
-export function meta(_: Route.MetaArgs): Route.MetaDescriptors {
+export function meta(): Route.MetaDescriptors {
   return [
     { title: "Join IS3A - Become a Member" },
     {
@@ -13,7 +15,17 @@ export function meta(_: Route.MetaArgs): Route.MetaDescriptors {
   ];
 }
 
-export default function Join(): JSX.Element {
+interface JoinLoaderData {
+  readonly currentYear: number;
+}
+
+export function loader(): JoinLoaderData {
+  return { currentYear: new Date().getFullYear() };
+}
+
+export default function Join({
+  loaderData,
+}: ReadonlyRouteProps<Route.ComponentProps>): JSX.Element {
   return (
     <div className="w-full">
       {/* Hero Section */}
@@ -143,7 +155,7 @@ export default function Join(): JSX.Element {
                   id="graduation"
                   name="graduation"
                   min="1990"
-                  max={new Date().getFullYear()}
+                  max={loaderData.currentYear}
                   required
                   className="w-full rounded-md border border-gray-300 px-4 py-2 focus:border-transparent focus:ring-2 focus:ring-red-600"
                 />

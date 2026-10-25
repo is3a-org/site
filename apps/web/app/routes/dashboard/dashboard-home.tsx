@@ -4,14 +4,12 @@ import { BreadcrumbItem, BreadcrumbPage } from "@is3a/design-system/breadcrumb";
 import type { JSX } from "react";
 
 import { DashboardBreadcrumb } from "~/components/dashboard-breadcrumb";
+import type { ReadonlyRouteProps } from "~/fragno/readonly-route-props";
 import { cn } from "~/lib/utils";
 
 import type { Route } from "./+types/dashboard-home";
 
-export async function loader({
-  context: _context,
-  request: _request,
-}: Route.LoaderArgs): Promise<Record<string, never>> {
+export function loader(): Record<string, never> {
   return {};
 }
 
@@ -19,16 +17,11 @@ export default function DashboardHome({
   matches,
   className,
   ...props
-}: React.ComponentProps<"div"> & Route.ComponentProps): JSX.Element {
+}: React.ComponentProps<"div"> & ReadonlyRouteProps<Route.ComponentProps>): JSX.Element {
   // Get user data from parent route loader
   const parentData = matches[1].loaderData;
 
-  const user = parentData?.user || {
-    name: "John Doe",
-    email: "john@example.com",
-    avatar: undefined,
-    role: "Member",
-  };
+  const user = parentData.user;
 
   return (
     <>
@@ -43,7 +36,7 @@ export default function DashboardHome({
         <div className="flex items-center gap-4">
           <Avatar className="h-16 w-16">
             <AvatarImage src={user.avatar} />
-            <AvatarFallback>{user.name?.[0]?.toUpperCase()}</AvatarFallback>
+            <AvatarFallback>{user.name[0]?.toUpperCase()}</AvatarFallback>
           </Avatar>
           <div>
             <div className="flex items-center gap-2">

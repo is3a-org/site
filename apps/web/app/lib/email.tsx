@@ -2,7 +2,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 
 import { MagicLinkEmail } from "~/components/email/magic-link-email";
 
-const POSTMARK_TOKEN = process.env.POSTMARK_SERVER_API_TOKEN || undefined;
+const POSTMARK_TOKEN = process.env.POSTMARK_SERVER_API_TOKEN;
 const SENDER = "no-reply@is3a.nl";
 
 export function magicLinkTemplate(url: string): string {
@@ -14,7 +14,7 @@ export async function sendEmail(
   subject: string,
   htmlContent: string,
 ): Promise<void> {
-  if (POSTMARK_TOKEN === undefined) {
+  if (POSTMARK_TOKEN === undefined || POSTMARK_TOKEN.length === 0) {
     console.warn("No POSTMARK_SERVER_API_TOKEN is set, assume email is disabled");
     console.log(`Trying to send email to ${email} with subject: ${subject}`);
     return;

@@ -11,19 +11,21 @@ import { Label } from "@is3a/design-system/label";
 import type { JSX } from "react";
 import { redirect } from "react-router";
 
+import type { ReadonlyRouteProps } from "~/fragno/readonly-route-props";
+import { readFormText } from "~/fragno/request-form";
 import { createSimpleAuthServer } from "~/fragno/simple-auth-server";
 import { requestContext } from "~/request-context";
 
 import type { Route } from "./+types/sign-up";
 
-export function meta(_: Route.MetaArgs): Route.MetaDescriptors {
+export function meta(): Route.MetaDescriptors {
   return [
     { title: "Sign Up - IS3A" },
     { name: "description", content: "Create your IS3A member account." },
   ];
 }
 
-export async function loader(_: Route.LoaderArgs): Promise<Record<string, never>> {
+export function loader(): Record<string, never> {
   return {};
 }
 
@@ -35,13 +37,13 @@ interface SignUpActionError {
 export async function action({
   request,
   context,
-}: Route.ActionArgs): Promise<Response | SignUpActionError> {
+}: Readonly<Route.ActionArgs>): Promise<Response | SignUpActionError> {
   const auth = createSimpleAuthServer(context.get(requestContext).pool);
 
   const formData = await request.formData();
-  const email = formData.get("email") as string;
-  const password = formData.get("password") as string;
-  const confirmPassword = formData.get("confirmPassword") as string;
+  const email = readFormText(formData, "email") ?? "";
+  const password = readFormText(formData, "password") ?? "";
+  const confirmPassword = readFormText(formData, "confirmPassword") ?? "";
 
   // Validate passwords match
   if (password !== confirmPassword) {
@@ -91,7 +93,9 @@ export async function action({
   }
 }
 
-export default function SignUp({ actionData }: Route.ComponentProps): JSX.Element {
+export default function SignUp({
+  actionData,
+}: ReadonlyRouteProps<Route.ComponentProps>): JSX.Element {
   return (
     <div className="flex min-h-screen w-full items-center justify-center bg-gray-50 px-4 py-12">
       <div className="flex w-full flex-col items-center">
@@ -102,7 +106,7 @@ export default function SignUp({ actionData }: Route.ComponentProps): JSX.Elemen
           </CardHeader>
           <CardContent>
             <form method="post" className="space-y-6">
-              {actionData?.error && (
+              {actionData?.error !== undefined && actionData.error !== "" && (
                 <div className="rounded-md bg-red-50 p-3 text-sm text-red-800">
                   {actionData.error}
                 </div>
@@ -115,7 +119,7 @@ export default function SignUp({ actionData }: Route.ComponentProps): JSX.Elemen
                   id="email"
                   name="email"
                   placeholder="you@example.com"
-                  defaultValue={actionData?.email || ""}
+                  defaultValue={actionData?.email ?? ""}
                   required
                 />
               </div>

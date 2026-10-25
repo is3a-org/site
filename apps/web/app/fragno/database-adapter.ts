@@ -5,9 +5,11 @@ import { NodePostgresDriverConfig } from "@fragno-dev/db/drivers";
 import type { PostgresPool } from "../db/postgres/is3a-postgres.ts";
 
 export function createAdapter(pool: PostgresPool | (() => PostgresPool)): SqlAdapter {
-  const resolvedPool = typeof pool === "function" ? pool() : pool;
+  // oxlint-disable-next-line anti-slop/no-runtime-typeof -- COMPATIBILITY: The adapter accepts a Pool capability or its lazy factory.
+  const isPoolFactory = typeof pool === "function";
+  const resolvedPool = isPoolFactory ? pool() : pool;
 
-  if (typeof pool === "function") {
+  if (isPoolFactory) {
     console.log("Created adapter for top-level Fragment");
   }
 

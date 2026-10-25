@@ -3,22 +3,17 @@ export { cn } from "@is3a/design-system/cn";
 
 const nanoIdGenerator = customAlphabet("346789ABCDEFGHJKLMNPQRTUVWXYabcdefghijkmnpqrtwxyz", 32);
 
-export function assert(condition: unknown, message?: string): asserts condition {
+export function assert(condition: boolean, message?: string): asserts condition {
   if (!condition) {
     throw new Error(message ?? "Assertion failed");
   }
 }
 
-export function unreachable(value?: never): never {
-  if (value) {
-    console.warn("Unreachable:", value);
-    throw new Error(`Unreachable: ${value}`);
-  }
-
+export function unreachable(_value?: never): never {
   throw new Error("Unreachable");
 }
 
-export function generateId(prefix: string, length: number = 32): string {
+export function generateId(prefix: string, length = 32): string {
   if (prefix.length > 4) {
     throw new Error("Prefix must be 4 characters or less");
   }

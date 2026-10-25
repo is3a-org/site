@@ -20,15 +20,15 @@ import { FieldTypeSelector } from "./field-type-selector";
 import type { FormField, FieldType } from "./types";
 
 export interface FieldCardProps {
-  field: FormField;
-  index: number;
-  onUpdate: (updates: Partial<Omit<FormField, "id">>) => void;
-  onUpdateLabel: (label: string) => void;
-  onDelete: () => void;
-  onDuplicate: () => void;
-  onMoveUp?: () => void;
-  onMoveDown?: () => void;
-  className?: string;
+  readonly field: FormField;
+  readonly index: number;
+  readonly onUpdate: (updates: Partial<Omit<FormField, "id">>) => void;
+  readonly onUpdateLabel: (label: string) => void;
+  readonly onDelete: () => void;
+  readonly onDuplicate: () => void;
+  readonly onMoveUp?: () => void;
+  readonly onMoveDown?: () => void;
+  readonly className?: string;
 }
 
 export function FieldCard({
@@ -64,7 +64,9 @@ export function FieldCard({
               <Input
                 id={`field-label-${field.id}`}
                 value={field.label}
-                onChange={(e) => onUpdateLabel(e.target.value)}
+                onChange={(e) => {
+                  onUpdateLabel(e.target.value);
+                }}
               />
             </div>
             <div className="space-y-2">
@@ -81,7 +83,9 @@ export function FieldCard({
               <Input
                 id={`field-description-${field.id}`}
                 value={field.description ?? ""}
-                onChange={(e) => onUpdate({ description: e.target.value || undefined })}
+                onChange={(e) => {
+                  onUpdate({ description: e.target.value || undefined });
+                }}
               />
             </div>
           )}
@@ -92,7 +96,9 @@ export function FieldCard({
                 <Switch
                   id={`field-required-${field.id}`}
                   checked={field.required}
-                  onCheckedChange={(checked) => onUpdate({ required: checked })}
+                  onCheckedChange={(checked) => {
+                    onUpdate({ required: checked });
+                  }}
                 />
                 <Label htmlFor={`field-required-${field.id}`} className="cursor-pointer">
                   Required
@@ -176,7 +182,9 @@ export function FieldCard({
           <FieldOptions
             fieldType={field.fieldType}
             options={field.options}
-            onChange={(options) => onUpdate({ options })}
+            onChange={(options) => {
+              onUpdate({ options });
+            }}
           />
         </div>
       </CardContent>

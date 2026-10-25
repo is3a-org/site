@@ -30,7 +30,7 @@ export const links: Route.LinksFunction = () => [
   },
 ];
 
-export function Layout({ children }: { children: React.ReactNode }): JSX.Element {
+export function Layout({ children }: { readonly children: React.ReactNode }): JSX.Element {
   return (
     <html lang="en">
       <head>
@@ -52,7 +52,7 @@ export default function App(): JSX.Element {
   return <Outlet />;
 }
 
-export function ErrorBoundary({ error }: Route.ErrorBoundaryProps): JSX.Element {
+export function ErrorBoundary({ error }: { readonly error: unknown }): JSX.Element {
   let message = "Oops!";
   let details = "An unexpected error occurred.";
   let stack: string | undefined;
@@ -61,7 +61,7 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps): JSX.Element 
     message = error.status === 404 ? "404" : "Error";
     details =
       error.status === 404 ? "The requested page could not be found." : error.statusText || details;
-  } else if (import.meta.env.DEV && error && error instanceof Error) {
+  } else if (import.meta.env.DEV && error instanceof Error) {
     details = error.message;
     stack = error.stack;
   }
@@ -70,7 +70,7 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps): JSX.Element 
     <main className="container mx-auto p-4 pt-16">
       <h1>{message}</h1>
       <p>{details}</p>
-      {stack && (
+      {stack !== undefined && stack !== "" && (
         <pre className="w-full overflow-x-auto p-4">
           <code>{stack}</code>
         </pre>

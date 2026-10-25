@@ -25,8 +25,8 @@ export function MembershipPlans(): JSX.Element {
       body: {
         priceId,
         quantity: 1,
-        successUrl: `${window.location.origin}/dashboard/subscribe-confirm`,
-        cancelUrl: `${window.location.origin}/dashboard/membership`,
+        successUrl: `${globalThis.location.origin}/dashboard/subscribe-confirm`,
+        cancelUrl: `${globalThis.location.origin}/dashboard/membership`,
       },
     });
     if (!response) {
@@ -34,7 +34,7 @@ export function MembershipPlans(): JSX.Element {
       return;
     }
     if (response.url) {
-      window.location.href = response.url;
+      globalThis.location.href = response.url;
     }
   };
 
@@ -107,12 +107,16 @@ export function MembershipPlans(): JSX.Element {
           </CardContent>
           <CardFooter>
             <Button
-              onClick={() => handleSubscribe(MEMBERSHIPS.FULL.priceId)}
+              onClick={() => {
+                void handleSubscribe(MEMBERSHIPS.FULL.priceId).catch((cause: unknown) => {
+                  console.error(new Error("Subscription request failed", { cause }));
+                });
+              }}
               disabled={loading}
               className="w-full"
               size="lg"
             >
-              {loading ? "Processing..." : "Get Full Membership"}
+              {loading === true ? "Processing..." : "Get Full Membership"}
             </Button>
           </CardFooter>
         </Card>
@@ -173,13 +177,17 @@ export function MembershipPlans(): JSX.Element {
           </CardContent>
           <CardFooter>
             <Button
-              onClick={() => handleSubscribe(MEMBERSHIPS.FLEX.priceId)}
+              onClick={() => {
+                void handleSubscribe(MEMBERSHIPS.FLEX.priceId).catch((cause: unknown) => {
+                  console.error(new Error("Subscription request failed", { cause }));
+                });
+              }}
               disabled={loading}
               className="w-full"
               variant="outline"
               size="lg"
             >
-              {loading ? "Processing..." : "Get Flex Membership"}
+              {loading === true ? "Processing..." : "Get Flex Membership"}
             </Button>
           </CardFooter>
         </Card>

@@ -8,14 +8,23 @@ import {
 } from "@is3a/design-system/card";
 import { Skeleton } from "@is3a/design-system/skeleton";
 import { CheckCircle2, XCircle, AlertTriangle } from "lucide-react";
-import type { JSX } from "react";
-import type { ReactNode } from "react";
-import { useState } from "react";
+import type { JSX, ReactNode } from "react";
+import { useMemo, useState } from "react";
 
 import { shadcnRenderers, shadcnCells } from "@fragno-dev/jsonforms-shadcn-renderers";
-import type { UISchemaElement } from "@jsonforms/core";
 import { JsonForms } from "@jsonforms/react";
 
+import {
+  dataSchemaSchema,
+  uiSchemaElementSchema,
+} from "~/components/ui/form-builder/form-schema-contracts";
+import {
+  toJsonFormsDataSchema,
+  toJsonFormsUiSchema,
+} from "~/components/ui/form-builder/jsonforms-schema-adapter";
+import type { ReadonlyRouteProps } from "~/fragno/readonly-route-props";
+import { formRenderDataSchema } from "~/lib/form-render-data";
+import type { FormRenderData } from "~/lib/form-render-data";
 import { formsClient } from "~/lib/forms-client";
 
 import type { Route } from "./+types/forms";
@@ -24,7 +33,7 @@ interface PublicFormLoaderData {
   slug: string;
 }
 
-export async function loader({ params }: Route.LoaderArgs): Promise<PublicFormLoaderData> {
+export function loader({ params }: Readonly<Route.LoaderArgs>): PublicFormLoaderData {
   return { slug: params.slug };
 }
 
@@ -33,16 +42,16 @@ function PageWrapper({
   wide,
   noCard,
 }: {
-  children: ReactNode;
-  wide?: boolean;
-  noCard?: boolean;
+  readonly children: ReactNode;
+  readonly wide?: boolean;
+  readonly noCard?: boolean;
 }): JSX.Element {
-  const widthClass = wide ? "w-full max-w-2xl" : "w-full max-w-md";
+  const widthClass = wide === true ? "w-full max-w-2xl" : "w-full max-w-md";
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-red-800 p-4">
-      {noCard ? (
-        <div className={`${widthClass}`}>{children}</div>
+      {noCard === true ? (
+        <div className={widthClass}>{children}</div>
       ) : (
         <Card className={`${widthClass} text-center`}>{children}</Card>
       )}
@@ -56,10 +65,10 @@ function StatusPage({
   message,
   action,
 }: {
-  icon: ReactNode;
-  title: string;
-  message: string;
-  action?: ReactNode;
+  readonly icon: ReactNode;
+  readonly title: string;
+  readonly message: string;
+  readonly action?: ReactNode;
 }): JSX.Element {
   return (
     <PageWrapper>
@@ -68,12 +77,22 @@ function StatusPage({
         <CardTitle>{title}</CardTitle>
         <p className="mt-2 text-muted-foreground">{message}</p>
       </CardHeader>
-      {action && <CardContent>{action}</CardContent>}
+      {action === undefined ||
+      action === null ||
+      action === false ||
+      action === "" ||
+      action === 0 ? (
+        action
+      ) : (
+        <CardContent>{action}</CardContent>
+      )}
     </PageWrapper>
   );
 }
 
-export default function PublicFormPage({ loaderData }: Route.ComponentProps): JSX.Element {
+export default function PublicFormPage({
+  loaderData,
+}: ReadonlyRouteProps<Route.ComponentProps>): JSX.Element {
   const { slug } = loaderData;
 
   const {
@@ -90,11 +109,23 @@ export default function PublicFormPage({ loaderData }: Route.ComponentProps): JS
     error: submitError,
   } = formsClient.useSubmitForm();
 
-  const [formData, setFormData] = useState<Record<string, unknown>>({});
-  const [formErrors, setFormErrors] = useState<unknown[]>([]);
+  const [formData, setFormData] = useState<FormRenderData>({});
+  const [formErrorCount, setFormErrorCount] = useState(0);
+  const renderedSchemas = useMemo(
+    () =>
+      form === undefined
+        ? undefined
+        : {
+            dataSchema: toJsonFormsDataSchema(dataSchemaSchema.parse(form.dataSchema)),
+            uiSchema:
+              form.uiSchema === undefined
+                ? undefined
+                : toJsonFormsUiSchema(uiSchemaElementSchema.parse(form.uiSchema)),
+          },
+    [form],
+  );
 
-  const handleSubmit = async (e: React.FormEvent): Promise<void> => {
-    e.preventDefault();
+  const handleSubmit = async (): Promise<void> => {
     await submitForm({
       path: { slug },
       body: { data: formData },
@@ -138,14 +169,19 @@ export default function PublicFormPage({ loaderData }: Route.ComponentProps): JS
     );
   }
 
-  if (submitResponse) {
+  if (submitResponse !== undefined && submitResponse !== "") {
     return (
       <StatusPage
         icon={<CheckCircle2 className="h-16 w-16 text-green-500" />}
         title="Thank You!"
         message="Your submission has been received successfully."
         action={
-          <Button variant="outline" onClick={() => window.location.reload()}>
+          <Button
+            variant="outline"
+            onClick={() => {
+              globalThis.location.reload();
+            }}
+          >
             Submit Another Response
           </Button>
         }
@@ -174,11 +210,13 @@ export default function PublicFormPage({ loaderData }: Route.ComponentProps): JS
           <CardHeader className="space-y-4">
             <img src="/is3a.svg" alt="IS3A logo" className="h-10 w-auto" />
             <CardTitle className="text-3xl leading-tight font-bold">{form.title}</CardTitle>
-            {form.description && (
-              <CardDescription className="text-base whitespace-pre-line text-foreground">
-                {form.description}
-              </CardDescription>
-            )}
+            {form.description !== undefined &&
+              form.description !== null &&
+              form.description !== "" && (
+                <CardDescription className="text-base whitespace-pre-line text-foreground">
+                  {form.description}
+                </CardDescription>
+              )}
           </CardHeader>
         </Card>
 
@@ -186,19 +224,21 @@ export default function PublicFormPage({ loaderData }: Route.ComponentProps): JS
           <CardContent className="pt-6">
             {submitError && (
               <div className="mb-4 rounded-md border border-red-200 bg-red-50 p-4 text-red-800">
-                {submitError.message || "Failed to submit form. Please try again."}
+                {submitError.message === ""
+                  ? "Failed to submit form. Please try again."
+                  : submitError.message}
               </div>
             )}
 
             <JsonForms
-              schema={form.dataSchema as Record<string, unknown>}
-              uischema={form.uiSchema as unknown as UISchemaElement}
+              schema={renderedSchemas?.dataSchema}
+              uischema={renderedSchemas?.uiSchema}
               data={formData}
               renderers={shadcnRenderers}
               cells={shadcnCells}
               onChange={({ data, errors }) => {
-                setFormData(data ?? {});
-                setFormErrors(errors ?? []);
+                setFormData(formRenderDataSchema.parse(data ?? {}));
+                setFormErrorCount(errors?.length ?? 0);
               }}
             />
 
@@ -206,10 +246,13 @@ export default function PublicFormPage({ loaderData }: Route.ComponentProps): JS
               <Button
                 type="submit"
                 className="w-full"
-                disabled={isSubmitting || isDraft || formErrors.length > 0}
-                onClick={handleSubmit}
+                disabled={(isSubmitting ?? false) || isDraft || formErrorCount > 0}
+                onClick={(event) => {
+                  event.preventDefault();
+                  void handleSubmit();
+                }}
               >
-                {isSubmitting ? "Submitting..." : "Submit"}
+                {isSubmitting === true ? "Submitting..." : "Submit"}
               </Button>
             </div>
           </CardContent>

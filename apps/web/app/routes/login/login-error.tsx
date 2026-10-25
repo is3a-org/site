@@ -3,7 +3,7 @@ import { Link } from "react-router";
 
 import type { Route } from "./+types/login-error";
 
-export function meta(_: Route.MetaArgs): Route.MetaDescriptors {
+export function meta(): Route.MetaDescriptors {
   return [
     { title: "Login Error - IS3A" },
     { name: "description", content: "There was an error logging in." },

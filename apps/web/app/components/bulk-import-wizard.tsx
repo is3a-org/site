@@ -24,36 +24,84 @@ import { useState } from "react";
 import { useFetcher } from "react-router";
 
 import { matchStripeCustomerToUser } from "~/lib/bulk-import-helpers";
+import type { action as bulkImportAction } from "~/routes/dashboard/stripe/bulk-import";
 
-type User = {
-  id: string;
-  email: string;
-  stripeCustomerId: string | null;
-};
+interface User {
+  readonly id: string;
+  readonly email: string;
+  readonly stripeCustomerId: string | null;
+}
 
-type StripeCustomer = {
-  id: string;
-  email: string | null;
-  name?: string | null;
-  created: number;
-};
+interface StripeCustomer {
+  readonly id: string;
+  readonly email: string | null;
+  readonly name?: string | null;
+  readonly created: number;
+}
 
-type BulkImportWizardProps = {
-  stripeCustomers: StripeCustomer[];
-  existingUsers: User[];
-};
+interface BulkImportWizardProps {
+  readonly stripeCustomers: readonly StripeCustomer[];
+  readonly existingUsers: readonly User[];
+}
 
 type Step = "select" | "preview" | "execute" | "results";
 
-type MatchResult = {
-  customer: StripeCustomer;
-  matchedUser: User | null;
-  matchType: "stripeCustomerId" | "email" | "none";
-  willCreateUser: boolean;
-  hasConflict: boolean;
-  conflictReason?: string;
-  alreadySynced: boolean;
-};
+interface MatchResult {
+  readonly customer: StripeCustomer;
+  readonly matchedUser: User | null;
+  readonly matchType: "stripeCustomerId" | "email" | "none";
+  readonly willCreateUser: boolean;
+  readonly hasConflict: boolean;
+  readonly conflictReason?: string;
+  readonly alreadySynced: boolean;
+}
+
+function getImportCustomerText(value: string | null | undefined): string {
+  return value === null || value === undefined || value === "" ? "—" : value;
+}
+
+function getImportPreviewRowClass(result: MatchResult): string {
+  if (result.hasConflict) {
+    return "bg-red-50 dark:bg-red-950/20";
+  }
+  return result.alreadySynced ? "bg-gray-50 dark:bg-gray-950/20" : "";
+}
+
+function BulkImportMatchAction({ result }: Readonly<{ result: MatchResult }>): JSX.Element {
+  if (result.alreadySynced) {
+    return (
+      <Badge variant="outline" className="border-gray-500 text-gray-700">
+        <CheckCircle2 className="mr-1 h-3 w-3" />
+        Already Synced (Will be skipped)
+      </Badge>
+    );
+  }
+  if (result.hasConflict) {
+    return (
+      <div className="space-y-1">
+        <Badge variant="outline" className="border-red-500 text-red-700">
+          <XCircle className="mr-1 h-3 w-3" />
+          Conflict (Will be skipped)
+        </Badge>
+        <p className="text-xs text-muted-foreground">{result.conflictReason}</p>
+      </div>
+    );
+  }
+  if (result.willCreateUser) {
+    return (
+      <Badge variant="outline" className="border-green-500 text-green-700">
+        <UserPlus className="mr-1 h-3 w-3" />
+        Create new user
+      </Badge>
+    );
+  }
+  return (
+    <Badge variant="outline" className="border-blue-500 text-blue-700">
+      <Users className="mr-1 h-3 w-3" />
+      Link to {result.matchedUser?.email}
+    </Badge>
+  );
+}
 
 export function BulkImportWizard({
   stripeCustomers,
@@ -63,8 +111,9 @@ export function BulkImportWizard({
   const [selectedCustomerIds, setSelectedCustomerIds] = useState<Set<string>>(new Set());
   const [matchResults, setMatchResults] = useState<MatchResult[]>([]);
 
-  const fetcher = useFetcher();
+  const fetcher = useFetcher<typeof bulkImportAction>();
   const isExecuting = fetcher.state === "submitting";
+  const importError = fetcher.data?.success === false ? fetcher.data : undefined;
 
   // Handle checkbox toggle for customer selection
   const toggleCustomer = (customerId: string): void => {
@@ -116,14 +165,14 @@ export function BulkImportWizard({
     const formData = new FormData();
     formData.append("intent", "bulk-sync-subscription");
     formData.append("customerIds", JSON.stringify(validCustomerIds));
-    fetcher.submit(formData, { method: "post" });
+    void fetcher.submit(formData, { method: "post" }).catch((cause: unknown) => {
+      console.error(new Error("Bulk import submission failed", { cause }));
+    });
   };
 
   // Move to results once fetch completes
-  if (step === "execute" && fetcher.data && !isExecuting) {
-    if (fetcher.data.success || fetcher.data.error) {
-      setStep("results");
-    }
+  if (step === "execute" && fetcher.data !== undefined && !isExecuting) {
+    setStep("results");
   }
 
   // Reset and start over
@@ -240,12 +289,17 @@ export function BulkImportWizard({
                         <TableRow key={customer.id}>
                           <TableCell>
                             <Checkbox
+                              aria-label={`Select Stripe customer ${customer.id}`}
                               checked={selectedCustomerIds.has(customer.id)}
-                              onCheckedChange={() => toggleCustomer(customer.id)}
+                              onCheckedChange={() => {
+                                toggleCustomer(customer.id);
+                              }}
                             />
                           </TableCell>
-                          <TableCell className="font-medium">{customer.name || "—"}</TableCell>
-                          <TableCell>{customer.email || "—"}</TableCell>
+                          <TableCell className="font-medium">
+                            {getImportCustomerText(customer.name)}
+                          </TableCell>
+                          <TableCell>{getImportCustomerText(customer.email)}</TableCell>
                           <TableCell className="font-mono text-xs">{customer.id}</TableCell>
                         </TableRow>
                       ))
@@ -325,45 +379,16 @@ export function BulkImportWizard({
                     {matchResults.map((result) => (
                       <TableRow
                         key={result.customer.id}
-                        className={
-                          result.hasConflict
-                            ? "bg-red-50 dark:bg-red-950/20"
-                            : result.alreadySynced
-                              ? "bg-gray-50 dark:bg-gray-950/20"
-                              : ""
-                        }
+                        className={getImportPreviewRowClass(result)}
                       >
                         <TableCell className="font-medium">
-                          {result.customer.name || result.customer.email || result.customer.id}
+                          {[result.customer.name, result.customer.email, result.customer.id].find(
+                            (value) => value !== undefined && value !== null && value !== "",
+                          ) ?? result.customer.id}
                         </TableCell>
-                        <TableCell>{result.customer.email || "—"}</TableCell>
+                        <TableCell>{getImportCustomerText(result.customer.email)}</TableCell>
                         <TableCell>
-                          {result.alreadySynced ? (
-                            <Badge variant="outline" className="border-gray-500 text-gray-700">
-                              <CheckCircle2 className="mr-1 h-3 w-3" />
-                              Already Synced (Will be skipped)
-                            </Badge>
-                          ) : result.hasConflict ? (
-                            <div className="space-y-1">
-                              <Badge variant="outline" className="border-red-500 text-red-700">
-                                <XCircle className="mr-1 h-3 w-3" />
-                                Conflict (Will be skipped)
-                              </Badge>
-                              <p className="text-xs text-muted-foreground">
-                                {result.conflictReason}
-                              </p>
-                            </div>
-                          ) : result.willCreateUser ? (
-                            <Badge variant="outline" className="border-green-500 text-green-700">
-                              <UserPlus className="mr-1 h-3 w-3" />
-                              Create new user
-                            </Badge>
-                          ) : (
-                            <Badge variant="outline" className="border-blue-500 text-blue-700">
-                              <Users className="mr-1 h-3 w-3" />
-                              Link to {result.matchedUser?.email}
-                            </Badge>
-                          )}
+                          <BulkImportMatchAction result={result} />
                         </TableCell>
                       </TableRow>
                     ))}
@@ -382,13 +407,18 @@ export function BulkImportWizard({
               )}
 
               <div className="flex justify-between">
-                <Button variant="outline" onClick={() => setStep("select")}>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setStep("select");
+                  }}
+                >
                   Back
                 </Button>
                 <Button onClick={handleExecute} disabled={validCount === 0}>
                   {validCount === 0
                     ? "No Valid Customers"
-                    : `Execute Import (${validCount} customer${validCount !== 1 ? "s" : ""})`}
+                    : `Execute Import (${validCount} customer${validCount === 1 ? "" : "s"})`}
                 </Button>
               </div>
             </div>
@@ -413,7 +443,7 @@ export function BulkImportWizard({
                   {[
                     alreadySyncedCount > 0 && `${alreadySyncedCount} already synced`,
                     conflictsCount > 0 &&
-                      `${conflictsCount} conflict${conflictsCount !== 1 ? "s" : ""}`,
+                      `${conflictsCount} conflict${conflictsCount === 1 ? "" : "s"}`,
                   ]
                     .filter(Boolean)
                     .join(", ")}{" "}
@@ -431,12 +461,12 @@ export function BulkImportWizard({
           <CardHeader>
             <CardTitle>Import Results</CardTitle>
             <CardDescription>
-              {fetcher.data?.success ? "Import completed successfully" : "Import failed"}
+              {fetcher.data?.success === true ? "Import completed successfully" : "Import failed"}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {fetcher.data?.success ? (
+              {fetcher.data?.success === true ? (
                 <div className="flex items-start gap-3 rounded-lg border border-green-500/50 bg-green-500/10 p-4">
                   <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-green-600" />
                   <div>
@@ -444,8 +474,8 @@ export function BulkImportWizard({
                       {fetcher.data.message}
                     </p>
                     <p className="mt-1 text-sm text-green-800 dark:text-green-200">
-                      Successfully imported {fetcher.data.results?.length || 0} customer(s) and
-                      synced their subscriptions.
+                      Successfully imported {fetcher.data.results.length} customer(s) and synced
+                      their subscriptions.
                     </p>
                   </div>
                 </div>
@@ -455,17 +485,19 @@ export function BulkImportWizard({
                   <div>
                     <p className="font-medium text-red-900 dark:text-red-100">Import Failed</p>
                     <p className="mt-1 text-sm text-red-800 dark:text-red-200">
-                      {fetcher.data?.error || "An unknown error occurred"}
+                      {importError === undefined || importError.error === ""
+                        ? "An unknown error occurred"
+                        : importError.error}
                     </p>
-                    {fetcher.data?.customerId && (
+                    {importError?.customerId !== undefined && importError.customerId !== "" && (
                       <p className="mt-1 text-xs text-red-700 dark:text-red-300">
-                        Failed at customer: {fetcher.data.customerId}
+                        Failed at customer: {importError.customerId}
                       </p>
                     )}
-                    {fetcher.data?.results && fetcher.data.results.length > 0 && (
+                    {importError?.results !== undefined && importError.results.length > 0 && (
                       <p className="mt-2 text-sm text-red-800 dark:text-red-200">
-                        Successfully processed {fetcher.data.results.length} customer(s) before
-                        error occurred.
+                        Successfully processed {importError.results.length} customer(s) before error
+                        occurred.
                       </p>
                     )}
                   </div>
@@ -473,7 +505,12 @@ export function BulkImportWizard({
               )}
 
               <div className="flex justify-end gap-2">
-                <Button variant="outline" onClick={() => window.location.reload()}>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    globalThis.location.reload();
+                  }}
+                >
                   Refresh Page
                 </Button>
                 <Button onClick={handleReset}>Start New Import</Button>

@@ -30,28 +30,30 @@ import {
 const PAGE_LIMIT = 40;
 const { useCustomers } = createStripeFragmentClient();
 
-type User = {
-  id: string;
-  email: string;
-  stripeCustomerId: string | null;
-};
+interface User {
+  readonly id: string;
+  readonly email: string;
+  readonly stripeCustomerId: string | null;
+}
 
-type StripeCustomer = {
-  id: string;
-  email: string | null;
-  name?: string | null;
-  created: number;
-};
+interface StripeCustomer {
+  readonly id: string;
+  readonly email: string | null;
+  readonly name?: string | null;
+  readonly created: number;
+}
 
-type StripeCustomersTableProps = {
-  users: User[];
-};
+interface StripeCustomersTableProps {
+  readonly users: readonly User[];
+}
 
-export function StripeCustomersTable({ users }: StripeCustomersTableProps): JSX.Element | null {
+export function StripeCustomersTable({
+  users,
+}: StripeCustomersTableProps): JSX.Element | undefined {
   const [pagination, setPagination] = useState<StripeCustomerPagination>({ pageHistory: [] });
   const { currentCursor, pageHistory } = pagination;
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [selectedCustomer, setSelectedCustomer] = useState<StripeCustomer | null>(null);
+  const [selectedCustomer, setSelectedCustomer] = useState<StripeCustomer>();
 
   const { data, loading, error } = useCustomers({
     query: {
@@ -84,7 +86,7 @@ export function StripeCustomersTable({ users }: StripeCustomersTableProps): JSX.
   }
 
   if (!data?.customers) {
-    return null;
+    return undefined;
   }
 
   const handleOpenSyncDialog = (customer: StripeCustomer): void => {
@@ -96,7 +98,7 @@ export function StripeCustomersTable({ users }: StripeCustomersTableProps): JSX.
     <>
       <Table>
         <TableCaption>
-          Showing {data.customers.length} member{data.customers.length !== 1 ? "s" : ""}
+          Showing {data.customers.length} member{data.customers.length === 1 ? "" : "s"}
         </TableCaption>
         <TableHeader>
           <TableRow>
@@ -123,7 +125,11 @@ export function StripeCustomersTable({ users }: StripeCustomersTableProps): JSX.
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={() => handleOpenSyncDialog(customer)}>
+                    <DropdownMenuItem
+                      onClick={() => {
+                        handleOpenSyncDialog(customer);
+                      }}
+                    >
                       <RefreshCw className="mr-2 h-4 w-4" />
                       Sync Subscription
                     </DropdownMenuItem>
@@ -145,15 +151,11 @@ export function StripeCustomersTable({ users }: StripeCustomersTableProps): JSX.
       )}
 
       <div className="flex items-center justify-between">
-        <Button
-          onClick={handlePreviousPage}
-          disabled={loading || pageHistory.length === 0}
-          variant="outline"
-        >
+        <Button onClick={handlePreviousPage} disabled={pageHistory.length === 0} variant="outline">
           Previous
         </Button>
         <span className="text-sm text-muted-foreground">Page {pageHistory.length + 1}</span>
-        <Button onClick={handleNextPage} disabled={loading || !data.hasMore} variant="outline">
+        <Button onClick={handleNextPage} disabled={!data.hasMore} variant="outline">
           Next
         </Button>
       </div>

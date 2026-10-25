@@ -12,6 +12,7 @@ import type { JSX } from "react";
 
 import { DashboardBreadcrumb } from "~/components/dashboard-breadcrumb";
 import { UserRepo } from "~/db/repo/user";
+import type { ReadonlyRouteProps } from "~/fragno/readonly-route-props";
 import { getMembershipByPriceId } from "~/lib/memberships";
 import { cn } from "~/lib/utils";
 import { requestContext } from "~/request-context";
@@ -22,23 +23,24 @@ interface MembersLoaderData {
   members: Awaited<ReturnType<UserRepo["getAllUsers"]>>;
 }
 
-export async function loader({ context }: Route.LoaderArgs): Promise<MembersLoaderData> {
+export async function loader({ context }: Readonly<Route.LoaderArgs>): Promise<MembersLoaderData> {
   const userRepo = new UserRepo(context.get(requestContext).db);
   return { members: await userRepo.getAllUsers() };
 }
 
 const toMembershipType = (priceId?: string | null): string => {
-  return getMembershipByPriceId(priceId)?.name || "-";
+  const name = getMembershipByPriceId(priceId)?.name;
+  return name === undefined || name === "" ? "-" : name;
 };
 
 export default function DashboardMembers({
-  matches,
+  matches: _matches,
   loaderData,
-  actionData,
-  params,
+  actionData: _actionData,
+  params: _params,
   className,
   ...props
-}: React.ComponentProps<"div"> & Route.ComponentProps): JSX.Element {
+}: React.ComponentProps<"div"> & ReadonlyRouteProps<Route.ComponentProps>): JSX.Element {
   const { members } = loaderData;
 
   return (
@@ -53,7 +55,7 @@ export default function DashboardMembers({
         <h2 className="text-2xl font-bold">Members</h2>
         <Table>
           <TableCaption>
-            Showing {members.length} member{members.length !== 1 ? "s" : ""}
+            Showing {members.length} member{members.length === 1 ? "" : "s"}
           </TableCaption>
           <TableHeader>
             <TableRow>
@@ -70,8 +72,16 @@ export default function DashboardMembers({
               <TableRow key={member.id + member.subscriptionId}>
                 <TableCell>{member.email}</TableCell>
                 <TableCell>{member.subscriptionId}</TableCell>
-                <TableCell>{member.stripeCustomerId || "-"}</TableCell>
-                <TableCell>{member.subscriptionStatus || "-"}</TableCell>
+                <TableCell>
+                  {member.stripeCustomerId === null || member.stripeCustomerId === ""
+                    ? "-"
+                    : member.stripeCustomerId}
+                </TableCell>
+                <TableCell>
+                  {member.subscriptionStatus === null || member.subscriptionStatus === ""
+                    ? "-"
+                    : member.subscriptionStatus}
+                </TableCell>
                 <TableCell>{toMembershipType(member.subscriptionStripePriceId)}</TableCell>
                 <TableCell>{new Date(member.createdAt).toLocaleDateString()}</TableCell>
               </TableRow>

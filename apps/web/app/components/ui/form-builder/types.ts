@@ -1,3 +1,17 @@
+/** Parsed JSON values used by form definitions and submission data. */
+export type FormJsonValue =
+  | string
+  | number
+  | boolean
+  | null
+  | readonly FormJsonValue[]
+  | FormJsonObject;
+
+/** Parsed JSON objects preserve arbitrary named fields without accepting unparsed values. */
+export interface FormJsonObject {
+  readonly [key: string]: FormJsonValue;
+}
+
 export type FieldType =
   | "text"
   | "textarea"
@@ -18,19 +32,19 @@ export type FieldType =
  */
 export interface FieldOptions {
   /** Options for select/dropdown fields */
-  enumValues?: string[];
+  readonly enumValues?: readonly string[];
   /** Minimum value for number/integer fields */
-  minimum?: number;
+  readonly minimum?: number;
   /** Maximum value for number/integer fields */
-  maximum?: number;
+  readonly maximum?: number;
   /** Default value for slider fields */
-  defaultValue?: number;
+  readonly defaultValue?: number;
   /** Placeholder text for text/textarea fields */
-  placeholder?: string;
+  readonly placeholder?: string;
   /** Raw JSON Schema for unsupported field types */
-  rawJsonSchema?: string;
+  readonly rawJsonSchema?: string;
   /** Raw UI Schema for unsupported field types */
-  rawUiSchema?: string;
+  readonly rawUiSchema?: string;
 }
 
 /**
@@ -38,75 +52,74 @@ export interface FieldOptions {
  */
 export interface FormField {
   /** Unique identifier for this field */
-  id: string;
+  readonly id: string;
   /** Property name in the generated JSON Schema */
-  fieldName: string;
+  readonly fieldName: string;
   /** Display label for the field */
-  label: string;
+  readonly label: string;
   /** Optional help text / description */
-  description?: string;
+  readonly description?: string;
   /** The type of field */
-  fieldType: FieldType;
+  readonly fieldType: FieldType;
   /** Whether the field is required */
-  required: boolean;
+  readonly required: boolean;
   /** Type-specific options */
-  options?: FieldOptions;
+  readonly options?: FieldOptions;
 }
 
 /**
  * State of the form builder.
  */
 export interface FormBuilderState {
-  fields: FormField[];
+  readonly fields: readonly FormField[];
 }
 
 /**
  * JSON Schema property definition (subset of JSON Schema).
  */
-export interface JsonSchemaProperty {
-  type: "string" | "number" | "integer" | "boolean" | "object" | "array";
-  title?: string;
-  description?: string;
-  format?: string;
-  enum?: string[];
-  minimum?: number;
-  maximum?: number;
-  minLength?: number;
-  maxLength?: number;
-  default?: unknown;
+export type JsonSchemaProperty = boolean | JsonSchemaObject;
+
+/** JSON Schema object fields remain available to the builder while Boolean subschemas stay intact. */
+export interface JsonSchemaObject {
+  readonly type?: string | readonly string[];
+  readonly title?: string;
+  readonly description?: string;
+  readonly format?: string;
+  readonly enum?: readonly FormJsonValue[];
+  readonly minimum?: number;
+  readonly maximum?: number;
+  readonly minLength?: number;
+  readonly maxLength?: number;
+  readonly default?: FormJsonValue;
   /** Nested properties for object types */
-  properties?: Record<string, JsonSchemaProperty>;
+  readonly properties?: Readonly<Record<string, JsonSchemaProperty>>;
   /** Required fields for object types */
-  required?: string[];
+  readonly required?: readonly string[];
   /** Items schema for array types */
-  items?: JsonSchemaProperty;
+  readonly items?: JsonSchemaProperty | readonly JsonSchemaProperty[];
 }
 
 /**
  * JSON Schema for the form data.
  */
-export interface DataSchema {
-  type: "object";
-  properties: Record<string, JsonSchemaProperty>;
-  required?: string[];
-}
+export type DataSchema = JsonSchemaObject;
 
 /**
  * UI Schema element (Control or Layout).
  */
 export interface UiSchemaElement {
-  type: "Control" | "VerticalLayout" | "HorizontalLayout" | "Group" | "Label";
-  scope?: string;
-  elements?: UiSchemaElement[];
-  options?: Record<string, unknown>;
+  readonly type: string;
+  readonly scope?: string;
+  readonly elements?: readonly UiSchemaElement[];
+  readonly options?: FormJsonObject;
   /** Text content for Label elements */
-  text?: string;
+  readonly text?: string;
 }
 
 /**
  * Generated schemas from the form builder.
  */
 export interface GeneratedSchemas {
-  dataSchema: DataSchema;
-  uiSchema: UiSchemaElement;
+  readonly dataSchema: DataSchema;
+  readonly uiSchema: UiSchemaElement;
 }

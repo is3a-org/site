@@ -1,5 +1,4 @@
-import type { JSX } from "react";
-import type { ReactNode } from "react";
+import type { JSX, ReactNode } from "react";
 
 // Apparently inline css is the way to go for emails
 const styles = {
@@ -36,12 +35,12 @@ const styles = {
 export function EmailLayout({
   title,
   children,
-}: {
+}: Readonly<{
   title: string;
   children: ReactNode;
-}): JSX.Element {
+}>): JSX.Element {
   return (
-    <html>
+    <html lang="en">
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />

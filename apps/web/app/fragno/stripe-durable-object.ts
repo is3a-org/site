@@ -39,13 +39,13 @@ function createRuntime(): StripeFragmentRuntime {
  * every Stripe service call that writes must go through this object. Use `getStripeFragment()`.
  */
 export class StripeFragmentDurableObject extends DurableObject<CloudflareEnv> {
-  #host: FragmentDurableObjectHost<void, StripeFragmentRuntime>;
+  readonly #host: FragmentDurableObjectHost<void, StripeFragmentRuntime>;
   #runtime!: StripeFragmentRuntime;
 
-  constructor(ctx: DurableObjectState, env: CloudflareEnv) {
+  public constructor(ctx: DurableObjectState, env: CloudflareEnv) {
     super(ctx, env);
 
-    this.#host = createFragmentDurableObjectHost<CloudflareEnv, void, StripeFragmentRuntime>({
+    this.#host = createFragmentDurableObjectHost({
       name: "stripe",
       state: ctx,
       env,
@@ -68,29 +68,27 @@ export class StripeFragmentDurableObject extends DurableObject<CloudflareEnv> {
     });
   }
 
-  override async fetch(request: Request): Promise<Response> {
-    return await this.#host.fetch(this.#runtime, request);
+  public override async fetch(request: Request): Promise<Response> {
+    return this.#host.fetch(this.#runtime, request);
   }
 
-  override async alarm(): Promise<void> {
+  public override async alarm(): Promise<void> {
     await this.#host.alarm();
   }
 
-  async getSubscriptionsByReferenceId(referenceId: string): Promise<Subscription[]> {
+  public async getSubscriptionsByReferenceId(referenceId: string): Promise<Subscription[]> {
     const { stripe } = this.#runtime;
-    return await stripe.callServices(() =>
-      stripe.services.getSubscriptionsByReferenceId(referenceId),
-    );
+    return stripe.callServices(() => stripe.services.getSubscriptionsByReferenceId(referenceId));
   }
 
-  async syncSubscriptions(referenceId: string): Promise<void> {
+  public async syncSubscriptions(referenceId: string): Promise<void> {
     const { stripe } = this.#runtime;
     await stripe.callServices(() => stripe.services.syncSubscriptions(referenceId));
   }
 
-  async linkCustomer(link: StripeCustomerLink): Promise<LinkCustomerResult> {
+  public async linkCustomer(link: Readonly<StripeCustomerLink>): Promise<LinkCustomerResult> {
     const { stripe } = this.#runtime;
-    return await stripe.callServices(() => stripe.services.linkCustomer(link));
+    return stripe.callServices(() => stripe.services.linkCustomer(link));
   }
 
   /**
@@ -101,7 +99,7 @@ export class StripeFragmentDurableObject extends DurableObject<CloudflareEnv> {
     try {
       const unlinked = await this.#runtime.userRepo.getUsersWithUnlinkedStripeCustomer();
       for (const { userId, stripeCustomerId } of unlinked) {
-        if (!stripeCustomerId) {
+        if (stripeCustomerId === null || stripeCustomerId === "") {
           continue;
         }
         const result = await this.linkCustomer({
@@ -133,7 +131,7 @@ export function getStripeFragment(
 export async function linkStripeCustomer(
   env: CloudflareEnv,
   userRepo: UserRepo,
-  link: StripeCustomerLink,
+  link: Readonly<StripeCustomerLink>,
 ): Promise<string | null> {
   const stripe = getStripeFragment(env);
 
@@ -147,5 +145,6 @@ export async function linkStripeCustomer(
   // The fragment's onCustomerLinked hook records this too, but only once the hook has run
   await userRepo.setStripeCustomerId(link.referenceId, link.customerId);
   await stripe.syncSubscriptions(link.referenceId);
+  // oxlint-disable-next-line unicorn/no-null -- COMPATIBILITY: linkStripeCustomer returns a nullable error string; null means the link and subscription sync succeeded.
   return null;
 }

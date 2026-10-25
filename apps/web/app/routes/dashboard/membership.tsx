@@ -26,6 +26,7 @@ import type { Subscription } from "@fragno-dev/stripe";
 
 import { DashboardBreadcrumb } from "~/components/dashboard-breadcrumb";
 import { MembershipPlans } from "~/components/membership-plans";
+import type { ReadonlyRouteProps } from "~/fragno/readonly-route-props";
 import { createSimpleAuthServer } from "~/fragno/simple-auth-server";
 import { getStripeFragment } from "~/fragno/stripe-durable-object";
 import { getMembershipByPriceId } from "~/lib/memberships";
@@ -35,17 +36,20 @@ import { cn } from "~/lib/utils";
 import { requestContext } from "~/request-context";
 
 import type { Route } from "./+types/membership";
-import { formatMembershipCancellationDate } from "./membership-billing";
+import {
+  formatMembershipDate as formatDate,
+  formatMembershipCancellationDate,
+} from "./membership-billing";
 
-type StatusMeta = {
+interface StatusMeta {
   label: string;
   badgeColor: string;
   textColor: string;
   isHealthy: boolean;
   showPaymentWarning: boolean;
-};
+}
 
-const STATUS_CONFIG: Record<string, StatusMeta> = {
+const STATUS_CONFIG = {
   active: {
     label: "Active",
     badgeColor: "bg-green-600",
@@ -95,16 +99,10 @@ const STATUS_CONFIG: Record<string, StatusMeta> = {
     isHealthy: false,
     showPaymentWarning: false,
   },
-};
-
-const DISPLAY_DATE_FORMAT: Intl.DateTimeFormatOptions = {
-  month: "long",
-  day: "numeric",
-  year: "numeric",
-};
+} satisfies Record<string, StatusMeta>;
 
 const getStatusMeta = (status?: string, isScheduledToCancel?: boolean): StatusMeta => {
-  if (isScheduledToCancel) {
+  if (isScheduledToCancel === true) {
     return {
       label: "Canceling",
       badgeColor: "bg-orange-300",
@@ -114,28 +112,18 @@ const getStatusMeta = (status?: string, isScheduledToCancel?: boolean): StatusMe
     };
   }
 
-  if (status && STATUS_CONFIG[status]) {
-    return STATUS_CONFIG[status];
+  const knownStatus = Object.entries(STATUS_CONFIG).find(([statusName]) => statusName === status);
+  if (knownStatus !== undefined) {
+    return knownStatus[1];
   }
 
   return {
-    label: status || "Unknown",
+    label: status === undefined || status === "" ? "Unknown" : status,
     badgeColor: "bg-gray-400",
     textColor: "text-gray-800",
     isHealthy: false,
     showPaymentWarning: false,
   };
-};
-
-const formatDate = (date?: string | number | Date | null): string | null => {
-  if (!date) {
-    return null;
-  }
-  const parsedDate = new Date(date);
-  if (Number.isNaN(parsedDate.getTime())) {
-    return null;
-  }
-  return parsedDate.toLocaleDateString("en-US", DISPLAY_DATE_FORMAT);
 };
 
 const describeStatus = ({
@@ -145,11 +133,11 @@ const describeStatus = ({
   renewalDate,
   trialEndDate,
 }: {
-  status?: string;
-  isScheduledToCancel: boolean;
-  cancelDate?: string | number | Date | null;
-  renewalDate?: string | number | Date | null;
-  trialEndDate?: string | number | Date | null;
+  readonly status?: string;
+  readonly isScheduledToCancel: boolean;
+  readonly cancelDate?: string | number | Date | null;
+  readonly renewalDate?: string | number | Date | null;
+  readonly trialEndDate?: string | number | Date | null;
 }): string => {
   if (isScheduledToCancel) {
     return `Your membership is scheduled to cancel on ${
@@ -157,25 +145,41 @@ const describeStatus = ({
     }`;
   }
 
-  switch (status) {
-    case "trialing":
-      return trialEndDate ? `Trial ends on ${formatDate(trialEndDate)}` : "Your trial is active";
-    case "past_due":
+  switch (status ?? "") {
+    case "trialing": {
+      return trialEndDate !== undefined &&
+        trialEndDate !== null &&
+        trialEndDate !== "" &&
+        trialEndDate !== 0
+        ? `Trial ends on ${formatDate(trialEndDate)}`
+        : "Your trial is active";
+    }
+    case "past_due": {
       return "Payment failed. Please update your payment method to continue your membership.";
-    case "unpaid":
+    }
+    case "unpaid": {
       return "Your subscription is unpaid and has been canceled. Please update your payment method.";
-    case "incomplete":
+    }
+    case "incomplete": {
       return "Your subscription setup is incomplete. Please complete the payment process.";
-    case "incomplete_expired":
+    }
+    case "incomplete_expired": {
       return "Your subscription setup has expired. Please start a new subscription.";
-    case "active":
-      return renewalDate
+    }
+    case "active": {
+      return renewalDate !== undefined &&
+        renewalDate !== null &&
+        renewalDate !== "" &&
+        renewalDate !== 0
         ? `Renews automatically on ${formatDate(renewalDate)}`
         : "Your subscription is active";
-    case "canceled":
+    }
+    case "canceled": {
       return "Your membership has been canceled and will not renew";
-    default:
+    }
+    default: {
       return "Check your subscription status";
+    }
   }
 };
 
@@ -185,41 +189,45 @@ interface PaymentWarningConfig {
   variant: "destructive" | "default";
 }
 
-const getPaymentWarningConfig = (status?: string): PaymentWarningConfig | null => {
-  switch (status) {
-    case "past_due":
+const getPaymentWarningConfig = (status?: string): PaymentWarningConfig | undefined => {
+  switch (status ?? "") {
+    case "past_due": {
       return {
         title: "⚠️ Payment Failed",
         message:
           "We couldn't process your payment. Please update your payment method to avoid losing access to your membership benefits.",
         variant: "destructive" as const,
       };
-    case "unpaid":
+    }
+    case "unpaid": {
       return {
         title: "❌ Subscription Unpaid",
         message:
           "Your subscription payment has failed permanently. Please update your payment method and restart your subscription.",
         variant: "destructive" as const,
       };
-    case "incomplete":
+    }
+    case "incomplete": {
       return {
         title: "⏳ Payment Incomplete",
         message:
           "Your subscription setup wasn't completed. Please finish the payment process to activate your membership.",
         variant: "default" as const,
       };
-    default:
-      return null;
+    }
+    default: {
+      return undefined;
+    }
   }
 };
 
-const redirectToStripe = (response?: { url?: string }): void => {
-  if (response?.url) {
-    window.location.href = response.url;
+const redirectToStripe = (response?: { readonly url?: string }): void => {
+  if (response?.url !== undefined && response.url !== "") {
+    globalThis.location.href = response.url;
   }
 };
 
-const ErrorAlert = ({ message }: { message: string }): JSX.Element => (
+const ErrorAlert = ({ message }: { readonly message: string }): JSX.Element => (
   <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-red-800">
     <p className="font-semibold">Error</p>
     <p className="text-sm">{message}</p>
@@ -233,31 +241,33 @@ interface MembershipLoaderData {
 export async function loader({
   context,
   request,
-}: Route.LoaderArgs): Promise<MembershipLoaderData> {
+}: Readonly<Route.LoaderArgs>): Promise<MembershipLoaderData> {
   const auth = createSimpleAuthServer(context.get(requestContext).pool);
   const response = await auth.callRoute("GET", "/me", {
     headers: request.headers,
   });
 
-  if (response.type === "json" && response.data) {
+  if (response.type === "json") {
     const subscriptions = await getStripeFragment(
       context.get(requestContext).cloudflare.env,
     ).getSubscriptionsByReferenceId(response.data.user.id);
     // Get the first subscription (most apps only have one per customer)
-    const subscription = subscriptions[0] || null;
+    // oxlint-disable-next-line unicorn/no-null -- COMPATIBILITY: The membership loader JSON includes subscription: null when Stripe has no subscriptions.
+    const subscription = subscriptions.at(0) ?? null;
     return { subscription };
   }
+  // oxlint-disable-next-line unicorn/no-null -- COMPATIBILITY: The membership loader JSON includes subscription: null for an unauthenticated request.
   return { subscription: null };
 }
 
 export default function DashboardSubscribe({
   loaderData,
-  actionData,
-  params,
-  matches,
+  actionData: _actionData,
+  params: _params,
+  matches: _matches,
   className,
   ...props
-}: React.ComponentProps<"div"> & Route.ComponentProps): JSX.Element {
+}: React.ComponentProps<"div"> & ReadonlyRouteProps<Route.ComponentProps>): JSX.Element {
   const { subscription } = loaderData;
 
   // User info
@@ -268,14 +278,14 @@ export default function DashboardSubscribe({
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [passwordSuccess, setPasswordSuccess] = useState(false);
-  const [passwordError, setPasswordError] = useState<string | null>(null);
+  const [passwordError, setPasswordError] = useState<string>();
 
   const { mutate: changePassword, loading: changePasswordLoading } =
     simpleAuthClient.useChangePassword();
 
-  const handleChangePassword = async (e: React.FormEvent): Promise<void> => {
+  const handleChangePassword = async (e: React.SubmitEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault();
-    setPasswordError(null);
+    setPasswordError(undefined);
     setPasswordSuccess(false);
 
     if (newPassword !== confirmPassword) {
@@ -296,8 +306,8 @@ export default function DashboardSubscribe({
       setNewPassword("");
       setConfirmPassword("");
       setShowPasswordForm(false);
-    } catch (err) {
-      setPasswordError(err instanceof Error ? err.message : "Failed to change password");
+    } catch (error_) {
+      setPasswordError(error_ instanceof Error ? error_.message : "Failed to change password");
     }
   };
 
@@ -322,7 +332,8 @@ export default function DashboardSubscribe({
   const status = subscription?.status;
   const hasSubscription = !!subscription;
   const membership = getMembershipByPriceId(subscription?.priceId);
-  const isScheduledToCancel = subscription?.cancelAtPeriodEnd || subscription?.cancelAt !== null;
+  const isScheduledToCancel =
+    subscription !== null && (subscription.cancelAtPeriodEnd || subscription.cancelAt !== null);
   const renewalDate = subscription?.currentPeriodEnd;
   const cancelDate = subscription?.cancelAt;
   const trialEndDate = subscription?.trialEnd;
@@ -335,20 +346,17 @@ export default function DashboardSubscribe({
     trialEndDate,
   });
   const paymentWarning = getPaymentWarningConfig(status);
-  const nextBillingLabel = isScheduledToCancel
-    ? "Cancels On"
-    : status === "trialing"
-      ? "Trial Ends"
-      : "Renews On";
+  const renewalLabel = status === "trialing" ? "Trial Ends" : "Renews On";
+  const nextBillingLabel = isScheduledToCancel ? "Cancels On" : renewalLabel;
   const nextBillingDate =
-    (isScheduledToCancel ? formatDate(cancelDate) : null) ||
-    (status === "trialing" ? formatDate(trialEndDate) : null) ||
-    formatDate(renewalDate) ||
+    (isScheduledToCancel ? formatDate(cancelDate) : undefined) ??
+    (status === "trialing" ? formatDate(trialEndDate) : undefined) ??
+    formatDate(renewalDate) ??
     "N/A";
-  const errors = [cancelError, error, createPortalError].filter((err) => err != null);
+  const errors = [cancelError, error, createPortalError].filter((err) => err !== undefined);
 
   const handleUncancel = async (): Promise<void> => {
-    if (!subscription?.priceId) {
+    if (subscription?.priceId === undefined || subscription.priceId === "") {
       return;
     }
 
@@ -356,8 +364,8 @@ export default function DashboardSubscribe({
       body: {
         priceId: subscription.priceId,
         quantity: 1,
-        successUrl: `${window.location.origin}/dashboard/subscribe-confirm`,
-        cancelUrl: `${window.location.origin}/dashboard/membership`,
+        successUrl: `${globalThis.location.origin}/dashboard/subscribe-confirm`,
+        cancelUrl: `${globalThis.location.origin}/dashboard/membership`,
       },
     });
     redirectToStripe(response);
@@ -366,7 +374,7 @@ export default function DashboardSubscribe({
   const handleCancel = async (): Promise<void> => {
     const resp = await cancelSubscription({
       body: {
-        returnUrl: `${window.location.origin}/dashboard/subscribe-confirm?sad=true`,
+        returnUrl: `${globalThis.location.origin}/dashboard/subscribe-confirm?sad=true`,
       },
     });
     redirectToStripe(resp);
@@ -375,7 +383,7 @@ export default function DashboardSubscribe({
   const handleUpdateBilling = async (): Promise<void> => {
     const resp = await createPortal({
       body: {
-        returnUrl: `${window.location.origin}/dashboard/subscribe-confirm`,
+        returnUrl: `${globalThis.location.origin}/dashboard/subscribe-confirm`,
       },
     });
     redirectToStripe(resp);
@@ -418,9 +426,8 @@ export default function DashboardSubscribe({
             <CardDescription>Your account details</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-            {userLoading ? (
-              <p className="text-sm text-muted-foreground">Loading...</p>
-            ) : userData ? (
+            {userLoading && <p className="text-sm text-muted-foreground">Loading...</p>}
+            {!userLoading && userData !== undefined && (
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
                   <p className="text-sm font-medium">Email</p>
@@ -431,7 +438,8 @@ export default function DashboardSubscribe({
                   <p className="text-sm text-muted-foreground capitalize">{userData.user.role}</p>
                 </div>
               </div>
-            ) : (
+            )}
+            {!userLoading && userData === undefined && (
               <p className="text-sm text-muted-foreground">Unable to load user information</p>
             )}
 
@@ -445,8 +453,13 @@ export default function DashboardSubscribe({
             )}
 
             {showPasswordForm ? (
-              <form onSubmit={handleChangePassword} className="space-y-4">
-                {passwordError && (
+              <form
+                onSubmit={(event) => {
+                  void handleChangePassword(event);
+                }}
+                className="space-y-4"
+              >
+                {passwordError !== undefined && passwordError !== "" && (
                   <div className="rounded-md bg-red-50 p-3 text-sm text-red-800">
                     {passwordError}
                   </div>
@@ -458,7 +471,9 @@ export default function DashboardSubscribe({
                     type="password"
                     id="newPassword"
                     value={newPassword}
-                    onChange={(e) => setNewPassword(e.target.value)}
+                    onChange={(e) => {
+                      setNewPassword(e.target.value);
+                    }}
                     required
                     minLength={8}
                   />
@@ -470,7 +485,9 @@ export default function DashboardSubscribe({
                     type="password"
                     id="confirmPassword"
                     value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    onChange={(e) => {
+                      setConfirmPassword(e.target.value);
+                    }}
                     required
                     minLength={8}
                   />
@@ -478,7 +495,7 @@ export default function DashboardSubscribe({
 
                 <div className="flex gap-2">
                   <Button type="submit" disabled={changePasswordLoading}>
-                    {changePasswordLoading ? "Changing..." : "Save Password"}
+                    {changePasswordLoading === true ? "Changing..." : "Save Password"}
                   </Button>
                   <Button
                     type="button"
@@ -487,7 +504,7 @@ export default function DashboardSubscribe({
                       setShowPasswordForm(false);
                       setNewPassword("");
                       setConfirmPassword("");
-                      setPasswordError(null);
+                      setPasswordError(undefined);
                     }}
                   >
                     Cancel
@@ -495,7 +512,12 @@ export default function DashboardSubscribe({
                 </div>
               </form>
             ) : (
-              <Button variant="outline" onClick={() => setShowPasswordForm(true)}>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setShowPasswordForm(true);
+                }}
+              >
                 <Lock className="mr-2 h-4 w-4" />
                 Change Password
               </Button>
@@ -513,7 +535,10 @@ export default function DashboardSubscribe({
                   <div className="space-y-2">
                     <div className="flex items-center gap-3">
                       <CardTitle className="text-2xl">
-                        {membership?.name || "Unknown"} Membership
+                        {membership?.name === undefined || membership.name === ""
+                          ? "Unknown"
+                          : membership.name}{" "}
+                        Membership
                       </CardTitle>
                       <Badge
                         variant={statusMeta.isHealthy ? "default" : "secondary"}
@@ -557,12 +582,14 @@ export default function DashboardSubscribe({
                       {paymentWarning.message}
                     </p>
                     <Button
-                      onClick={handleUpdateBilling}
+                      onClick={() => {
+                        void handleUpdateBilling();
+                      }}
                       disabled={createPortalLoading}
                       className="mt-3"
                       variant={paymentWarning.variant}
                     >
-                      {createPortalLoading ? "Redirecting..." : "Update Payment Method"}
+                      {createPortalLoading === true ? "Redirecting..." : "Update Payment Method"}
                     </Button>
                   </div>
                 )}
@@ -576,7 +603,10 @@ export default function DashboardSubscribe({
                     <div>
                       <p className="text-sm font-medium">Billing</p>
                       <p className="text-sm text-muted-foreground">
-                        {membership?.price || "N/A"} per year
+                        {membership?.price === undefined || membership.price === ""
+                          ? "N/A"
+                          : membership.price}{" "}
+                        per year
                       </p>
                     </div>
                   </div>
@@ -617,11 +647,22 @@ export default function DashboardSubscribe({
                 {/* Actions */}
                 {statusMeta.isHealthy && !isScheduledToCancel && (
                   <div className="flex gap-2 border-t pt-4">
-                    <Button onClick={handleUpdateBilling} disabled={createPortalLoading}>
-                      {createPortalLoading ? "Redirecting..." : "Update Billing Info"}
+                    <Button
+                      onClick={() => {
+                        void handleUpdateBilling();
+                      }}
+                      disabled={createPortalLoading}
+                    >
+                      {createPortalLoading === true ? "Redirecting..." : "Update Billing Info"}
                     </Button>
-                    <Button variant="destructive" onClick={handleCancel} disabled={cancelLoading}>
-                      {cancelLoading ? "Cancelling..." : "Cancel Membership"}
+                    <Button
+                      variant="destructive"
+                      onClick={() => {
+                        void handleCancel();
+                      }}
+                      disabled={cancelLoading}
+                    >
+                      {cancelLoading === true ? "Cancelling..." : "Cancel Membership"}
                     </Button>
                   </div>
                 )}
@@ -649,8 +690,14 @@ export default function DashboardSubscribe({
                     choose a new plan after{" "}
                     {formatMembershipCancellationDate(cancelDate, renewalDate)}.
                   </p>
-                  <Button variant="default" onClick={handleUncancel} disabled={loading}>
-                    {loading ? "Renewing..." : "Renew Membership"}
+                  <Button
+                    variant="default"
+                    onClick={() => {
+                      void handleUncancel();
+                    }}
+                    disabled={loading}
+                  >
+                    {loading === true ? "Renewing..." : "Renew Membership"}
                   </Button>
                 </div>
               </>

@@ -1,14 +1,14 @@
 import { Button } from "@is3a/design-system/button";
 import { Input } from "@is3a/design-system/input";
 import { Plus, Trash2, ChevronUp, ChevronDown } from "lucide-react";
-import type { JSX } from "react";
+import type { Dispatch, JSX } from "react";
 
 import { cn } from "@/lib/utils";
 
 export interface EnumValuesEditorProps {
-  values: string[];
-  onChange: (values: string[]) => void;
-  className?: string;
+  readonly values: readonly string[];
+  readonly onChange: Dispatch<string[]>;
+  readonly className?: string;
 }
 
 export function EnumValuesEditor({
@@ -49,7 +49,9 @@ export function EnumValuesEditor({
             <span className="w-4 text-xs text-muted-foreground">{index + 1}.</span>
             <Input
               value={value}
-              onChange={(e) => updateOption(index, e.target.value)}
+              onChange={(e) => {
+                updateOption(index, e.target.value);
+              }}
               placeholder={`Option ${index + 1}`}
               className="flex-1"
             />
@@ -59,7 +61,9 @@ export function EnumValuesEditor({
                 variant="ghost"
                 size="icon"
                 className="size-8"
-                onClick={() => moveOption(index, index - 1)}
+                onClick={() => {
+                  moveOption(index, index - 1);
+                }}
                 disabled={index === 0}
               >
                 <ChevronUp className="size-4" />
@@ -70,7 +74,9 @@ export function EnumValuesEditor({
                 variant="ghost"
                 size="icon"
                 className="size-8"
-                onClick={() => moveOption(index, index + 1)}
+                onClick={() => {
+                  moveOption(index, index + 1);
+                }}
                 disabled={index === values.length - 1}
               >
                 <ChevronDown className="size-4" />
@@ -81,7 +87,9 @@ export function EnumValuesEditor({
                 variant="ghost"
                 size="icon"
                 className="size-8 text-destructive hover:text-destructive"
-                onClick={() => deleteOption(index)}
+                onClick={() => {
+                  deleteOption(index);
+                }}
                 disabled={values.length <= 1}
               >
                 <Trash2 className="size-4" />

@@ -23,25 +23,27 @@ import type { JSX } from "react";
 import { useState, useEffect } from "react";
 import { useFetcher } from "react-router";
 
-type User = {
-  id: string;
-  email: string;
-  stripeCustomerId: string | null;
-};
+import type { action as stripeCustomerAction } from "~/routes/dashboard/stripe";
 
-type StripeCustomer = {
-  id: string;
-  email: string | null;
-  name?: string | null;
-  created: number;
-};
+interface User {
+  readonly id: string;
+  readonly email: string;
+  readonly stripeCustomerId: string | null;
+}
 
-type SyncSubscriptionDialogProps = {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  customer: StripeCustomer;
-  allUsers: User[];
-};
+interface StripeCustomer {
+  readonly id: string;
+  readonly email: string | null;
+  readonly name?: string | null;
+  readonly created: number;
+}
+
+interface SyncSubscriptionDialogProps {
+  readonly open: boolean;
+  readonly onOpenChange: (open: boolean) => void;
+  readonly customer: StripeCustomer;
+  readonly allUsers: readonly User[];
+}
 
 type Step = "select-user" | "create-user" | "confirm";
 
@@ -51,48 +53,43 @@ export function SyncSubscriptionDialog({
   customer,
   allUsers,
 }: SyncSubscriptionDialogProps): JSX.Element {
+  const userByStripeId = allUsers.find((user) => user.stripeCustomerId === customer.id);
+  const matchedUser = userByStripeId ?? allUsers.find((user) => user.email === customer.email);
+  const matchType = userByStripeId === undefined ? "email" : "stripeCustomerId";
   const [step, setStep] = useState<Step>("select-user");
-  const [selectedUserId, setSelectedUserId] = useState<string>("");
+  const [selectedUserId, setSelectedUserId] = useState(matchedUser?.id ?? "");
   const [createNew, setCreateNew] = useState(false);
-  const [newUserEmail, setNewUserEmail] = useState(customer.email || "");
-  const [newUserName, setNewUserName] = useState(customer.name || "");
-  const [matchedUser, setMatchedUser] = useState<User | null>(null);
-  const [matchType, setMatchType] = useState<"stripeCustomerId" | "email" | null>(null);
+  const [newUserEmail, setNewUserEmail] = useState(customer.email ?? "");
+  const [newUserName, setNewUserName] = useState(customer.name ?? "");
+  const [previousInputs, setPreviousInputs] = useState({ open, customer, allUsers });
 
-  const fetcher = useFetcher();
+  const fetcher = useFetcher<typeof stripeCustomerAction>();
   const isSubmitting = fetcher.state === "submitting";
+  const submissionError = fetcher.data?.success === false ? fetcher.data.error : undefined;
+  const customerLabel =
+    [customer.name, customer.email, customer.id].find(
+      (value) => value !== undefined && value !== null && value !== "",
+    ) ?? customer.id;
 
-  // Reset state when dialog opens
-  useEffect(() => {
+  // Reset before rendering a newly opened dialog or a changed customer/user list.
+  if (
+    previousInputs.open !== open ||
+    previousInputs.customer !== customer ||
+    previousInputs.allUsers !== allUsers
+  ) {
+    setPreviousInputs({ open, customer, allUsers });
     if (open) {
       setStep("select-user");
-      setSelectedUserId("");
+      setSelectedUserId(matchedUser?.id ?? "");
       setCreateNew(false);
-      setNewUserEmail(customer.email || "");
-      setNewUserName(customer.name || "");
-      setMatchedUser(null);
-      setMatchType(null);
-
-      // Check for existing user match
-      const userByStripeId = allUsers.find((u) => u.stripeCustomerId === customer.id);
-      if (userByStripeId) {
-        setMatchedUser(userByStripeId);
-        setMatchType("stripeCustomerId");
-        setSelectedUserId(userByStripeId.id);
-      } else {
-        const userByEmail = allUsers.find((u) => u.email === customer.email);
-        if (userByEmail) {
-          setMatchedUser(userByEmail);
-          setMatchType("email");
-          setSelectedUserId(userByEmail.id);
-        }
-      }
+      setNewUserEmail(customer.email ?? "");
+      setNewUserName(customer.name ?? "");
     }
-  }, [open, customer, allUsers]);
+  }
 
   // Close dialog on successful submission
   useEffect(() => {
-    if (fetcher.data?.success && !isSubmitting) {
+    if (fetcher.data?.success === true && !isSubmitting) {
       onOpenChange(false);
     }
   }, [fetcher.data, isSubmitting, onOpenChange]);
@@ -101,7 +98,7 @@ export function SyncSubscriptionDialog({
     if (step === "select-user") {
       if (createNew) {
         setStep("create-user");
-      } else if (selectedUserId) {
+      } else if (selectedUserId !== "") {
         handleSubmit();
       }
     } else if (step === "create-user") {
@@ -113,7 +110,7 @@ export function SyncSubscriptionDialog({
     const formData = new FormData();
     formData.append("intent", "sync-subscription");
     formData.append("stripeCustomerId", customer.id);
-    formData.append("stripeCustomerEmail", customer.email || "");
+    formData.append("stripeCustomerEmail", customer.email ?? "");
 
     if (createNew) {
       formData.append("createNewUser", "true");
@@ -123,12 +120,14 @@ export function SyncSubscriptionDialog({
       formData.append("userId", selectedUserId);
     }
 
-    fetcher.submit(formData, { method: "post" });
+    void fetcher.submit(formData, { method: "post" }).catch((cause: unknown) => {
+      console.error(new Error("Subscription sync submission failed", { cause }));
+    });
   };
 
-  const canProceed = (): string | boolean => {
+  const canProceed = (): boolean => {
     if (step === "select-user") {
-      return createNew || selectedUserId;
+      return createNew || selectedUserId !== "";
     }
     if (step === "create-user") {
       return newUserEmail.trim() !== "" && newUserEmail.includes("@");
@@ -150,22 +149,22 @@ export function SyncSubscriptionDialog({
           {/* Customer Info */}
           <div className="space-y-1 rounded-md border p-3">
             <p className="text-sm font-medium">Stripe Customer</p>
-            <p className="text-sm text-muted-foreground">
-              {customer.name || customer.email || customer.id}
-            </p>
-            {customer.email && <p className="text-xs text-muted-foreground">{customer.email}</p>}
+            <p className="text-sm text-muted-foreground">{customerLabel}</p>
+            {customer.email !== null && customer.email !== "" && (
+              <p className="text-xs text-muted-foreground">{customer.email}</p>
+            )}
           </div>
 
           {/* Error Display */}
-          {fetcher.data?.error && (
+          {submissionError !== undefined && submissionError !== "" && (
             <div className="flex items-start gap-2 rounded-md border border-destructive/50 bg-destructive/10 p-3">
               <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-destructive" />
-              <div className="text-sm text-destructive">{fetcher.data.error}</div>
+              <div className="text-sm text-destructive">{submissionError}</div>
             </div>
           )}
 
           {/* Match Info */}
-          {matchedUser && matchType && (
+          {matchedUser !== undefined && (
             <div className="flex items-start gap-2 rounded-md border border-green-500/50 bg-green-500/10 p-3">
               <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-green-600" />
               <div className="text-sm">
@@ -203,7 +202,9 @@ export function SyncSubscriptionDialog({
                     {allUsers.map((user) => (
                       <SelectItem key={user.id} value={user.id}>
                         {user.email}
-                        {user.stripeCustomerId && " (already linked to Stripe Customer)"}
+                        {user.stripeCustomerId !== null &&
+                          user.stripeCustomerId !== "" &&
+                          " (already linked to Stripe Customer)"}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -240,7 +241,9 @@ export function SyncSubscriptionDialog({
                   type="text"
                   placeholder="Full Name"
                   value={newUserName}
-                  onChange={(e) => setNewUserName(e.target.value)}
+                  onChange={(e) => {
+                    setNewUserName(e.target.value);
+                  }}
                 />
               </div>
               <div className="space-y-2">
@@ -250,7 +253,9 @@ export function SyncSubscriptionDialog({
                   type="email"
                   placeholder="user@example.com"
                   value={newUserEmail}
-                  onChange={(e) => setNewUserEmail(e.target.value)}
+                  onChange={(e) => {
+                    setNewUserEmail(e.target.value);
+                  }}
                 />
                 <p className="text-xs text-muted-foreground">
                   A password will be auto-generated for this user.
@@ -261,13 +266,21 @@ export function SyncSubscriptionDialog({
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isSubmitting}>
+          <Button
+            variant="outline"
+            onClick={() => {
+              onOpenChange(false);
+            }}
+            disabled={isSubmitting}
+          >
             Cancel
           </Button>
           {step === "create-user" && (
             <Button
               variant="outline"
-              onClick={() => setStep("select-user")}
+              onClick={() => {
+                setStep("select-user");
+              }}
               disabled={isSubmitting}
             >
               Back

@@ -6,15 +6,7 @@ import {
   SidebarRail,
   useSidebar,
 } from "@is3a/design-system/sidebar";
-import {
-  Home,
-  MapPin,
-  Users,
-  HandCoins,
-  Sparkles,
-  ClipboardList,
-  type LucideIcon,
-} from "lucide-react";
+import { Home, MapPin, Users, HandCoins, Sparkles, ClipboardList } from "lucide-react";
 import type { JSX } from "react";
 import { Link } from "react-router";
 
@@ -57,7 +49,7 @@ const navItems = [
   {
     title: "Stripe",
     url: "/dashboard/admin/stripe",
-    icon: StripeIcon as LucideIcon,
+    icon: StripeIcon,
     adminOnly: true,
   },
   {
@@ -68,15 +60,15 @@ const navItems = [
   },
 ];
 
-interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
-  user: {
-    name: string;
-    email: string;
-    avatar?: string;
-    isAdmin: boolean;
-    impersonatedBy: string | null;
+type AppSidebarProps = React.ComponentProps<typeof Sidebar> & {
+  readonly user: {
+    readonly name: string;
+    readonly email: string;
+    readonly avatar?: string;
+    readonly isAdmin: boolean;
+    readonly impersonatedBy: string | null;
   };
-}
+};
 
 function SidebarLogo(): JSX.Element {
   const { state } = useSidebar();

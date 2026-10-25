@@ -10,10 +10,10 @@ import {
 import { CheckCircle2, XCircle, Loader2, HeartCrack } from "lucide-react";
 import type { JSX } from "react";
 import { useEffect } from "react";
-import { useSearchParams } from "react-router";
-import { useNavigate } from "react-router";
+import { useSearchParams, useNavigate } from "react-router";
 
 import { DashboardBreadcrumb } from "~/components/dashboard-breadcrumb";
+import type { ReadonlyRouteProps } from "~/fragno/readonly-route-props";
 import { createSimpleAuthServer } from "~/fragno/simple-auth-server";
 import { getStripeFragment } from "~/fragno/stripe-durable-object";
 import { cn } from "~/lib/utils";
@@ -29,13 +29,13 @@ interface SubscriptionConfirmationData {
 export async function loader({
   context,
   request,
-}: Route.LoaderArgs): Promise<SubscriptionConfirmationData> {
+}: Readonly<Route.LoaderArgs>): Promise<SubscriptionConfirmationData> {
   const auth = createSimpleAuthServer(context.get(requestContext).pool);
   const response = await auth.callRoute("GET", "/me", {
     headers: request.headers,
   });
 
-  if (response.type !== "json" || !response.data) {
+  if (response.type !== "json") {
     console.error("No session found");
     return { status: "error", message: "Could not retrieve data for user" };
   }
@@ -48,25 +48,28 @@ export async function loader({
 
 export default function DashboardSubscribeConfirm({
   loaderData,
-  actionData,
-  params,
-  matches,
+  actionData: _actionData,
+  params: _params,
+  matches: _matches,
   className,
   ...props
-}: React.ComponentProps<"div"> & Route.ComponentProps): JSX.Element {
+}: React.ComponentProps<"div"> & ReadonlyRouteProps<Route.ComponentProps>): JSX.Element {
   const { status, message } = loaderData;
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
 
   const isSad = searchParams.get("sad") === "true";
 
-  useEffect(() => {
+  useEffect((): (() => void) | undefined => {
     if (status === "success") {
       const timer = setTimeout(() => {
-        navigate("/dashboard/membership");
+        void navigate("/dashboard/membership");
       }, 2000);
-      return (): void => clearTimeout(timer);
+      return (): void => {
+        clearTimeout(timer);
+      };
     }
+    return undefined;
   }, [status, navigate]);
 
   const successTitle = isSad ? "Successfully Cancelled" : "Success!";
@@ -110,7 +113,12 @@ export default function DashboardSubscribeConfirm({
                 <span>Redirecting...</span>
               </div>
             ) : (
-              <Button onClick={() => navigate("/dashboard/membership")} className="w-full">
+              <Button
+                onClick={() => {
+                  void navigate("/dashboard/membership");
+                }}
+                className="w-full"
+              >
                 Back to profile
               </Button>
             )}

@@ -32,41 +32,24 @@ import {
 } from "@is3a/design-system/table";
 import { ArrowLeft, Download } from "lucide-react";
 import type { JSX } from "react";
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo } from "react";
 import { Link } from "react-router";
 
 import { DashboardBreadcrumb } from "~/components/dashboard-breadcrumb";
+import { formJsonObjectSchema } from "~/components/ui/form-builder/form-schema-contracts";
+import type { FormJsonObject } from "~/components/ui/form-builder/types";
 import { formsClient, useAllSubmissions } from "~/lib/forms-client";
 
 import type { Route } from "./+types/export";
+import {
+  flattenSubmission,
+  formatSubmissionCell,
+  generateSubmissionCsv,
+} from "./submission-export";
 
-function flattenObject(obj: Record<string, unknown>, prefix = ""): Record<string, unknown> {
-  return Object.entries(obj).reduce(
-    (acc, [key, value]) => {
-      const newKey = prefix ? `${prefix}.${key}` : key;
-      if (value && typeof value === "object" && !Array.isArray(value) && value !== null) {
-        Object.assign(acc, flattenObject(value as Record<string, unknown>, newKey));
-      } else {
-        acc[newKey] = value;
-      }
-      return acc;
-    },
-    {} as Record<string, unknown>,
-  );
-}
-
-function generateCSV(data: Record<string, unknown>[], columns: string[]): string {
-  const escapeCSV = (value: unknown): string => {
-    const str = value === null || value === undefined ? "" : String(value);
-    if (str.includes(",") || str.includes('"') || str.includes("\n")) {
-      return `"${str.replace(/"/g, '""')}"`;
-    }
-    return str;
-  };
-
-  const header = columns.map(escapeCSV).join(",");
-  const rows = data.map((row) => columns.map((col) => escapeCSV(row[col])).join(","));
-  return [header, ...rows].join("\n");
+interface ColumnSelection {
+  readonly source: readonly string[];
+  readonly columns: ReadonlySet<string>;
 }
 
 function downloadCSV(content: string, filename: string): void {
@@ -79,23 +62,26 @@ function downloadCSV(content: string, filename: string): void {
   URL.revokeObjectURL(url);
 }
 
-export default function ExportSubmissionsPage({ params }: Route.ComponentProps): JSX.Element {
+export default function ExportSubmissionsPage({
+  params,
+}: Readonly<Pick<Route.ComponentProps, "params">>): JSX.Element {
   const { data: form, loading: isLoadingForm } = formsClient.useFormById({
     path: { id: params.id },
   });
   const { data: submissions, loading: isLoadingSubmissions } = useAllSubmissions(params.id);
   const isLoading = isLoadingForm || isLoadingSubmissions;
 
-  const [selectedVersion, setSelectedVersion] = useState<string>("");
-  const [selectedColumns, setSelectedColumns] = useState<Set<string>>(new Set());
+  const [versionChoice, setSelectedVersion] = useState("");
+  const [columnSelection, setColumnSelection] = useState<ColumnSelection>();
 
-  const submissionsList = submissions ?? [];
+  const submissionsList = useMemo(() => submissions ?? [], [submissions]);
 
   // Get unique versions
   const versions = useMemo(() => {
     const versionSet = new Set(submissionsList.map((s) => s.formVersion));
-    return Array.from(versionSet).sort((a, b) => b - a);
+    return [...versionSet].toSorted((a, b) => b - a);
   }, [submissionsList]);
+  const selectedVersion = versionChoice === "" ? String(versions[0] ?? "") : versionChoice;
 
   // Filter submissions by selected version
   const filteredSubmissions = useMemo(() => {
@@ -107,34 +93,27 @@ export default function ExportSubmissionsPage({ params }: Route.ComponentProps):
 
   // Flatten all submissions data and get all unique column keys
   const { flattenedData, allColumns } = useMemo(() => {
-    const flattened: Record<string, unknown>[] = filteredSubmissions.map((s) => ({
+    const flattened: FormJsonObject[] = filteredSubmissions.map((s) => ({
       submittedAt: new Date(s.submittedAt).toISOString(),
-      ...flattenObject(s.data as Record<string, unknown>),
+      ...flattenSubmission(formJsonObjectSchema.parse(s.data)),
     }));
 
-    const columns = new Set<string>();
-    columns.add("submittedAt");
-    flattened.forEach((row) => {
-      Object.keys(row).forEach((key) => columns.add(key));
-    });
+    const columns = new Set<string>(["submittedAt"]);
+    for (const row of flattened) {
+      for (const key of Object.keys(row)) {
+        columns.add(key);
+      }
+    }
 
     return {
       flattenedData: flattened,
-      allColumns: Array.from(columns),
+      allColumns: [...columns],
     };
   }, [filteredSubmissions]);
 
-  // Reset selected columns when version changes
-  useEffect(() => {
-    setSelectedColumns(new Set(allColumns));
-  }, [allColumns]);
-
-  // Set default version when page loads
-  useEffect(() => {
-    if (versions.length > 0 && !selectedVersion) {
-      setSelectedVersion(String(versions[0]));
-    }
-  }, [versions, selectedVersion]);
+  // A new submission snapshot selects all columns without copying derived data into state.
+  const selectedColumns =
+    columnSelection?.source === allColumns ? columnSelection.columns : new Set(allColumns);
 
   const toggleColumn = (column: string): void => {
     const newSelected = new Set(selectedColumns);
@@ -143,19 +122,23 @@ export default function ExportSubmissionsPage({ params }: Route.ComponentProps):
     } else {
       newSelected.add(column);
     }
-    setSelectedColumns(newSelected);
+    setColumnSelection({ source: allColumns, columns: newSelected });
   };
 
-  const selectAll = (): void => setSelectedColumns(new Set(allColumns));
-  const deselectAll = (): void => setSelectedColumns(new Set());
+  const selectAll = (): void => {
+    setColumnSelection({ source: allColumns, columns: new Set(allColumns) });
+  };
+  const deselectAll = (): void => {
+    setColumnSelection({ source: allColumns, columns: new Set() });
+  };
 
   const handleExport = (): void => {
     if (!form) {
       return;
     }
     const columnsToExport = allColumns.filter((c) => selectedColumns.has(c));
-    const csv = generateCSV(flattenedData, columnsToExport);
-    const filename = `${form.title.toLowerCase().replace(/\s+/g, "-")}-v${selectedVersion}-submissions.csv`;
+    const csv = generateSubmissionCsv(flattenedData, columnsToExport);
+    const filename = `${form.title.toLowerCase().replaceAll(/\s+/g, "-")}-v${selectedVersion}-submissions.csv`;
     downloadCSV(csv, filename);
   };
 
@@ -171,25 +154,22 @@ export default function ExportSubmissionsPage({ params }: Route.ComponentProps):
         </BreadcrumbItem>
         <BreadcrumbSeparator />
         <BreadcrumbItem>
-          {isLoading ? (
-            <Skeleton className="h-4 w-24" />
-          ) : form ? (
+          {isLoading && <Skeleton className="h-4 w-24" />}
+          {!isLoading && form && (
             <BreadcrumbLink asChild>
               <Link to={`/dashboard/admin/forms/${form.id}/edit`}>{form.title}</Link>
             </BreadcrumbLink>
-          ) : (
-            <BreadcrumbPage>Not Found</BreadcrumbPage>
           )}
+          {!isLoading && !form && <BreadcrumbPage>Not Found</BreadcrumbPage>}
         </BreadcrumbItem>
         <BreadcrumbSeparator />
         <BreadcrumbItem>
-          {isLoading ? (
-            <Skeleton className="h-4 w-20" />
-          ) : form ? (
+          {isLoading && <Skeleton className="h-4 w-20" />}
+          {!isLoading && form && (
             <BreadcrumbLink asChild>
               <Link to={`/dashboard/admin/forms/${form.id}/submissions`}>Submissions</Link>
             </BreadcrumbLink>
-          ) : null}
+          )}
         </BreadcrumbItem>
         <BreadcrumbSeparator />
         <BreadcrumbItem>
@@ -249,7 +229,7 @@ export default function ExportSubmissionsPage({ params }: Route.ComponentProps):
                 {selectedVersion && (
                   <p className="text-sm text-muted-foreground">
                     {filteredSubmissions.length} submission
-                    {filteredSubmissions.length !== 1 ? "s" : ""} for this version. Each form
+                    {filteredSubmissions.length === 1 ? "" : "s"} for this version. Each form
                     version represents a different data schema.
                   </p>
                 )}
@@ -275,7 +255,9 @@ export default function ExportSubmissionsPage({ params }: Route.ComponentProps):
                         <Checkbox
                           id={`col-${column}`}
                           checked={selectedColumns.has(column)}
-                          onCheckedChange={() => toggleColumn(column)}
+                          onCheckedChange={() => {
+                            toggleColumn(column);
+                          }}
                         />
                         <label
                           htmlFor={`col-${column}`}
@@ -312,7 +294,7 @@ export default function ExportSubmissionsPage({ params }: Route.ComponentProps):
                         <TableRow key={i}>
                           {selectedColumnsArray.map((col) => (
                             <TableCell key={col} className="whitespace-nowrap">
-                              {String(row[col] ?? "")}
+                              {formatSubmissionCell(row[col])}
                             </TableCell>
                           ))}
                         </TableRow>

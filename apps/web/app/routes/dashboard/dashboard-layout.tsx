@@ -21,13 +21,14 @@ import { isRouteErrorResponse, Outlet, redirect } from "react-router";
 
 import type { AuthMeResponse } from "@fragno-dev/auth";
 
+import type { ReadonlyRouteProps } from "~/fragno/readonly-route-props";
 import { createSimpleAuthServer } from "~/fragno/simple-auth-server";
 import { requestContext } from "~/request-context";
 import { DashboardNavigationSidebar } from "~/routes/dashboard/dashboard-sidebar";
 
 import type { Route } from "./+types/dashboard-layout";
 
-export function meta(_: Route.MetaArgs): Route.MetaDescriptors {
+export function meta(): Route.MetaDescriptors {
   return [{ title: "Dashboard" }, { name: "description", content: "Dashboard" }];
 }
 
@@ -43,7 +44,7 @@ interface DashboardLoaderData {
 export async function loader({
   context,
   request,
-}: Route.LoaderArgs): Promise<Response | DashboardLoaderData> {
+}: Readonly<Route.LoaderArgs>): Promise<Response | DashboardLoaderData> {
   const auth = createSimpleAuthServer(context.get(requestContext).pool);
 
   const response = await auth.callRoute("GET", "/me", {
@@ -59,6 +60,7 @@ export async function loader({
         email,
         avatar: undefined,
         isAdmin: role == "admin",
+        // oxlint-disable-next-line unicorn/no-null -- COMPATIBILITY: the existing serialized auth view uses explicit null for an absent impersonator.
         impersonatedBy: null,
         role: role,
       },
@@ -68,57 +70,67 @@ export async function loader({
   return redirect("/login");
 }
 
-export function ErrorBoundary({ error, loaderData }: Route.ErrorBoundaryProps): JSX.Element {
+export function ErrorBoundary({
+  error,
+  loaderData,
+}: ReadonlyRouteProps<Route.ErrorBoundaryProps>): JSX.Element {
   if (!loaderData) {
     return <div>Error</div>;
   }
 
   const { user } = loaderData;
 
-  const errorContent = isRouteErrorResponse(error) ? (
-    <Card className="mx-4 my-6">
-      <CardHeader>
-        <div className="flex items-center gap-2">
-          <AlertCircle className="h-5 w-5 text-destructive" />
-          <CardTitle>Error {error.status}</CardTitle>
-        </div>
-        <CardDescription>{error.statusText}</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <p className="text-sm text-muted-foreground">{error.data}</p>
-      </CardContent>
-    </Card>
-  ) : error instanceof Error ? (
-    <Card className="mx-4 my-6">
-      <CardHeader>
-        <div className="flex items-center gap-2">
-          <AlertCircle className="h-5 w-5 text-destructive" />
-          <CardTitle>Error</CardTitle>
-        </div>
-      </CardHeader>
-      <CardContent>
-        <p className="text-sm text-muted-foreground">{error.message}</p>
-        {error.stack && (
-          <div className="mt-4">
-            <p className="mb-2 text-sm font-medium">Stack Trace:</p>
-            <pre className="overflow-auto rounded-md bg-muted p-4 text-xs">{error.stack}</pre>
+  let errorContent: JSX.Element;
+  if (isRouteErrorResponse(error)) {
+    errorContent = (
+      <Card className="mx-4 my-6">
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <AlertCircle className="h-5 w-5 text-destructive" />
+            <CardTitle>Error {error.status}</CardTitle>
           </div>
-        )}
-      </CardContent>
-    </Card>
-  ) : (
-    <Card className="mx-4 my-6">
-      <CardHeader>
-        <div className="flex items-center gap-2">
-          <AlertCircle className="h-5 w-5 text-destructive" />
-          <CardTitle>Unknown Error</CardTitle>
-        </div>
-      </CardHeader>
-      <CardContent>
-        <p className="text-sm text-muted-foreground">An unexpected error occurred.</p>
-      </CardContent>
-    </Card>
-  );
+          <CardDescription>{error.statusText}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-muted-foreground">{error.data}</p>
+        </CardContent>
+      </Card>
+    );
+  } else if (error instanceof Error) {
+    errorContent = (
+      <Card className="mx-4 my-6">
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <AlertCircle className="h-5 w-5 text-destructive" />
+            <CardTitle>Error</CardTitle>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-muted-foreground">{error.message}</p>
+          {error.stack !== undefined && error.stack !== "" && (
+            <div className="mt-4">
+              <p className="mb-2 text-sm font-medium">Stack Trace:</p>
+              <pre className="overflow-auto rounded-md bg-muted p-4 text-xs">{error.stack}</pre>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    );
+  } else {
+    errorContent = (
+      <Card className="mx-4 my-6">
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <AlertCircle className="h-5 w-5 text-destructive" />
+            <CardTitle>Unknown Error</CardTitle>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-muted-foreground">An unexpected error occurred.</p>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <SidebarProvider>
@@ -147,7 +159,9 @@ export function ErrorBoundary({ error, loaderData }: Route.ErrorBoundaryProps): 
   );
 }
 
-export default function Page({ loaderData }: Route.ComponentProps): JSX.Element {
+export default function Page({
+  loaderData,
+}: ReadonlyRouteProps<Route.ComponentProps>): JSX.Element {
   const { user } = loaderData;
 
   return (

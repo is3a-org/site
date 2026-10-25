@@ -11,14 +11,21 @@ import { FIELD_TYPES } from "./constants";
 import type { FieldType } from "./types";
 
 export interface FieldTypeSelectorProps {
-  value: FieldType;
-  onChange: (type: FieldType) => void;
+  readonly value: FieldType;
+  readonly onChange: (type: FieldType) => void;
 }
 
 export function FieldTypeSelector({ value, onChange }: FieldTypeSelectorProps): JSX.Element {
   return (
-    // Cast is safe: select options are constrained to FieldType values
-    <Select value={value} onValueChange={(v) => onChange(v as FieldType)}>
+    <Select
+      value={value}
+      onValueChange={(selected) => {
+        const fieldType = FIELD_TYPES.find((option) => option.type === selected);
+        if (fieldType !== undefined) {
+          onChange(fieldType.type);
+        }
+      }}
+    >
       <SelectTrigger data-slot="field-type-selector" className="w-[180px]">
         <SelectValue placeholder="Select type" />
       </SelectTrigger>

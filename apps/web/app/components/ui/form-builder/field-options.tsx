@@ -10,10 +10,10 @@ import { EnumValuesEditor } from "./enum-values-editor";
 import type { FieldType, FieldOptions as FieldOptionsType } from "./types";
 
 export interface FieldOptionsProps {
-  fieldType: FieldType;
-  options: FieldOptionsType | undefined;
-  onChange: (options: FieldOptionsType) => void;
-  className?: string;
+  readonly fieldType: FieldType;
+  readonly options: FieldOptionsType | undefined;
+  readonly onChange: (options: FieldOptionsType) => void;
+  readonly className?: string;
 }
 
 export function FieldOptions({
@@ -21,7 +21,7 @@ export function FieldOptions({
   options,
   onChange,
   className,
-}: FieldOptionsProps): JSX.Element | null {
+}: FieldOptionsProps): JSX.Element | undefined {
   const updateOption = <K extends keyof FieldOptionsType>(
     key: K,
     value: FieldOptionsType[K],
@@ -30,7 +30,7 @@ export function FieldOptions({
   };
 
   if (fieldType === "label") {
-    return null;
+    return undefined;
   }
 
   if (fieldType === "select") {
@@ -38,7 +38,9 @@ export function FieldOptions({
       <div data-slot="field-options" className={cn("border-t pt-4", className)}>
         <EnumValuesEditor
           values={options?.enumValues ?? ["Option 1"]}
-          onChange={(enumValues) => updateOption("enumValues", enumValues)}
+          onChange={(enumValues) => {
+            updateOption("enumValues", enumValues);
+          }}
         />
       </div>
     );
@@ -60,7 +62,9 @@ export function FieldOptions({
               id="min-value"
               type="number"
               value={options?.minimum ?? defaultMin}
-              onChange={(e) => updateOption("minimum", Number(e.target.value) || defaultMin)}
+              onChange={(e) => {
+                updateOption("minimum", Number(e.target.value) || defaultMin);
+              }}
             />
           </div>
           <div className="space-y-2">
@@ -71,7 +75,9 @@ export function FieldOptions({
               id="default-value"
               type="number"
               value={options?.defaultValue ?? defaultValue}
-              onChange={(e) => updateOption("defaultValue", Number(e.target.value) || defaultValue)}
+              onChange={(e) => {
+                updateOption("defaultValue", Number(e.target.value) || defaultValue);
+              }}
             />
           </div>
           <div className="space-y-2">
@@ -82,7 +88,9 @@ export function FieldOptions({
               id="max-value"
               type="number"
               value={options?.maximum ?? defaultMax}
-              onChange={(e) => updateOption("maximum", Number(e.target.value) || defaultMax)}
+              onChange={(e) => {
+                updateOption("maximum", Number(e.target.value) || defaultMax);
+              }}
             />
           </div>
         </div>
@@ -103,9 +111,9 @@ export function FieldOptions({
               type="number"
               placeholder="No minimum"
               value={options?.minimum ?? ""}
-              onChange={(e) =>
-                updateOption("minimum", e.target.value ? Number(e.target.value) : undefined)
-              }
+              onChange={(e) => {
+                updateOption("minimum", e.target.value ? Number(e.target.value) : undefined);
+              }}
             />
           </div>
           <div className="space-y-2">
@@ -117,9 +125,9 @@ export function FieldOptions({
               type="number"
               placeholder="No maximum"
               value={options?.maximum ?? ""}
-              onChange={(e) =>
-                updateOption("maximum", e.target.value ? Number(e.target.value) : undefined)
-              }
+              onChange={(e) => {
+                updateOption("maximum", e.target.value ? Number(e.target.value) : undefined);
+              }}
             />
           </div>
         </div>
@@ -138,7 +146,9 @@ export function FieldOptions({
             id="placeholder"
             placeholder="Enter placeholder text"
             value={options?.placeholder ?? ""}
-            onChange={(e) => updateOption("placeholder", e.target.value || undefined)}
+            onChange={(e) => {
+              updateOption("placeholder", e.target.value || undefined);
+            }}
           />
         </div>
       </div>
@@ -158,7 +168,9 @@ export function FieldOptions({
             rows={6}
             placeholder="{}"
             value={options?.rawJsonSchema ?? "{}"}
-            onChange={(e) => updateOption("rawJsonSchema", e.target.value)}
+            onChange={(e) => {
+              updateOption("rawJsonSchema", e.target.value);
+            }}
           />
         </div>
         <div className="space-y-2">
@@ -171,12 +183,14 @@ export function FieldOptions({
             rows={4}
             placeholder="{}"
             value={options?.rawUiSchema ?? "{}"}
-            onChange={(e) => updateOption("rawUiSchema", e.target.value)}
+            onChange={(e) => {
+              updateOption("rawUiSchema", e.target.value);
+            }}
           />
         </div>
       </div>
     );
   }
 
-  return null;
+  return undefined;
 }

@@ -33,12 +33,7 @@ import type { Role } from "@fragno-dev/auth";
 import { DashboardBreadcrumb } from "~/components/dashboard-breadcrumb";
 import { simpleAuthClient } from "~/lib/simple-auth-client";
 
-import type { Route } from "./+types/users";
-
-export async function loader({
-  context: _context,
-  request: _request,
-}: Route.LoaderArgs): Promise<Record<string, never>> {
+export function loader(): Record<string, never> {
   return {};
 }
 
@@ -46,7 +41,7 @@ export default function UsersPage(): JSX.Element {
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState<"email" | "createdAt">("createdAt");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
-  const [cursor, setCursor] = useState<string | undefined>(undefined);
+  const [cursor, setCursor] = useState<string | undefined>();
   const [cursorHistory, setCursorHistory] = useState<(string | undefined)[]>([]);
   const [refreshUser, setRefreshUser] = useState(0);
   const pageSize = 10;
@@ -81,7 +76,7 @@ export default function UsersPage(): JSX.Element {
 
   const toggleSort = (column: "email" | "createdAt"): void => {
     // When searching, only allow email sorting
-    if (search && column === "createdAt") {
+    if (search !== "" && column === "createdAt") {
       return;
     }
 
@@ -96,7 +91,7 @@ export default function UsersPage(): JSX.Element {
   };
 
   const handleNextPage = (): void => {
-    if (data?.cursor) {
+    if (data?.cursor !== undefined && data.cursor !== "") {
       setCursorHistory([...cursorHistory, cursor]);
       setCursor(data.cursor);
     }
@@ -142,12 +137,20 @@ export default function UsersPage(): JSX.Element {
                 <Input
                   placeholder="Search by email..."
                   value={search}
-                  onChange={(e) => handleSearch(e.target.value)}
+                  onChange={(e) => {
+                    handleSearch(e.target.value);
+                  }}
                   className="pl-9"
                 />
               </div>
               {search && (
-                <Button variant="outline" size="sm" onClick={() => handleSearch("")}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    handleSearch("");
+                  }}
+                >
                   Clear
                 </Button>
               )}
@@ -163,7 +166,7 @@ export default function UsersPage(): JSX.Element {
             {/* Loading State */}
             {loading && (
               <div className="space-y-2">
-                {[...Array(5)].map((_, i) => (
+                {Array.from({ length: 5 }, (_, i) => (
                   <Skeleton key={i} className="h-12 w-full" />
                 ))}
               </div>
@@ -181,7 +184,9 @@ export default function UsersPage(): JSX.Element {
                             variant="ghost"
                             size="sm"
                             className="-ml-3 h-8 data-[state=open]:bg-accent"
-                            onClick={() => toggleSort("email")}
+                            onClick={() => {
+                              toggleSort("email");
+                            }}
                           >
                             Email
                             <ArrowUpDown className="ml-2 h-4 w-4" />
@@ -192,7 +197,9 @@ export default function UsersPage(): JSX.Element {
                             variant="ghost"
                             size="sm"
                             className="-ml-3 h-8 data-[state=open]:bg-accent"
-                            onClick={() => toggleSort("createdAt")}
+                            onClick={() => {
+                              toggleSort("createdAt");
+                            }}
                             disabled={!!search}
                             title={
                               search
@@ -230,9 +237,11 @@ export default function UsersPage(): JSX.Element {
                             <TableCell>
                               <Select
                                 value={user.role}
-                                onValueChange={(newRole) =>
-                                  handleRoleChange(user.id, newRole as Role)
-                                }
+                                onValueChange={(newRole) => {
+                                  if (newRole === "admin" || newRole === "user") {
+                                    void handleRoleChange(user.id, newRole);
+                                  }
+                                }}
                                 disabled={updateRoleLoading}
                               >
                                 <SelectTrigger className="h-8 w-[110px]">

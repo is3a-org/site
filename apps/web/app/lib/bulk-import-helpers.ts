@@ -1,23 +1,23 @@
-type User = {
-  id: string;
-  email: string;
-  stripeCustomerId: string | null;
-};
+interface User {
+  readonly id: string;
+  readonly email: string;
+  readonly stripeCustomerId: string | null;
+}
 
-type StripeCustomer = {
-  id: string;
-  email: string | null;
-  name?: string | null;
-  created: number;
-};
+interface StripeCustomer {
+  readonly id: string;
+  readonly email: string | null;
+  readonly name?: string | null;
+  readonly created: number;
+}
 
-type MatchResult = {
-  matchedUser: User | null;
-  matchType: "stripeCustomerId" | "email" | "none";
-  hasConflict: boolean;
-  conflictReason?: string;
-  alreadySynced: boolean;
-};
+interface MatchResult {
+  readonly matchedUser: User | null;
+  readonly matchType: "stripeCustomerId" | "email" | "none";
+  readonly hasConflict: boolean;
+  readonly conflictReason?: string;
+  readonly alreadySynced: boolean;
+}
 
 /**
  * Attempts to match a Stripe customer to an existing user in the system.
@@ -30,7 +30,7 @@ type MatchResult = {
  */
 export function matchStripeCustomerToUser(
   customer: StripeCustomer,
-  existingUsers: User[],
+  existingUsers: readonly User[],
 ): MatchResult {
   // First try to match by Stripe customer ID
   const userByStripeId = existingUsers.find((u) => u.stripeCustomerId === customer.id);
@@ -44,14 +44,18 @@ export function matchStripeCustomerToUser(
   }
 
   // Then try to match by email (case-insensitive)
-  if (customer.email) {
+  if (customer.email !== null && customer.email.length > 0) {
     const normalizedCustomerEmail = customer.email.toLowerCase();
     const userByEmail = existingUsers.find(
       (u) => u.email.toLowerCase() === normalizedCustomerEmail,
     );
     if (userByEmail) {
       // Check if this user already has a different Stripe customer ID
-      if (userByEmail.stripeCustomerId && userByEmail.stripeCustomerId !== customer.id) {
+      if (
+        userByEmail.stripeCustomerId !== null &&
+        userByEmail.stripeCustomerId.length > 0 &&
+        userByEmail.stripeCustomerId !== customer.id
+      ) {
         return {
           matchedUser: userByEmail,
           matchType: "email",
@@ -72,6 +76,7 @@ export function matchStripeCustomerToUser(
 
   // No match found
   return {
+    // oxlint-disable-next-line unicorn/no-null -- COMPATIBILITY: The customer matching contract returns null when no user is matched.
     matchedUser: null,
     matchType: "none",
     hasConflict: false,
@@ -79,19 +84,20 @@ export function matchStripeCustomerToUser(
   };
 }
 
-/**
- * Validates that a Stripe customer has the minimum required data for import
- */
-export function validateStripeCustomer(customer: StripeCustomer): {
-  valid: boolean;
-  error?: string;
-} {
+/** A Stripe customer validation result describes whether automatic user creation is possible. */
+export interface StripeCustomerValidation {
+  readonly valid: boolean;
+  readonly error?: string;
+}
+
+/** Validate the minimum Stripe customer data needed for automatic user creation. */
+export function validateStripeCustomer(customer: StripeCustomer): StripeCustomerValidation {
   if (!customer.id) {
     return { valid: false, error: "Customer missing ID" };
   }
 
   // For auto-creating users, we need an email
-  if (!customer.email) {
+  if (customer.email === null || customer.email.length === 0) {
     return {
       valid: false,
       error: "Customer missing email (required for auto-creating users)",

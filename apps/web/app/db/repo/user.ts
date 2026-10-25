@@ -1,7 +1,7 @@
 import { and, eq, isNotNull, isNull } from "drizzle-orm";
 
 import { customer_stripe, user_auth, subscription_stripe } from "~/db/postgres/fragno-schema";
-import { type DrizzleDatabase } from "~/db/postgres/is3a-postgres";
+import type { DrizzleDatabase } from "~/db/postgres/is3a-postgres";
 import { user_stripe } from "~/db/postgres/postgres.schema";
 
 /** User membership summary with nullable fields from the Stripe left joins. */
@@ -30,14 +30,14 @@ export type UnlinkedStripeCustomer = Pick<
 >;
 
 export class UserRepo {
-  #db: DrizzleDatabase;
+  readonly #db: DrizzleDatabase;
 
-  constructor(db: DrizzleDatabase) {
+  public constructor(db: DrizzleDatabase) {
     this.#db = db;
   }
 
-  async getAllUsers(): Promise<UserMembershipSummary[]> {
-    return await this.#db
+  public async getAllUsers(): Promise<UserMembershipSummary[]> {
+    return this.#db
       .select({
         id: user_auth.id,
         email: user_auth.email,
@@ -53,7 +53,7 @@ export class UserRepo {
       .orderBy(user_auth.email);
   }
 
-  async setStripeCustomerId(userId: string, stripeCustomerId: string): Promise<void> {
+  public async setStripeCustomerId(userId: string, stripeCustomerId: string): Promise<void> {
     await this.#db
       .insert(user_stripe)
       .values({
@@ -69,8 +69,8 @@ export class UserRepo {
   }
 
   /** Users linked to a Stripe customer that the Stripe fragment does not know about yet. */
-  async getUsersWithUnlinkedStripeCustomer(): Promise<UnlinkedStripeCustomer[]> {
-    return await this.#db
+  public async getUsersWithUnlinkedStripeCustomer(): Promise<UnlinkedStripeCustomer[]> {
+    return this.#db
       .select({
         userId: user_stripe.userId,
         stripeCustomerId: user_stripe.stripeCustomerId,
@@ -80,7 +80,7 @@ export class UserRepo {
       .where(and(isNotNull(user_stripe.stripeCustomerId), isNull(customer_stripe.id)));
   }
 
-  async getUserById(id: string): Promise<UserMembershipDetails | null> {
+  public async getUserById(id: string): Promise<UserMembershipDetails | null> {
     const user = await this.#db
       .select({
         id: user_auth.id,
@@ -101,10 +101,11 @@ export class UserRepo {
       .where(eq(user_auth.id, id))
       .orderBy(subscription_stripe.status) // 'active' comes first
       .limit(1); // We've set "1 subscription per customer" setting in Stripe
+    // oxlint-disable-next-line unicorn/no-null -- COMPATIBILITY: Repository lookups return null when no user matches, preserving their public nullable result contract.
     return user.length === 1 ? user[0] : null;
   }
 
-  async getUserByEmail(email: string): Promise<UserMembershipSummary | null> {
+  public async getUserByEmail(email: string): Promise<UserMembershipSummary | null> {
     const user = await this.#db
       .select({
         id: user_auth.id,
@@ -121,10 +122,13 @@ export class UserRepo {
       // Auth stores emails trimmed and lowercased
       .where(eq(user_auth.email, email.trim().toLowerCase()))
       .limit(1);
+    // oxlint-disable-next-line unicorn/no-null -- COMPATIBILITY: Repository lookups return null when no user matches, preserving their public nullable result contract.
     return user.length === 1 ? user[0] : null;
   }
 
-  async getUserByStripeCustomerId(stripeCustomerId: string): Promise<UserMembershipSummary | null> {
+  public async getUserByStripeCustomerId(
+    stripeCustomerId: string,
+  ): Promise<UserMembershipSummary | null> {
     const user = await this.#db
       .select({
         id: user_auth.id,
@@ -140,6 +144,7 @@ export class UserRepo {
       .leftJoin(subscription_stripe, eq(subscription_stripe.referenceId, user_auth.id))
       .where(eq(user_stripe.stripeCustomerId, stripeCustomerId))
       .limit(1);
+    // oxlint-disable-next-line unicorn/no-null -- COMPATIBILITY: Repository lookups return null when no user matches, preserving their public nullable result contract.
     return user.length === 1 ? user[0] : null;
   }
 }

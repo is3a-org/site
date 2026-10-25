@@ -1,12 +1,8 @@
-import type { JSX } from "react";
+import type { ComponentProps, JSX } from "react";
 
 import { cn } from "~/lib/utils";
 
-interface StripeIconProps extends React.SVGProps<SVGSVGElement> {
-  className?: string;
-}
-
-export function StripeIcon({ className, ...props }: StripeIconProps): JSX.Element {
+export function StripeIcon({ className, ...props }: ComponentProps<"svg">): JSX.Element {
   return (
     <svg
       width="512"

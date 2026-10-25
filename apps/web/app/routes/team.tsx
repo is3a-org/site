@@ -2,7 +2,7 @@ import type { JSX } from "react";
 
 import type { Route } from "./+types/team";
 
-export function meta(_: Route.MetaArgs): Route.MetaDescriptors {
+export function meta(): Route.MetaDescriptors {
   return [
     { title: "Our Team - IS3A" },
     {

@@ -15,7 +15,7 @@ const styles = {
   },
 } as const;
 
-export function MagicLinkEmail({ url }: { url: string }): JSX.Element {
+export function MagicLinkEmail({ url }: Readonly<{ url: string }>): JSX.Element {
   return (
     <EmailLayout title="Log in to IS3A">
       <p>Click the button below to log in to your account:</p>

@@ -26,7 +26,7 @@ export const RANDOM_LEN = 16;
 export const ULID_LEN = TIME_LEN + RANDOM_LEN;
 
 function replaceCharAt(str: string, index: number, char: string): string {
-  return str.substring(0, index) + char + str.substring(index + 1);
+  return str.slice(0, index) + char + str.slice(index + 1);
 }
 
 /**
@@ -51,17 +51,14 @@ export function decodeTime(ulid: string): number {
   if (ulid.length !== ULID_LEN) {
     throw new Error(`ULID must be exactly ${ULID_LEN} characters long`);
   }
-  const time = ulid
-    .substring(0, TIME_LEN)
-    .split("")
-    .reverse()
-    .reduce((carry, char, index) => {
-      const encodingIndex = ENCODING.indexOf(char);
-      if (encodingIndex === -1) {
-        throw new Error(`Invalid ULID character found: ${char}`);
-      }
-      return (carry += encodingIndex * Math.pow(ENCODING_LEN, index));
-    }, 0);
+  let time = 0;
+  for (const char of ulid.slice(0, TIME_LEN)) {
+    const encodingIndex = ENCODING.indexOf(char);
+    if (encodingIndex === -1) {
+      throw new Error(`Invalid ULID character found: ${char}`);
+    }
+    time = time * ENCODING_LEN + encodingIndex;
+  }
   if (time > TIME_MAX) {
     throw new RangeError(`ULID timestamp component exceeds maximum value of ${TIME_MAX}`);
   }
@@ -96,16 +93,16 @@ export function incrementBase32(str: string): string {
   let charIndex;
   const maxCharIndex = ENCODING_LEN - 1;
   while (--index >= 0) {
-    char = str[index]!;
+    char = str.charAt(index);
     charIndex = ENCODING.indexOf(char);
     if (charIndex === -1) {
       throw new TypeError("Incorrectly encoded string");
     }
     if (charIndex === maxCharIndex) {
-      str = replaceCharAt(str, index, ENCODING[0]!);
+      str = replaceCharAt(str, index, ENCODING[0]);
       continue;
     }
-    return replaceCharAt(str, index, ENCODING[charIndex + 1]!);
+    return replaceCharAt(str, index, ENCODING[charIndex + 1]);
   }
   throw new Error("Cannot increment this string");
 }
