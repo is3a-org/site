@@ -224,7 +224,9 @@ describe("OTT Services", async () => {
       });
 
       // Wait a moment to ensure expiry
-      await new Promise((resolve) => setTimeout(resolve, 100));
+      await new Promise<void>((resolve) => {
+        setTimeout(resolve, 100);
+      });
 
       const result = await test.inContext(async function () {
         return this.handlerTx()
@@ -245,7 +247,9 @@ describe("OTT Services", async () => {
           .then(([result]) => result);
       });
 
-      await new Promise((resolve) => setTimeout(resolve, 100));
+      await new Promise<void>((resolve) => {
+        setTimeout(resolve, 100);
+      });
 
       const firstAttempt = await test.inContext(async function () {
         return this.handlerTx()
@@ -316,7 +320,9 @@ describe("OTT Services", async () => {
           .execute()
           .then(([result]) => result);
       });
-      await new Promise((resolve) => setTimeout(resolve, 100));
+      await new Promise<void>((resolve) => {
+        setTimeout(resolve, 100);
+      });
 
       // Create valid token
       const validToken = await test.inContext(async function () {
@@ -397,7 +403,9 @@ describe("OTT Services", async () => {
           .then(([result]) => result);
       });
 
-      await new Promise((resolve) => setTimeout(resolve, 100));
+      await new Promise<void>((resolve) => {
+        setTimeout(resolve, 100);
+      });
 
       const result = await test.inContext(async function () {
         return this.handlerTx()
@@ -613,7 +621,9 @@ describe("OTT Services", async () => {
           .then(([result]) => result);
       });
 
-      await new Promise((resolve) => setTimeout(resolve, 50));
+      await new Promise<void>((resolve) => {
+        setTimeout(resolve, 50);
+      });
 
       const result = await test.inContext(async function () {
         return this.handlerTx()
@@ -630,7 +640,7 @@ describe("OTT Services", async () => {
       const { token } = await test.inContext(async function () {
         return this.handlerTx()
           .withServiceCalls(() => [
-            services.generateToken(testUserId, "email_verification", 10080), // 1 week
+            services.generateToken(testUserId, "email_verification", 10_080), // 1 week
           ])
           .execute()
           .then(([result]) => result);

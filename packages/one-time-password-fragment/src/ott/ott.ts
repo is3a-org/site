@@ -5,10 +5,15 @@ import { defineRoute, defineRoutes } from "@fragno-dev/core";
 import type { otpFragmentDefinition } from "..";
 
 export interface OttConfig {
-  sendEmail?: (params: { to: string; subject: string; body: string }) => Promise<void>;
+  sendEmail?: (params: {
+    readonly to: string;
+    readonly subject: string;
+    readonly body: string;
+  }) => Promise<void>;
 }
 
 // Token type enum
+// oxlint-disable-next-line no-redeclare -- COMPATIBILITY: The public OttType API intentionally exports its Zod schema value and inferred string union under the same legal TypeScript name.
 export const OttType = z.enum(["email_verification", "password_reset", "passwordless_login"]);
 export type OttType = z.infer<typeof OttType>;
 

@@ -15,26 +15,33 @@ import type {
   ExtractFragmentServiceThisContext,
   FlattenRouteFactories,
 } from "@fragno-dev/core/route";
+import { z } from "zod";
 
 import { defineFragment, instantiate, type FragnoInstantiatedFragment } from "@fragno-dev/core";
 import { withDatabase, type FragnoPublicConfigWithDatabase } from "@fragno-dev/db";
 
-import { ottRoutesFactory, type OttConfig, OttType } from "./ott/ott";
-import { generateToken } from "./ott/ott";
+import { generateToken, ottRoutesFactory, type OttConfig, type OttType } from "./ott/ott";
 import { otpSchema } from "./schema";
-import { totpRoutesFactory, type TotpConfig } from "./totp/totp";
-import { base32Encode, verifyBackupCode, verifyTOTP } from "./totp/totp";
+import {
+  totpRoutesFactory,
+  type TotpConfig,
+  base32Encode,
+  verifyBackupCode,
+  verifyTOTP,
+} from "./totp/totp";
 
 export interface OtpFragmentConfig extends OttConfig, TotpConfig {
   issuer?: string;
 }
+
+const backupCodeStorageSchema = z.array(z.string());
 
 export const otpFragmentDefinition = defineFragment<OtpFragmentConfig>("one-time-password")
   .extend(withDatabase(otpSchema))
   .providesBaseService(({ defineService, config }) => {
     return defineService({
       // OTT services
-      generateToken: function (userId: string, type: OttType, durationMinutes: number = 15) {
+      generateToken: function (userId: string, type: OttType, durationMinutes = 15) {
         return this.serviceTx(otpSchema)
           .retrieve((uow) =>
             uow.find("one_time_token", (b) =>
@@ -150,11 +157,12 @@ export const otpFragmentDefinition = defineFragment<OtpFragmentConfig>("one-time
       },
 
       // TOTP services
-      enableTotp: function (userId: string, hashedBackupCodes: string[]) {
+      enableTotp: function (userId: string, hashedBackupCodes: readonly string[]) {
         const secretBytes = crypto.getRandomValues(new Uint8Array(20));
         const secret = base32Encode(secretBytes);
 
-        const issuer = config?.issuer || "SimpleAuth";
+        const issuer =
+          config.issuer === undefined || config.issuer === "" ? "SimpleAuth" : config.issuer;
         const qrCodeUrl = `otpauth://totp/${encodeURIComponent(issuer)}:${encodeURIComponent(userId)}?secret=${secret}&issuer=${encodeURIComponent(issuer)}`;
 
         return this.serviceTx(otpSchema)
@@ -209,24 +217,24 @@ export const otpFragmentDefinition = defineFragment<OtpFragmentConfig>("one-time
           )
           .transformRetrieve(async ([totpRecord]) => {
             if (!totpRecord) {
-              return null;
+              return { matched: false as const };
             }
 
-            const backupCodes: string[] = JSON.parse(totpRecord.backupCodes);
+            const backupCodes = backupCodeStorageSchema.parse(JSON.parse(totpRecord.backupCodes));
 
             for (let i = 0; i < backupCodes.length; i++) {
               const isValid = await verifyBackupCode(code.toUpperCase(), backupCodes[i]);
               if (isValid) {
                 const nextBackupCodes = [...backupCodes];
                 nextBackupCodes.splice(i, 1);
-                return { totpRecord, nextBackupCodes };
+                return { matched: true as const, totpRecord, nextBackupCodes };
               }
             }
 
-            return null;
+            return { matched: false as const };
           })
           .mutate(({ uow, retrieveResult: match }) => {
-            if (!match) {
+            if (!match.matched) {
               return { valid: false };
             }
 
@@ -324,7 +332,7 @@ export interface OtpFragmentClients {
 export type OtpFragmentAdapterClients = Pick<OtpFragmentClients, keyof OtpFragmentClients>;
 
 export function createOtpFragment(
-  config: OtpFragmentConfig = {},
+  config: Readonly<OtpFragmentConfig> = {},
   fragnoConfig: FragnoPublicConfigWithDatabase,
 ): OtpFragment {
   return instantiate(otpFragmentDefinition)
