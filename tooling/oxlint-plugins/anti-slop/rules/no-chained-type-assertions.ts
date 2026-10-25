@@ -64,7 +64,7 @@ export const noChainedTypeAssertionsRule = defineRule({
     },
   },
   create(context) {
-    const checkTypeAssertion = (node: TypeAssertionExpression) => {
+    const checkTypeAssertion = (node: TypeAssertionExpression): void => {
       if (!isOutermostAssertionInChain(node) || !isForbiddenAssertionChain(node)) {
         return;
       }

@@ -9,9 +9,11 @@
     "storybook:build": "vp run @is3a/design-system#build",
     "stripe": "vp run @is3a/web#stripe",
     "stripe:webhook": "vp run @is3a/web#stripe:webhook",
-    "types:check": "vp run -r types:check",
-    "test": "vp run -r test && vp run test:stripe",
-    "test:stripe": "node --test tooling/stripe.test.mjs",
+    "types:check": "vp run -r types:check && vp run types:check:tooling",
+    "types:check:tooling": "tsc --project tooling/tsconfig.json --noEmit",
+    "test": "vp run -r test && vp run test:stripe && vp run test:tooling",
+    "test:stripe": "node --test tooling/stripe.test.mts",
+    "test:tooling": "node --test tooling/lint-*.test.mts",
     "check": "vp run types:check && vp check",
     "ready": "vp run check && vp run test && vp run build",
     "prepare": "vp config --no-agent",
@@ -26,10 +28,12 @@
     "update:fragno": "vp list -r | grep fragno | cut -d' ' -f1 | sort -u | xargs -I {} vp update {}@latest -r"
   },
   "devDependencies": {
+    "@types/node": "^26.6.5",
     "typescript": "7.0.2",
     "vite": "catalog:",
     "vite-plus": "catalog:",
-    "wrangler": "^4.152.0"
+    "wrangler": "^4.152.0",
+    "zod": "^4.6.7"
   },
   "engines": {
     "node": "^22.22.1 || ^24.11.0 || >=26.0.0"

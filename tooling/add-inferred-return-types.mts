@@ -1,4 +1,3 @@
-import { execFileSync } from "node:child_process";
 import { readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -14,25 +13,34 @@ import {
   isStringLiteral,
   SyntaxKind,
 } from "typescript/unstable/ast";
+import type {
+  ArrowFunction,
+  FunctionDeclaration,
+  FunctionExpression,
+  GetAccessorDeclaration,
+  MethodDeclaration,
+  Node,
+} from "typescript/unstable/ast";
 import { API, NodeBuilderFlags } from "typescript/unstable/sync";
 
-// Preview with `node tooling/add-inferred-return-types.mjs`; add --write to apply.
+import { readLintReturnTypeDiagnostics } from "./lint-return-diagnostics.mts";
+import type { LintReturnTypeDiagnostic } from "./lint-return-diagnostics.mts";
+
+// Preview with `node tooling/add-inferred-return-types.mts`; add --write to apply.
 // Requires the repository's installed TypeScript 7 API and generated project types.
 const projectRoot = fileURLToPath(new URL("../", import.meta.url));
 const writeAnnotations = process.argv.includes("--write");
-const lintResult = JSON.parse(
-  execFileSync("pnpm", ["lint", "--format=json"], {
-    cwd: projectRoot,
-    encoding: "utf8",
-    maxBuffer: 16 * 1024 * 1024,
-  }),
+const lintDiagnostics = readLintReturnTypeDiagnostics(
+  "pnpm",
+  ["exec", "vp", "lint", ".", "--format=json"],
+  projectRoot,
 );
 const returnTypeRules = new Set([
   "typescript(explicit-function-return-type)",
   "typescript(explicit-module-boundary-types)",
 ]);
-const diagnosticsByFile = new Map();
-for (const diagnostic of lintResult.diagnostics) {
+const diagnosticsByFile = new Map<string, LintReturnTypeDiagnostic[]>();
+for (const diagnostic of lintDiagnostics) {
   if (!returnTypeRules.has(diagnostic.code)) {
     continue;
   }
@@ -46,15 +54,39 @@ for (const diagnostic of lintResult.diagnostics) {
 }
 
 const api = new API({ cwd: projectRoot });
-const proposals = [];
-const skipped = [];
-const plannedFiles = [];
+type ReturnTypeFunctionNode =
+  | ArrowFunction
+  | FunctionDeclaration
+  | FunctionExpression
+  | GetAccessorDeclaration
+  | MethodDeclaration;
+interface ReturnTypeLocation {
+  readonly filename: string;
+  readonly line: number;
+  readonly name: string | undefined;
+  readonly type: string | undefined;
+}
+interface SkippedReturnTypeLocation extends ReturnTypeLocation {
+  readonly reason: string;
+}
+interface PlannedReturnTypeFile {
+  readonly filename: string;
+  readonly originalText: string;
+  readonly updatedText: string;
+}
+interface ReturnTypeTextEdit {
+  readonly position: number;
+  readonly text: string;
+}
+const proposals: ReturnTypeLocation[] = [];
+const skipped: SkippedReturnTypeLocation[] = [];
+const plannedFiles: PlannedReturnTypeFile[] = [];
 
-function getReturnTypeSkipReason(typeText, predicate) {
-  if (!typeText) {
+function getReturnTypeSkipReason(typeText: string | undefined, hasTypePredicate: boolean): string {
+  if (typeText === undefined || typeText.length === 0) {
     return "No inferred type";
   }
-  if (predicate) {
+  if (hasTypePredicate) {
     return "Needs a type predicate contract";
   }
   if (/\b(?:any|unknown)\b/.test(typeText)) {
@@ -76,6 +108,7 @@ try {
       "apps/web/tsconfig.node.json",
       "packages/design-system/tsconfig.json",
       "packages/one-time-password-fragment/tsconfig.json",
+      "tooling/tsconfig.json",
     ].map((filename) => path.resolve(projectRoot, filename)),
     openFiles: [...diagnosticsByFile.keys()],
   });
@@ -83,7 +116,10 @@ try {
     for (const [filename, diagnostics] of diagnosticsByFile) {
       // Prefer the owning project to another project's imported copy of this file.
       const project = snapshot.getProjects().find((entry) => entry.rootFiles.includes(filename));
-      const source = project?.program.getSourceFile(filename);
+      if (project === undefined) {
+        throw new Error(`Return type owning project not found: ${filename}`);
+      }
+      const source = project.program.getSourceFile(filename);
       if (!source) {
         throw new Error(`Return type project not found: ${filename}`);
       }
@@ -91,31 +127,38 @@ try {
       if (originalText !== source.text) {
         throw new Error(`Return type source snapshot is stale: ${filename}`);
       }
-      const functions = [];
-      function collectFunctions(node) {
+      const functions: ReturnTypeFunctionNode[] = [];
+      function collectFunctions(node: Node): void {
         if (
           (isFunctionDeclaration(node) ||
             isFunctionExpression(node) ||
             isArrowFunction(node) ||
             isMethodDeclaration(node) ||
             isGetAccessorDeclaration(node)) &&
-          node.body &&
-          !node.type
+          node.body !== undefined &&
+          node.type === undefined
         ) {
           functions.push(node);
         }
         node.forEachChild(collectFunctions);
       }
       collectFunctions(source);
-      const targetFunctions = new Set();
+      const targetFunctions = new Set<ReturnTypeFunctionNode>();
       for (const diagnostic of diagnostics) {
-        const { offset: byteOffset, length: byteLength } = diagnostic.labels[0].span;
+        const label = diagnostic.labels.at(0);
+        if (label === undefined) {
+          throw new Error(`Return type diagnostic label missing: ${filename}`);
+        }
+        const { offset: byteOffset, length: byteLength } = label.span;
         const position = Buffer.from(originalText).subarray(0, byteOffset).toString("utf8").length;
         const end = Buffer.from(originalText)
           .subarray(0, byteOffset + byteLength)
           .toString("utf8").length;
         const target = functions.find(
-          (node) => node.getStart(source) <= end && position < node.body.getStart(source),
+          (node) =>
+            node.body !== undefined &&
+            node.getStart(source) <= end &&
+            position < node.body.getStart(source),
         );
         if (!target) {
           throw new Error(
@@ -125,9 +168,12 @@ try {
         targetFunctions.add(target);
       }
 
-      const edits = [];
+      const edits: ReturnTypeTextEdit[] = [];
       let needsJsxImport = false;
       for (const node of targetFunctions) {
+        if (node.body === undefined) {
+          throw new Error(`Return type function body missing: ${filename}`);
+        }
         const signature = project.checker.getSignatureFromDeclaration(node);
         const returnType = signature && project.checker.getReturnTypeOfSignature(signature);
         const typeText =
@@ -136,14 +182,14 @@ try {
         const location = {
           filename: path.relative(projectRoot, filename),
           line: source.getLineAndCharacterOfPosition(node.getStart(source)).line + 1,
-          name: node.name?.getText(source),
+          name: isArrowFunction(node) ? undefined : node.name?.getText(source),
           type: typeText,
         };
         // Structural results need named contracts, rather than copied anonymous shapes.
         // Weak types and long dependency types also need a deliberate public contract.
         const predicate = signature && project.checker.getTypePredicateOfSignature(signature);
-        const reason = getReturnTypeSkipReason(typeText, predicate);
-        if (reason) {
+        const reason = getReturnTypeSkipReason(typeText, predicate !== undefined);
+        if (reason.length > 0 || typeText === undefined) {
           skipped.push({ ...location, type: typeText?.slice(0, 240), reason });
           continue;
         }
@@ -154,7 +200,10 @@ try {
         if (previousToken?.kind === SyntaxKind.CloseParenToken) {
           edits.push({ position: previousToken.end, text: `: ${annotation}` });
         } else if (isArrowFunction(node) && node.parameters.length === 1) {
-          const parameter = node.parameters[0];
+          const parameter = node.parameters.at(0);
+          if (parameter === undefined) {
+            throw new Error(`Return type arrow parameter missing: ${filename}:${location.line}`);
+          }
           edits.push(
             { position: parameter.getStart(source), text: "(" },
             { position: parameter.end, text: `): ${annotation}` },

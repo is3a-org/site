@@ -1,5 +1,5 @@
 import { defineRule } from "vite-plus/lint/plugins";
-import type { ESTree, Scope, SourceCode, Variable } from "vite-plus/lint/plugins";
+import type { ESTree, Scope, Variable } from "vite-plus/lint/plugins";
 
 import {
   classifyWideningTarget,
@@ -8,6 +8,7 @@ import {
   type TypeEnvironment,
   type WideningTarget,
 } from "../shared/dictionary-types.ts";
+import type { LintSourceCodeReader } from "../shared/lint-source-code-reader.ts";
 
 type FunctionExpression = ESTree.ArrowFunctionExpression | ESTree.Function;
 
@@ -26,9 +27,9 @@ function unwrapExpression(expression: ESTree.Expression): ESTree.Expression {
 }
 
 function resolveVariable(
-  sourceCode: SourceCode,
+  sourceCode: LintSourceCodeReader,
   identifier: ESTree.IdentifierReference,
-): Variable | null {
+): Variable | undefined {
   let scope: Scope | null = sourceCode.getScope(identifier);
   while (scope !== null) {
     const variable = scope.set.get(identifier.name);
@@ -37,17 +38,17 @@ function resolveVariable(
     }
     scope = scope.upper;
   }
-  return null;
+  return undefined;
 }
 
-function variableDeclarator(variable: Variable): ESTree.VariableDeclarator | null {
+function variableDeclarator(variable: Variable): ESTree.VariableDeclarator | undefined {
   if (variable.defs.length !== 1) {
-    return null;
+    return undefined;
   }
-  const [definition] = variable.defs;
+  const definition = variable.defs.at(0);
   return definition?.type === "Variable" && definition.node.type === "VariableDeclarator"
     ? definition.node
-    : null;
+    : undefined;
 }
 
 function isStableConstVariable(variable: Variable, declarator: ESTree.VariableDeclarator): boolean {
@@ -59,7 +60,7 @@ function isStableConstVariable(variable: Variable, declarator: ESTree.VariableDe
 }
 
 function hasKnownEvidence(
-  sourceCode: SourceCode,
+  sourceCode: LintSourceCodeReader,
   expression: ESTree.Expression,
   visitedVariables = new Set<Variable>(),
 ): boolean {
@@ -71,7 +72,7 @@ function hasKnownEvidence(
     return false;
   }
   const variable = resolveVariable(sourceCode, unwrapped);
-  if (variable === null || visitedVariables.has(variable)) {
+  if (variable === undefined || visitedVariables.has(variable)) {
     return false;
   }
   const declarator = variableDeclarator(variable);
@@ -85,14 +86,14 @@ function hasKnownEvidence(
 function annotationTarget(
   annotation: ESTree.TSTypeAnnotation | null | undefined,
   environment: TypeEnvironment,
-): WideningTarget | null {
+): WideningTarget | undefined {
   return annotation === null || annotation === undefined
-    ? null
+    ? undefined
     : classifyWideningTarget(annotation.typeAnnotation, environment);
 }
 
-function enclosingFunction(node: ESTree.Node): FunctionExpression | null {
-  let current: ESTree.Node | null = node.parent;
+function enclosingFunction(node: ESTree.Node): FunctionExpression | undefined {
+  let current = node.parent;
   while (current !== null && current.type !== "Program") {
     if (
       current.type === "ArrowFunctionExpression" ||
@@ -103,10 +104,10 @@ function enclosingFunction(node: ESTree.Node): FunctionExpression | null {
     }
     current = current.parent;
   }
-  return null;
+  return undefined;
 }
 
-function sourceKeyName(sourceCode: SourceCode, key: ESTree.PropertyKey): string {
+function sourceKeyName(sourceCode: LintSourceCodeReader, key: ESTree.PropertyKey): string {
   if (key.type === "Identifier" || key.type === "PrivateIdentifier") {
     return key.name;
   }
@@ -116,8 +117,11 @@ function sourceKeyName(sourceCode: SourceCode, key: ESTree.PropertyKey): string 
   return sourceCode.getText(key);
 }
 
-function functionName(sourceCode: SourceCode, owner: FunctionExpression | null): string {
-  if (owner === null) {
+function functionName(
+  sourceCode: LintSourceCodeReader,
+  owner: FunctionExpression | undefined,
+): string {
+  if (owner === undefined) {
     return "anonymous function";
   }
   if (owner.id !== null) {
@@ -160,14 +164,14 @@ export const noKnownValueWideningRule = defineRule({
     },
   },
   createOnce(context) {
-    let environment: TypeEnvironment | null = null;
+    let environment: TypeEnvironment | undefined;
 
     const reportFlow = (
       expression: ESTree.Expression,
-      destination: WideningTarget | null,
+      destination: WideningTarget | undefined,
       subject: string,
-    ) => {
-      if (destination === null) {
+    ): void => {
+      if (destination === undefined) {
         return;
       }
       if (isDictionaryAccumulatorTarget(destination) && isEmptyObjectExpression(expression)) {
@@ -183,14 +187,16 @@ export const noKnownValueWideningRule = defineRule({
       });
     };
 
-    const targetFromAnnotation = (annotation: ESTree.TSTypeAnnotation | null | undefined) =>
-      environment === null ? null : annotationTarget(annotation, environment);
+    const targetFromAnnotation = (
+      annotation: ESTree.TSTypeAnnotation | null | undefined,
+    ): WideningTarget | undefined =>
+      environment === undefined ? undefined : annotationTarget(annotation, environment);
 
     return {
-      Program(node) {
+      Program(node): void {
         environment = createTypeEnvironment(node);
       },
-      VariableDeclarator(node) {
+      VariableDeclarator(node): void {
         if (node.init === null || node.id.type !== "Identifier") {
           return;
         }
@@ -200,7 +206,7 @@ export const noKnownValueWideningRule = defineRule({
           `binding \`${node.id.name}\``,
         );
       },
-      PropertyDefinition(node) {
+      PropertyDefinition(node): void {
         if (node.value === null) {
           return;
         }
@@ -210,7 +216,7 @@ export const noKnownValueWideningRule = defineRule({
           `property \`${sourceKeyName(context.sourceCode, node.key)}\``,
         );
       },
-      AccessorProperty(node) {
+      AccessorProperty(node): void {
         if (node.value === null) {
           return;
         }
@@ -220,12 +226,12 @@ export const noKnownValueWideningRule = defineRule({
           `property \`${sourceKeyName(context.sourceCode, node.key)}\``,
         );
       },
-      AssignmentExpression(node) {
+      AssignmentExpression(node): void {
         if (node.operator !== "=" || node.left.type !== "Identifier") {
           return;
         }
         const variable = resolveVariable(context.sourceCode, node.left);
-        if (variable === null) {
+        if (variable === undefined) {
           return;
         }
         const declarator = variableDeclarator(variable);
@@ -238,7 +244,7 @@ export const noKnownValueWideningRule = defineRule({
           `binding \`${declarator.id.name}\``,
         );
       },
-      ReturnStatement(node) {
+      ReturnStatement(node): void {
         if (node.argument === null) {
           return;
         }
@@ -249,7 +255,7 @@ export const noKnownValueWideningRule = defineRule({
           `return value of \`${functionName(context.sourceCode, owner)}\``,
         );
       },
-      ArrowFunctionExpression(node) {
+      ArrowFunctionExpression(node): void {
         if (node.body.type === "BlockStatement") {
           return;
         }
@@ -259,8 +265,8 @@ export const noKnownValueWideningRule = defineRule({
           `return value of \`${functionName(context.sourceCode, node)}\``,
         );
       },
-      TSAsExpression(node) {
-        if (environment === null || hasParentAssertion(node)) {
+      TSAsExpression(node): void {
+        if (environment === undefined || hasParentAssertion(node)) {
           return;
         }
         reportFlow(
@@ -269,8 +275,8 @@ export const noKnownValueWideningRule = defineRule({
           "assertion",
         );
       },
-      TSTypeAssertion(node) {
-        if (environment === null || hasParentAssertion(node)) {
+      TSTypeAssertion(node): void {
+        if (environment === undefined || hasParentAssertion(node)) {
           return;
         }
         reportFlow(

@@ -53,7 +53,7 @@ export const noUnknownParametersRule = defineRule({
     },
   },
   create(context) {
-    const checkParameters = (node: ParameterOwner) => {
+    const checkParameters = (node: ParameterOwner): void => {
       for (const parameter of node.params) {
         const annotation = parameterAnnotation(parameter);
         if (annotation?.typeAnnotation.type !== "TSUnknownKeyword") {

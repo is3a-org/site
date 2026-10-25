@@ -21,21 +21,27 @@ export const noForbiddenTermInSymbolNamesRule = defineRule({
     },
   },
   create(context) {
-    const reportForbiddenSymbolName = (node: ESTree.Node & { name: string }) => {
-      if (!containsForbiddenSymbolName(node.name)) {
+    const reportForbiddenSymbolName = (node: ESTree.Node, name: string): void => {
+      if (!containsForbiddenSymbolName(name)) {
         return;
       }
       context.report({
         node,
         messageId: "forbiddenSymbolName",
-        data: { name: node.name },
+        data: { name },
       });
     };
 
     return {
-      Identifier: reportForbiddenSymbolName,
-      PrivateIdentifier: reportForbiddenSymbolName,
-      JSXIdentifier: reportForbiddenSymbolName,
+      Identifier(node): void {
+        reportForbiddenSymbolName(node, node.name);
+      },
+      PrivateIdentifier(node): void {
+        reportForbiddenSymbolName(node, node.name);
+      },
+      JSXIdentifier(node): void {
+        reportForbiddenSymbolName(node, node.name);
+      },
     };
   },
 });

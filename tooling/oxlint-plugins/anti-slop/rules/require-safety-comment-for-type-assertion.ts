@@ -1,5 +1,7 @@
 import { defineRule } from "vite-plus/lint/plugins";
-import type { ESTree, SourceCode } from "vite-plus/lint/plugins";
+import type { ESTree } from "vite-plus/lint/plugins";
+
+import type { LintSourceCodeReader } from "../shared/lint-source-code-reader.ts";
 
 type TypeAssertion = ESTree.TSAsExpression | ESTree.TSTypeAssertion;
 
@@ -19,9 +21,9 @@ function isConstAssertion(node: TypeAssertion): boolean {
   );
 }
 
-function hasSafetyComment(sourceCode: SourceCode, node: TypeAssertion): boolean {
+function hasSafetyComment(sourceCode: LintSourceCodeReader, node: TypeAssertion): boolean {
   let current: ESTree.Node = node;
-  while (true) {
+  for (;;) {
     if (
       sourceCode
         .getCommentsBefore(current)
@@ -50,7 +52,7 @@ export const requireSafetyCommentForTypeAssertionRule = defineRule({
     },
   },
   create(context) {
-    const checkAssertion = (node: TypeAssertion) => {
+    const checkAssertion = (node: TypeAssertion): void => {
       if (isConstAssertion(node) || hasSafetyComment(context.sourceCode, node)) {
         return;
       }

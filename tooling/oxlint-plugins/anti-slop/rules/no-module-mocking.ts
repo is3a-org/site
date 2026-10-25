@@ -1,12 +1,14 @@
 import { defineRule } from "vite-plus/lint/plugins";
-import type { ESTree, Scope, SourceCode, Variable } from "vite-plus/lint/plugins";
+import type { ESTree, Scope, Variable } from "vite-plus/lint/plugins";
+
+import type { LintSourceCodeReader } from "../shared/lint-source-code-reader.ts";
 
 const moduleMockMethods = new Set(["doMock", "mock", "unstable_mockModule"]);
 
 function resolveVariable(
-  sourceCode: SourceCode,
+  sourceCode: LintSourceCodeReader,
   identifier: ESTree.IdentifierReference,
-): Variable | null {
+): Variable | undefined {
   let scope: Scope | null = sourceCode.getScope(identifier);
   while (scope !== null) {
     const variable = scope.set.get(identifier.name);
@@ -15,18 +17,18 @@ function resolveVariable(
     }
     scope = scope.upper;
   }
-  return null;
+  return undefined;
 }
 
-function importedName(node: ESTree.Node): string | null {
+function importedName(node: ESTree.Node): string | undefined {
   if (node.type !== "ImportSpecifier") {
-    return null;
+    return undefined;
   }
   return node.imported.type === "Identifier" ? node.imported.name : node.imported.value;
 }
 
 function isTestFrameworkObject(
-  sourceCode: SourceCode,
+  sourceCode: LintSourceCodeReader,
   expression: ESTree.Expression,
 ): expression is ESTree.IdentifierReference {
   if (expression.type !== "Identifier") {
@@ -40,7 +42,7 @@ function isTestFrameworkObject(
   }
 
   const variable = resolveVariable(sourceCode, expression);
-  if (variable === null || variable.defs.length === 0) {
+  if (variable === undefined || variable.defs.length === 0) {
     return expression.name === "vi" || expression.name === "jest";
   }
   return variable.defs.some((definition) => {
@@ -55,7 +57,7 @@ function isTestFrameworkObject(
   });
 }
 
-function moduleMockCall(sourceCode: SourceCode, callee: ESTree.Expression): boolean {
+function moduleMockCall(sourceCode: LintSourceCodeReader, callee: ESTree.Expression): boolean {
   if (!("property" in callee) || !("object" in callee) || !("computed" in callee)) {
     return false;
   }
@@ -63,17 +65,15 @@ function moduleMockCall(sourceCode: SourceCode, callee: ESTree.Expression): bool
     return false;
   }
   const property = callee.property;
-  const method = callee.computed
-    ? property.type === "Literal" &&
+  if (callee.computed) {
+    return (
+      property.type === "Literal" &&
       (property.value === "doMock" ||
         property.value === "mock" ||
         property.value === "unstable_mockModule")
-      ? property.value
-      : null
-    : property.type === "Identifier"
-      ? property.name
-      : null;
-  return method !== null && moduleMockMethods.has(method);
+    );
+  }
+  return property.type === "Identifier" && moduleMockMethods.has(property.name);
 }
 
 /** Ban test framework module mocking in favor of real dependency seams. */
@@ -91,7 +91,7 @@ export const noModuleMockingRule = defineRule({
   },
   create(context) {
     return {
-      CallExpression(node) {
+      CallExpression(node): void {
         if (node.callee.type === "Super" || node.callee.type === "V8IntrinsicExpression") {
           return;
         }

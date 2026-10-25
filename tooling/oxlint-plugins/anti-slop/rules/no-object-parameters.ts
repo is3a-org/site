@@ -1,5 +1,7 @@
 import { defineRule } from "vite-plus/lint/plugins";
-import type { ESTree, SourceCode } from "vite-plus/lint/plugins";
+import type { ESTree } from "vite-plus/lint/plugins";
+
+import type { LintSourceCodeReader } from "../shared/lint-source-code-reader.ts";
 
 type Parameter = ESTree.ParamPattern;
 type ParameterOwner =
@@ -24,7 +26,7 @@ function parameterAnnotation(parameter: Parameter): ESTree.TSTypeAnnotation | nu
   return parameter.typeAnnotation;
 }
 
-function parameterName(parameter: Parameter, sourceCode: SourceCode): string {
+function parameterName(parameter: Parameter, sourceCode: LintSourceCodeReader): string {
   return parameter.type === "Identifier"
     ? parameter.name
     : sourceCode.getText(parameter).replace(/\s*:\s*object\s*$/u, "");
@@ -32,8 +34,8 @@ function parameterName(parameter: Parameter, sourceCode: SourceCode): string {
 
 function lexicalTypeParameterNames(node: ESTree.Node): ReadonlySet<string> {
   const names = new Set<string>();
-  let current: ESTree.Node | null = node;
-  while (current !== null && current.type !== "Program") {
+  let current: ESTree.Node = node;
+  while (current.type !== "Program") {
     if ("typeParameters" in current) {
       for (const parameter of current.typeParameters?.params ?? []) {
         names.add(parameter.name.name);
@@ -83,9 +85,7 @@ export const noObjectParametersRule = defineRule({
       if (
         type.type !== "TSTypeReference" ||
         type.typeName.type !== "Identifier" ||
-        (type.typeArguments !== null &&
-          type.typeArguments !== undefined &&
-          type.typeArguments.params.length > 0) ||
+        (type.typeArguments !== null && type.typeArguments.params.length > 0) ||
         visited.has(type.typeName.name) ||
         shadowedAliases.has(type.typeName.name)
       ) {
@@ -95,12 +95,11 @@ export const noObjectParametersRule = defineRule({
       if (alias === undefined) {
         return false;
       }
-      const nextVisited = new Set(visited);
-      nextVisited.add(type.typeName.name);
+      const nextVisited = new Set([...visited, type.typeName.name]);
       return resolvesToObject(alias, shadowedAliases, nextVisited);
     };
 
-    const checkParameters = (node: ParameterOwner) => {
+    const checkParameters = (node: ParameterOwner): void => {
       const shadowedAliases = lexicalTypeParameterNames(node);
       for (const parameter of node.params) {
         const annotation = parameterAnnotation(parameter);
@@ -119,13 +118,13 @@ export const noObjectParametersRule = defineRule({
     };
 
     return {
-      Program(node) {
+      Program(node): void {
         for (const statement of node.body) {
           const declaration =
             statement.type === "ExportNamedDeclaration" ? statement.declaration : statement;
           if (
             declaration?.type === "TSTypeAliasDeclaration" &&
-            (declaration.typeParameters === null || declaration.typeParameters === undefined)
+            declaration.typeParameters === null
           ) {
             aliases.set(declaration.id.name, declaration.typeAnnotation);
           }

@@ -4,7 +4,7 @@ import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 
-const script = fileURLToPath(new URL("./stripe.mjs", import.meta.url));
+const script = fileURLToPath(new URL("stripe.mts", import.meta.url));
 const sandboxKey = "sk_test_fake_guard_test_key";
 
 for (const { name, args, key = sandboxKey } of [
@@ -21,7 +21,7 @@ for (const { name, args, key = sandboxKey } of [
   { name: "leading Vite+ separator", args: ["--", "listen", "--live"] },
   { name: "webhook task separator", args: ["listen", "--all-snapshot", "--", "--live"] },
 ]) {
-  test(`rejects ${name} before contacting Stripe`, () => {
+  void test(`rejects ${name} before contacting Stripe`, () => {
     const result = spawnSync(process.execPath, [script, ...args], {
       env: { ...process.env, STRIPE_SECRET_KEY: key, STRIPE_API_KEY: "" },
       encoding: "utf8",
