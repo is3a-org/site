@@ -1,5 +1,6 @@
 "use client";
 
+import { Alert, AlertDescription, AlertTitle } from "@is3a/design-system/alert";
 import { Badge } from "@is3a/design-system/badge";
 import { Button } from "@is3a/design-system/button";
 import {
@@ -62,15 +63,15 @@ function getImportCustomerText(value: string | null | undefined): string {
 
 function getImportPreviewRowClass(result: MatchResult): string {
   if (result.hasConflict) {
-    return "bg-red-50 dark:bg-red-950/20";
+    return "bg-destructive-muted";
   }
-  return result.alreadySynced ? "bg-gray-50 dark:bg-gray-950/20" : "";
+  return result.alreadySynced ? "bg-muted" : "";
 }
 
 function BulkImportMatchAction({ result }: Readonly<{ result: MatchResult }>): JSX.Element {
   if (result.alreadySynced) {
     return (
-      <Badge variant="outline" className="border-gray-500 text-gray-700">
+      <Badge variant="secondary">
         <CheckCircle2 className="mr-1 h-3 w-3" />
         Already Synced (Will be skipped)
       </Badge>
@@ -79,7 +80,7 @@ function BulkImportMatchAction({ result }: Readonly<{ result: MatchResult }>): J
   if (result.hasConflict) {
     return (
       <div className="space-y-1">
-        <Badge variant="outline" className="border-red-500 text-red-700">
+        <Badge variant="destructive">
           <XCircle className="mr-1 h-3 w-3" />
           Conflict (Will be skipped)
         </Badge>
@@ -89,14 +90,14 @@ function BulkImportMatchAction({ result }: Readonly<{ result: MatchResult }>): J
   }
   if (result.willCreateUser) {
     return (
-      <Badge variant="outline" className="border-green-500 text-green-700">
+      <Badge variant="success">
         <UserPlus className="mr-1 h-3 w-3" />
         Create new user
       </Badge>
     );
   }
   return (
-    <Badge variant="outline" className="border-blue-500 text-blue-700">
+    <Badge variant="outline">
       <Users className="mr-1 h-3 w-3" />
       Link to {result.matchedUser?.email}
     </Badge>
@@ -337,28 +338,28 @@ export function BulkImportWizard({
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
                 <div className="flex items-center gap-3 rounded-lg border p-4">
-                  <Users className="h-8 w-8 text-blue-500" />
+                  <Users className="h-8 w-8 text-chart-3" />
                   <div>
                     <p className="text-2xl font-bold">{existingUsersCount}</p>
                     <p className="text-sm text-muted-foreground">Will Link</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3 rounded-lg border p-4">
-                  <UserPlus className="h-8 w-8 text-green-500" />
+                  <UserPlus className="h-8 w-8 text-success" />
                   <div>
                     <p className="text-2xl font-bold">{newUsersCount}</p>
                     <p className="text-sm text-muted-foreground">Will Create</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3 rounded-lg border p-4">
-                  <CheckCircle2 className="h-8 w-8 text-gray-500" />
+                  <CheckCircle2 className="h-8 w-8 text-muted-foreground" />
                   <div>
                     <p className="text-2xl font-bold">{alreadySyncedCount}</p>
                     <p className="text-sm text-muted-foreground">Already Synced</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3 rounded-lg border p-4">
-                  <XCircle className="h-8 w-8 text-red-500" />
+                  <XCircle className="h-8 w-8 text-destructive" />
                   <div>
                     <p className="text-2xl font-bold">{conflictsCount}</p>
                     <p className="text-sm text-muted-foreground">Conflicts</p>
@@ -397,13 +398,13 @@ export function BulkImportWizard({
               </div>
 
               {newUsersCount > 0 && (
-                <div className="rounded-lg border border-yellow-500/50 bg-yellow-500/10 p-3">
-                  <p className="text-sm text-yellow-900 dark:text-yellow-100">
+                <Alert variant="warning">
+                  <AlertDescription>
                     <strong>Note:</strong> {newUsersCount} new user(s) will be created with
                     auto-generated passwords. Users will need to reset their passwords on first
                     login.
-                  </p>
-                </div>
+                  </AlertDescription>
+                </Alert>
               )}
 
               <div className="flex justify-between">
@@ -467,41 +468,35 @@ export function BulkImportWizard({
           <CardContent>
             <div className="space-y-4">
               {fetcher.data?.success === true ? (
-                <div className="flex items-start gap-3 rounded-lg border border-green-500/50 bg-green-500/10 p-4">
-                  <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-green-600" />
-                  <div>
-                    <p className="font-medium text-green-900 dark:text-green-100">
-                      {fetcher.data.message}
-                    </p>
-                    <p className="mt-1 text-sm text-green-800 dark:text-green-200">
-                      Successfully imported {fetcher.data.results.length} customer(s) and synced
-                      their subscriptions.
-                    </p>
-                  </div>
-                </div>
+                <Alert variant="success" role="alert">
+                  <CheckCircle2 />
+                  <AlertTitle>{fetcher.data.message}</AlertTitle>
+                  <AlertDescription>
+                    Successfully imported {fetcher.data.results.length} customer(s) and synced their
+                    subscriptions.
+                  </AlertDescription>
+                </Alert>
               ) : (
-                <div className="flex items-start gap-3 rounded-lg border border-red-500/50 bg-red-500/10 p-4">
-                  <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-red-600" />
-                  <div>
-                    <p className="font-medium text-red-900 dark:text-red-100">Import Failed</p>
-                    <p className="mt-1 text-sm text-red-800 dark:text-red-200">
+                <Alert variant="destructive" role="alert">
+                  <AlertCircle />
+                  <AlertTitle>Import Failed</AlertTitle>
+                  <AlertDescription>
+                    <p>
                       {importError === undefined || importError.error === ""
                         ? "An unknown error occurred"
                         : importError.error}
                     </p>
                     {importError?.customerId !== undefined && importError.customerId !== "" && (
-                      <p className="mt-1 text-xs text-red-700 dark:text-red-300">
-                        Failed at customer: {importError.customerId}
-                      </p>
+                      <p className="text-xs">Failed at customer: {importError.customerId}</p>
                     )}
                     {importError?.results !== undefined && importError.results.length > 0 && (
-                      <p className="mt-2 text-sm text-red-800 dark:text-red-200">
+                      <p>
                         Successfully processed {importError.results.length} customer(s) before error
                         occurred.
                       </p>
                     )}
-                  </div>
-                </div>
+                  </AlertDescription>
+                </Alert>
               )}
 
               <div className="flex justify-end gap-2">

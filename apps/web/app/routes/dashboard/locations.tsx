@@ -216,7 +216,7 @@ export default function LocationsPage({
                             href={loc.website}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="flex items-center gap-1 text-sm text-blue-600 hover:underline"
+                            className="flex items-center gap-1 text-sm text-primary hover:underline"
                           >
                             <Globe className="h-3 w-3" />
                             Link
@@ -269,7 +269,7 @@ export default function LocationsPage({
                               handleDelete(loc);
                             }}
                           >
-                            <Trash2 className="h-4 w-4 text-red-600" />
+                            <Trash2 className="h-4 w-4 text-destructive" />
                           </Button>
                         </div>
                       </TableCell>
@@ -386,7 +386,7 @@ function LocationFormDialog({
           <div className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="name">
-                Name <span className="text-red-600">*</span>
+                Name <span className="text-destructive">*</span>
               </Label>
               <Input
                 id="name"

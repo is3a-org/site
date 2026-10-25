@@ -21,12 +21,7 @@ export const links: Route.LinksFunction = () => [
   },
   {
     rel: "stylesheet",
-    href: "https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap",
-  },
-  // Landing page fonts, same as the Google Sites theme on is3a.nl
-  {
-    rel: "stylesheet",
-    href: "https://fonts.googleapis.com/css?family=PT%20Sans%3A400%2C700%7CMerriweather%3A400%2C700&display=swap",
+    href: "https://fonts.googleapis.com/css2?family=Archivo:ital,wdth,wght@0,62..125,100..900;1,62..125,100..900&display=swap",
   },
 ];
 

@@ -1,5 +1,6 @@
 "use client";
 
+import { Alert, AlertDescription, AlertTitle } from "@is3a/design-system/alert";
 import { Button } from "@is3a/design-system/button";
 import {
   Dialog,
@@ -157,23 +158,21 @@ export function SyncSubscriptionDialog({
 
           {/* Error Display */}
           {submissionError !== undefined && submissionError !== "" && (
-            <div className="flex items-start gap-2 rounded-md border border-destructive/50 bg-destructive/10 p-3">
-              <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-destructive" />
-              <div className="text-sm text-destructive">{submissionError}</div>
-            </div>
+            <Alert variant="destructive" role="alert">
+              <AlertCircle />
+              <AlertDescription>{submissionError}</AlertDescription>
+            </Alert>
           )}
 
           {/* Match Info */}
           {matchedUser !== undefined && (
-            <div className="flex items-start gap-2 rounded-md border border-green-500/50 bg-green-500/10 p-3">
-              <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-green-600" />
-              <div className="text-sm">
-                <p className="font-medium text-green-900 dark:text-green-100">
-                  User found by {matchType === "stripeCustomerId" ? "Stripe ID" : "email"}
-                </p>
-                <p className="text-green-800 dark:text-green-200">{matchedUser.email}</p>
-              </div>
-            </div>
+            <Alert variant="success">
+              <CheckCircle2 />
+              <AlertTitle>
+                User found by {matchType === "stripeCustomerId" ? "Stripe ID" : "email"}
+              </AlertTitle>
+              <AlertDescription>{matchedUser.email}</AlertDescription>
+            </Alert>
           )}
 
           {/* Step 1: Select User */}
@@ -229,7 +228,7 @@ export function SyncSubscriptionDialog({
                       setSelectedUserId("");
                     }
                   }}
-                  className="h-4 w-4 rounded border-gray-300"
+                  className="size-4 accent-primary"
                 />
                 <Label htmlFor="create-new" className="cursor-pointer font-normal">
                   Create a new user instead

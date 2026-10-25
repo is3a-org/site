@@ -1,3 +1,4 @@
+import { Alert, AlertDescription, AlertTitle } from "@is3a/design-system/alert";
 import { Badge } from "@is3a/design-system/badge";
 import { BreadcrumbItem, BreadcrumbPage } from "@is3a/design-system/breadcrumb";
 import { Button } from "@is3a/design-system/button";
@@ -41,10 +42,18 @@ import {
   formatMembershipCancellationDate,
 } from "./membership-billing";
 
+type StatusTone = "success" | "warning" | "destructive" | "secondary";
+
+const STATUS_TEXT = {
+  success: "text-success",
+  warning: "text-warning",
+  destructive: "text-destructive",
+  secondary: "text-muted-foreground",
+} satisfies Record<StatusTone, string>;
+
 interface StatusMeta {
   label: string;
-  badgeColor: string;
-  textColor: string;
+  tone: StatusTone;
   isHealthy: boolean;
   showPaymentWarning: boolean;
 }
@@ -52,50 +61,43 @@ interface StatusMeta {
 const STATUS_CONFIG = {
   active: {
     label: "Active",
-    badgeColor: "bg-green-600",
-    textColor: "text-green-800",
+    tone: "success",
     isHealthy: true,
     showPaymentWarning: false,
   },
   trialing: {
     label: "Trial",
-    badgeColor: "bg-green-600",
-    textColor: "text-green-800",
+    tone: "success",
     isHealthy: true,
     showPaymentWarning: false,
   },
   past_due: {
     label: "Past Due",
-    badgeColor: "bg-red-600",
-    textColor: "text-red-800",
+    tone: "destructive",
     isHealthy: false,
     showPaymentWarning: true,
   },
   unpaid: {
     label: "Unpaid",
-    badgeColor: "bg-red-600",
-    textColor: "text-red-800",
+    tone: "destructive",
     isHealthy: false,
     showPaymentWarning: true,
   },
   incomplete: {
     label: "Incomplete",
-    badgeColor: "bg-yellow-500",
-    textColor: "text-yellow-800",
+    tone: "warning",
     isHealthy: false,
     showPaymentWarning: true,
   },
   incomplete_expired: {
     label: "Expired",
-    badgeColor: "bg-gray-400",
-    textColor: "text-gray-800",
+    tone: "secondary",
     isHealthy: false,
     showPaymentWarning: false,
   },
   canceled: {
     label: "Canceled",
-    badgeColor: "bg-gray-400",
-    textColor: "text-gray-800",
+    tone: "secondary",
     isHealthy: false,
     showPaymentWarning: false,
   },
@@ -105,8 +107,7 @@ const getStatusMeta = (status?: string, isScheduledToCancel?: boolean): StatusMe
   if (isScheduledToCancel === true) {
     return {
       label: "Canceling",
-      badgeColor: "bg-orange-300",
-      textColor: "text-orange-800",
+      tone: "warning",
       isHealthy: false,
       showPaymentWarning: false,
     };
@@ -119,8 +120,7 @@ const getStatusMeta = (status?: string, isScheduledToCancel?: boolean): StatusMe
 
   return {
     label: status === undefined || status === "" ? "Unknown" : status,
-    badgeColor: "bg-gray-400",
-    textColor: "text-gray-800",
+    tone: "secondary",
     isHealthy: false,
     showPaymentWarning: false,
   };
@@ -228,10 +228,10 @@ const redirectToStripe = (response?: { readonly url?: string }): void => {
 };
 
 const ErrorAlert = ({ message }: { readonly message: string }): JSX.Element => (
-  <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-red-800">
-    <p className="font-semibold">Error</p>
-    <p className="text-sm">{message}</p>
-  </div>
+  <Alert variant="destructive" role="alert">
+    <AlertTitle>Error</AlertTitle>
+    <AlertDescription>{message}</AlertDescription>
+  </Alert>
 );
 
 interface MembershipLoaderData {
@@ -447,9 +447,9 @@ export default function DashboardSubscribe({
             <hr />
 
             {passwordSuccess && (
-              <div className="rounded-md bg-green-50 p-3 text-sm text-green-800">
-                Password changed successfully
-              </div>
+              <Alert variant="success" role="alert">
+                <AlertDescription>Password changed successfully</AlertDescription>
+              </Alert>
             )}
 
             {showPasswordForm ? (
@@ -460,9 +460,9 @@ export default function DashboardSubscribe({
                 className="space-y-4"
               >
                 {passwordError !== undefined && passwordError !== "" && (
-                  <div className="rounded-md bg-red-50 p-3 text-sm text-red-800">
-                    {passwordError}
-                  </div>
+                  <Alert variant="destructive" role="alert">
+                    <AlertDescription>{passwordError}</AlertDescription>
+                  </Alert>
                 )}
 
                 <div className="space-y-2">
@@ -540,14 +540,9 @@ export default function DashboardSubscribe({
                           : membership.name}{" "}
                         Membership
                       </CardTitle>
-                      <Badge
-                        variant={statusMeta.isHealthy ? "default" : "secondary"}
-                        className={statusMeta.badgeColor}
-                      >
-                        {statusMeta.label}
-                      </Badge>
+                      <Badge variant={statusMeta.tone}>{statusMeta.label}</Badge>
                     </div>
-                    <CardDescription className={statusMeta.textColor}>
+                    <CardDescription className={STATUS_TEXT[statusMeta.tone]}>
                       {statusDescription}
                     </CardDescription>
                   </div>
@@ -556,42 +551,24 @@ export default function DashboardSubscribe({
               <CardContent className="space-y-6">
                 {/* Payment Issue Warning */}
                 {statusMeta.showPaymentWarning && paymentWarning && (
-                  <div
-                    className={`rounded-lg border p-4 ${
-                      paymentWarning.variant === "destructive"
-                        ? "border-red-300 bg-red-50"
-                        : "border-yellow-300 bg-yellow-50"
-                    }`}
+                  <Alert
+                    variant={paymentWarning.variant === "destructive" ? "destructive" : "warning"}
                   >
-                    <p
-                      className={`mb-2 font-semibold ${
-                        paymentWarning.variant === "destructive"
-                          ? "text-red-900"
-                          : "text-yellow-900"
-                      }`}
-                    >
-                      {paymentWarning.title}
-                    </p>
-                    <p
-                      className={`text-sm ${
-                        paymentWarning.variant === "destructive"
-                          ? "text-red-800"
-                          : "text-yellow-800"
-                      }`}
-                    >
-                      {paymentWarning.message}
-                    </p>
-                    <Button
-                      onClick={() => {
-                        void handleUpdateBilling();
-                      }}
-                      disabled={createPortalLoading}
-                      className="mt-3"
-                      variant={paymentWarning.variant}
-                    >
-                      {createPortalLoading === true ? "Redirecting..." : "Update Payment Method"}
-                    </Button>
-                  </div>
+                    <AlertTitle>{paymentWarning.title}</AlertTitle>
+                    <AlertDescription>
+                      <p>{paymentWarning.message}</p>
+                      <Button
+                        onClick={() => {
+                          void handleUpdateBilling();
+                        }}
+                        disabled={createPortalLoading}
+                        className="mt-3"
+                        variant={paymentWarning.variant}
+                      >
+                        {createPortalLoading === true ? "Redirecting..." : "Update Payment Method"}
+                      </Button>
+                    </AlertDescription>
+                  </Alert>
                 )}
 
                 {/* Membership Details */}
