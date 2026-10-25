@@ -6,7 +6,7 @@ import { requestContext } from "~/request-context";
 export { StripeFragmentDurableObject } from "~/fragno/stripe-durable-object";
 
 const requestHandler = createRequestHandler(
-  () => import("virtual:react-router/server-build"),
+  async () => import("virtual:react-router/server-build"),
   import.meta.env.MODE,
 );
 

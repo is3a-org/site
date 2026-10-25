@@ -1,3 +1,4 @@
+import { jsonSchemaPropertySchema, uiSchemaElementSchema } from "./form-schema-contracts";
 import type {
   FormField,
   FormBuilderState,
@@ -5,78 +6,46 @@ import type {
   JsonSchemaProperty,
   UiSchemaElement,
   DataSchema,
+  FormJsonValue,
 } from "./types";
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null;
-}
-
-function isJsonSchemaProperty(value: unknown): value is JsonSchemaProperty {
-  if (!isRecord(value)) {
-    return false;
-  }
-
-  const type = value.type;
-  return (
-    type === "string" ||
-    type === "number" ||
-    type === "integer" ||
-    type === "boolean" ||
-    type === "object" ||
-    type === "array"
-  );
-}
-
-function isUiSchemaElement(value: unknown): value is UiSchemaElement {
-  if (!isRecord(value)) {
-    return false;
-  }
-
-  const type = value.type;
-  return (
-    type === "Control" ||
-    type === "VerticalLayout" ||
-    type === "HorizontalLayout" ||
-    type === "Group" ||
-    type === "Label"
-  );
-}
 
 /**
  * Converts a single field to its JSON Schema property definition.
  */
 export function fieldToSchemaProperty(field: FormField): JsonSchemaProperty {
-  const base: JsonSchemaProperty = {
+  const base = {
     type: "string",
     title: field.label,
-  };
-
-  if (field.description) {
-    base.description = field.description;
-  }
+    ...(field.description !== undefined &&
+      field.description.length > 0 && { description: field.description }),
+  } satisfies JsonSchemaProperty;
 
   switch (field.fieldType) {
-    case "text":
+    case "text": {
       return { ...base, type: "string" };
+    }
 
-    case "textarea":
+    case "textarea": {
       return { ...base, type: "string" };
+    }
 
-    case "number":
+    case "number": {
       return {
         ...base,
         type: "number",
         ...(field.options?.minimum !== undefined && { minimum: field.options.minimum }),
         ...(field.options?.maximum !== undefined && { maximum: field.options.maximum }),
       };
+    }
 
-    case "integer":
+    case "integer": {
       return {
         ...base,
         type: "integer",
         ...(field.options?.minimum !== undefined && { minimum: field.options.minimum }),
         ...(field.options?.maximum !== undefined && { maximum: field.options.maximum }),
       };
+    }
 
     case "slider": {
       const min = field.options?.minimum;
@@ -91,44 +60,55 @@ export function fieldToSchemaProperty(field: FormField): JsonSchemaProperty {
       };
     }
 
-    case "email":
+    case "email": {
       return { ...base, type: "string", format: "email" };
+    }
 
-    case "boolean":
+    case "boolean": {
       return { ...base, type: "boolean" };
+    }
 
-    case "date":
+    case "date": {
       return { ...base, type: "string", format: "date" };
+    }
 
-    case "time":
+    case "time": {
       return { ...base, type: "string", format: "time" };
+    }
 
-    case "datetime":
+    case "datetime": {
       return { ...base, type: "string", format: "date-time" };
+    }
 
-    case "select":
+    case "select": {
       return {
         ...base,
         type: "string",
         enum: field.options?.enumValues ?? [],
       };
+    }
 
-    case "unsupported":
-      if (field.options?.rawJsonSchema) {
+    case "unsupported": {
+      if (field.options?.rawJsonSchema !== undefined && field.options.rawJsonSchema.length > 0) {
         try {
-          const parsed = JSON.parse(field.options.rawJsonSchema);
-          if (isJsonSchemaProperty(parsed)) {
-            return parsed;
+          const parsed = jsonSchemaPropertySchema.safeParse(
+            JSON.parse(field.options.rawJsonSchema),
+          );
+          if (parsed.success) {
+            return parsed.data;
           }
         } catch {
           return base;
         }
       }
       return base;
+    }
 
-    default:
+    case "label": {
       return base;
+    }
   }
+  return base;
 }
 
 /**
@@ -142,23 +122,22 @@ export function fieldToUiSchemaElement(field: FormField): UiSchemaElement {
     };
   }
 
-  if (field.fieldType === "unsupported" && field.options?.rawUiSchema) {
+  if (
+    field.fieldType === "unsupported" &&
+    field.options?.rawUiSchema !== undefined &&
+    field.options.rawUiSchema.length > 0
+  ) {
     try {
-      const parsed = JSON.parse(field.options.rawUiSchema);
-      if (isUiSchemaElement(parsed)) {
-        return parsed;
+      const parsed = uiSchemaElementSchema.safeParse(JSON.parse(field.options.rawUiSchema));
+      if (parsed.success) {
+        return parsed.data;
       }
     } catch {
       // Ignore invalid UI schema JSON and fall back to default control.
     }
   }
 
-  const control: UiSchemaElement = {
-    type: "Control",
-    scope: `#/properties/${field.fieldName}`,
-  };
-
-  const options: Record<string, unknown> = {};
+  const options: Record<string, FormJsonValue> = {};
 
   if (field.fieldType === "textarea") {
     options.multi = true;
@@ -168,15 +147,15 @@ export function fieldToUiSchemaElement(field: FormField): UiSchemaElement {
     options.slider = true;
   }
 
-  if (field.options?.placeholder) {
+  if (field.options?.placeholder !== undefined && field.options.placeholder.length > 0) {
     options.placeholder = field.options.placeholder;
   }
 
-  if (Object.keys(options).length > 0) {
-    control.options = options;
-  }
-
-  return control;
+  return {
+    type: "Control",
+    scope: `#/properties/${field.fieldName}`,
+    ...(Object.keys(options).length > 0 && { options }),
+  };
 }
 
 /**
@@ -228,9 +207,9 @@ export function labelToFieldName(label: string): string {
   return (
     label
       .toLowerCase()
-      .replace(/[^a-z0-9]+/g, "_")
-      .replace(/^_+|_+$/g, "")
-      .replace(/_+/g, "_") || "field"
+      .replaceAll(/[^a-z0-9]+/g, "_")
+      .replaceAll(/^_+|_+$/g, "")
+      .replaceAll(/_+/g, "_") || "field"
   );
 }
 
@@ -238,7 +217,7 @@ export function labelToFieldName(label: string): string {
  * Ensures a field name is unique within the form.
  * Appends a number suffix if the name already exists.
  */
-export function ensureUniqueFieldName(baseName: string, existingNames: string[]): string {
+export function ensureUniqueFieldName(baseName: string, existingNames: readonly string[]): string {
   let name = baseName;
   let counter = 1;
 

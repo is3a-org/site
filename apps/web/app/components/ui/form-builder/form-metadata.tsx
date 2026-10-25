@@ -9,20 +9,22 @@ import {
 } from "@is3a/design-system/select";
 import type { JSX } from "react";
 
+import type { FormStatus as FormsFragmentStatus } from "@fragno-dev/forms";
+
 import { cn } from "@/lib/utils";
 
-export type FormStatus = "draft" | "open" | "closed";
+export type FormStatus = FormsFragmentStatus;
 
 export interface FormMetadata {
-  title: string;
-  description: string;
-  status: FormStatus;
+  readonly title: string;
+  readonly description: string;
+  readonly status: FormStatus;
 }
 
 export interface FormMetadataEditorProps {
-  value: FormMetadata;
-  onChange: (metadata: FormMetadata) => void;
-  className?: string;
+  readonly value: FormMetadata;
+  readonly onChange: (metadata: FormMetadata) => void;
+  readonly className?: string;
 }
 
 const STATUS_OPTIONS: { value: FormStatus; label: string; description: string }[] = [
@@ -47,7 +49,9 @@ export function FormMetadataEditor({
         <Input
           id="form-title"
           value={value.title}
-          onChange={(e) => updateField("title", e.target.value)}
+          onChange={(e) => {
+            updateField("title", e.target.value);
+          }}
         />
       </div>
 
@@ -58,14 +62,23 @@ export function FormMetadataEditor({
         <Input
           id="form-description"
           value={value.description}
-          onChange={(e) => updateField("description", e.target.value)}
+          onChange={(e) => {
+            updateField("description", e.target.value);
+          }}
         />
       </div>
 
       <div className="space-y-2">
         <Label htmlFor="form-status">Status</Label>
-        {/* Cast is safe: select options are constrained to FormStatus values */}
-        <Select value={value.status} onValueChange={(v) => updateField("status", v as FormStatus)}>
+        <Select
+          value={value.status}
+          onValueChange={(selected) => {
+            const status = STATUS_OPTIONS.find((option) => option.value === selected);
+            if (status !== undefined) {
+              updateField("status", status.value);
+            }
+          }}
+        >
           <SelectTrigger id="form-status">
             <SelectValue placeholder="Select status" />
           </SelectTrigger>

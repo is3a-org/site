@@ -5,7 +5,7 @@ import { schema } from "./postgres.schema.ts";
 
 export function createPostgresPool(): Pool {
   return new Pool({
-    connectionString: process.env.PG_DATABASE_URL!,
+    connectionString: process.env.PG_DATABASE_URL,
   });
 }
 
@@ -17,3 +17,9 @@ export function createDrizzleDatabase(pool: Pool): DrizzleDatabase {
 }
 
 export type PostgresPool = Pool;
+
+/** Resolves the database connection pool or its lazy factory without changing pool ownership. */
+export function resolvePostgresPool(pool: PostgresPool | (() => PostgresPool)): PostgresPool {
+  // oxlint-disable-next-line anti-slop/no-runtime-typeof -- COMPATIBILITY: PostgreSQL integrations accept a Pool capability or its lazy factory.
+  return typeof pool === "function" ? pool() : pool;
+}

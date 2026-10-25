@@ -19,22 +19,33 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@is3a/design-system/ta
 import { Textarea } from "@is3a/design-system/textarea";
 import { ArrowLeft, Save, Eye, Code, Hammer } from "lucide-react";
 import type { JSX } from "react";
-import { useState, useEffect } from "react";
+import { useMemo, useState } from "react";
 import { Link } from "react-router";
 
-import type { FormStatus } from "@fragno-dev/forms";
 import { shadcnRenderers, shadcnCells } from "@fragno-dev/jsonforms-shadcn-renderers";
-import type { UISchemaElement } from "@jsonforms/core";
 import { JsonForms } from "@jsonforms/react";
 
 import { DashboardBreadcrumb } from "~/components/dashboard-breadcrumb";
 import { FormBuilder, FormMetadataEditor } from "~/components/ui/form-builder";
 import type { GeneratedSchemas, FormMetadata } from "~/components/ui/form-builder";
+import {
+  dataSchemaSchema,
+  generatedSchemasSchema,
+  uiSchemaElementSchema,
+} from "~/components/ui/form-builder/form-schema-contracts";
+import {
+  toJsonFormsDataSchema,
+  toJsonFormsUiSchema,
+} from "~/components/ui/form-builder/jsonforms-schema-adapter";
+import { formRenderDataSchema } from "~/lib/form-render-data";
+import type { FormRenderData } from "~/lib/form-render-data";
 import { formsClient } from "~/lib/forms-client";
 
 import type { Route } from "./+types/edit";
 
-export default function FormEditPage({ params }: Route.ComponentProps): JSX.Element {
+export default function FormEditPage({
+  params,
+}: Readonly<Pick<Route.ComponentProps, "params">>): JSX.Element {
   const { data: form, loading: isLoading } = formsClient.useFormById({ path: { id: params.id } });
   const { mutate: updateForm, loading: isUpdating } = formsClient.useUpdateForm();
 
@@ -44,27 +55,41 @@ export default function FormEditPage({ params }: Route.ComponentProps): JSX.Elem
     description: "",
     status: "draft",
   });
-  const [schemas, setSchemas] = useState<GeneratedSchemas | null>(null);
+  const [schemas, setSchemas] = useState<GeneratedSchemas>();
   const [dataSchemaText, setDataSchemaText] = useState("");
   const [uiSchemaText, setUiSchemaText] = useState("");
-  const [previewData, setPreviewData] = useState<Record<string, unknown>>({});
+  const [previewData, setPreviewData] = useState<FormRenderData>({});
+  const [initializedForm, setInitializedForm] = useState<typeof form>();
+  const renderedSchemas = useMemo(
+    () =>
+      schemas === undefined
+        ? undefined
+        : {
+            dataSchema: toJsonFormsDataSchema(schemas.dataSchema),
+            uiSchema: toJsonFormsUiSchema(schemas.uiSchema),
+          },
+    [schemas],
+  );
 
-  // Initialize form state when data loads
-  useEffect(() => {
-    if (form) {
+  // Reset the draft before rendering a different server snapshot.
+  if (form !== initializedForm) {
+    setInitializedForm(form);
+    if (form !== undefined) {
       setSlug(form.slug);
       setMetadata({
         title: form.title,
-        description: form.description || "",
-        status: form.status as FormMetadata["status"],
+        description: form.description ?? "",
+        status: form.status,
       });
-      const dataSchema = form.dataSchema as unknown as GeneratedSchemas["dataSchema"];
-      const uiSchema = form.uiSchema as unknown as GeneratedSchemas["uiSchema"];
-      setSchemas({ dataSchema, uiSchema });
-      setDataSchemaText(JSON.stringify(dataSchema, null, 2));
-      setUiSchemaText(JSON.stringify(uiSchema, null, 2));
+      const parsedSchemas = generatedSchemasSchema.parse({
+        dataSchema: form.dataSchema,
+        uiSchema: form.uiSchema ?? { type: "VerticalLayout", elements: [] },
+      });
+      setSchemas(parsedSchemas);
+      setDataSchemaText(JSON.stringify(parsedSchemas.dataSchema, undefined, 2));
+      setUiSchemaText(JSON.stringify(parsedSchemas.uiSchema, undefined, 2));
     }
-  }, [form]);
+  }
 
   const handleSave = async (): Promise<void> => {
     if (!form || !schemas) {
@@ -77,19 +102,19 @@ export default function FormEditPage({ params }: Route.ComponentProps): JSX.Elem
         title: metadata.title,
         slug,
         description: metadata.description,
-        status: metadata.status as FormStatus,
-        dataSchema: schemas.dataSchema,
-        uiSchema: schemas.uiSchema,
+        status: metadata.status,
+        dataSchema: { ...schemas.dataSchema },
+        uiSchema: { ...schemas.uiSchema },
       },
     });
 
-    window.location.reload();
+    globalThis.location.reload();
   };
 
   const handleSchemasChange = (newSchemas: GeneratedSchemas): void => {
     setSchemas(newSchemas);
-    setDataSchemaText(JSON.stringify(newSchemas.dataSchema, null, 2));
-    setUiSchemaText(JSON.stringify(newSchemas.uiSchema, null, 2));
+    setDataSchemaText(JSON.stringify(newSchemas.dataSchema, undefined, 2));
+    setUiSchemaText(JSON.stringify(newSchemas.uiSchema, undefined, 2));
   };
 
   return (
@@ -144,9 +169,14 @@ export default function FormEditPage({ params }: Route.ComponentProps): JSX.Elem
                   To form submit page
                 </Link>
               </Button>
-              <Button onClick={handleSave} disabled={isUpdating || isLoading}>
+              <Button
+                onClick={() => {
+                  void handleSave();
+                }}
+                disabled={(isUpdating ?? false) || isLoading}
+              >
                 <Save className="mr-2 h-4 w-4" />
-                {isUpdating ? "Saving..." : "Save"}
+                {isUpdating === true ? "Saving..." : "Save"}
               </Button>
             </div>
           </div>
@@ -171,18 +201,25 @@ export default function FormEditPage({ params }: Route.ComponentProps): JSX.Elem
               <FormMetadataEditor value={metadata} onChange={setMetadata} />
               <div className="space-y-2">
                 <Label htmlFor="slug">Slug</Label>
-                <Input id="slug" value={slug} onChange={(e) => setSlug(e.target.value)} />
+                <Input
+                  id="slug"
+                  value={slug}
+                  onChange={(e) => {
+                    setSlug(e.target.value);
+                  }}
+                />
                 <p className="text-sm text-muted-foreground">Public URL: /forms/{slug}</p>
               </div>
 
-              {schemas ? (
+              {schemas !== undefined && (
                 <FormBuilder defaultSchemas={schemas} onChange={handleSchemasChange} />
-              ) : isLoading ? (
+              )}
+              {schemas === undefined && isLoading && (
                 <div className="space-y-4">
                   <Skeleton className="h-24 w-full" />
                   <Skeleton className="h-24 w-full" />
                 </div>
-              ) : null}
+              )}
             </TabsContent>
 
             <TabsContent value="preview" className="mt-6">
@@ -197,12 +234,14 @@ export default function FormEditPage({ params }: Route.ComponentProps): JSX.Elem
                 <CardContent>
                   {schemas ? (
                     <JsonForms
-                      schema={schemas.dataSchema}
-                      uischema={schemas.uiSchema as UISchemaElement}
+                      schema={renderedSchemas?.dataSchema}
+                      uischema={renderedSchemas?.uiSchema}
                       data={previewData}
                       renderers={shadcnRenderers}
                       cells={shadcnCells}
-                      onChange={({ data }) => setPreviewData(data ?? {})}
+                      onChange={({ data }) => {
+                        setPreviewData(formRenderDataSchema.parse(data ?? {}));
+                      }}
                     />
                   ) : (
                     <div className="flex items-center justify-center py-8 text-muted-foreground">
@@ -224,8 +263,8 @@ export default function FormEditPage({ params }: Route.ComponentProps): JSX.Elem
                   onChange={(e) => {
                     setDataSchemaText(e.target.value);
                     try {
-                      const parsed = JSON.parse(e.target.value);
-                      setSchemas((prev) => (prev ? { ...prev, dataSchema: parsed } : null));
+                      const parsed = dataSchemaSchema.parse(JSON.parse(e.target.value));
+                      setSchemas((prev) => (prev ? { ...prev, dataSchema: parsed } : undefined));
                     } catch {
                       // Allow typing invalid JSON
                     }
@@ -242,8 +281,8 @@ export default function FormEditPage({ params }: Route.ComponentProps): JSX.Elem
                   onChange={(e) => {
                     setUiSchemaText(e.target.value);
                     try {
-                      const parsed = JSON.parse(e.target.value);
-                      setSchemas((prev) => (prev ? { ...prev, uiSchema: parsed } : null));
+                      const parsed = uiSchemaElementSchema.parse(JSON.parse(e.target.value));
+                      setSchemas((prev) => (prev ? { ...prev, uiSchema: parsed } : undefined));
                     } catch {
                       // Allow typing invalid JSON
                     }

@@ -21,15 +21,19 @@ import { simpleAuthClient } from "@/lib/simple-auth-client";
 
 export function NavUser({
   user,
-}: {
-  user: {
+}: Readonly<{
+  user: Readonly<{
     name: string;
     email: string;
     avatar?: string;
-  };
-}): JSX.Element {
+  }>;
+}>): JSX.Element {
   const { isMobile, setOpenMobile } = useSidebar();
   const navigate = useNavigate();
+  const signOutAndNavigate = async (): Promise<void> => {
+    await simpleAuthClient.signOut();
+    await navigate("/");
+  };
 
   return (
     <SidebarMenu>
@@ -83,10 +87,11 @@ export function NavUser({
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem
-              onClick={async () => {
+              onClick={() => {
                 setOpenMobile(false);
-                await simpleAuthClient.signOut();
-                navigate("/");
+                void signOutAndNavigate().catch((cause: unknown) => {
+                  console.error(new Error("Sign out failed", { cause }));
+                });
               }}
             >
               <LogOut />

@@ -5,7 +5,7 @@ dotenv.config({
   path: ".dev.vars",
 });
 
-if (!process.env.PG_DATABASE_URL) {
+if (process.env.PG_DATABASE_URL === undefined || process.env.PG_DATABASE_URL === "") {
   throw new Error("PG_DATABASE_URL is not set");
 }
 
@@ -14,6 +14,6 @@ export default defineConfig({
   schema: ["./app/db/postgres/postgres.schema.ts", "./app/db/postgres/fragno-schema.ts"],
   out: "./app/db/postgres/migrations",
   dbCredentials: {
-    url: process.env.PG_DATABASE_URL!,
+    url: process.env.PG_DATABASE_URL,
   },
 });

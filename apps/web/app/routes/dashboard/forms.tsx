@@ -37,17 +37,16 @@ import {
 import { Textarea } from "@is3a/design-system/textarea";
 import { Plus, Pencil, FileText, Trash2, ClipboardList, ExternalLink } from "lucide-react";
 import type { JSX } from "react";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Link, useNavigate } from "react-router";
+import { z } from "zod";
 
 import type { FormStatus } from "@fragno-dev/forms";
 
 import { DashboardBreadcrumb } from "~/components/dashboard-breadcrumb";
 import { formsClient } from "~/lib/forms-client";
 
-import type { Route } from "./+types/forms";
-
-export async function loader(_args: Route.LoaderArgs): Promise<Record<string, never>> {
+export function loader(): Record<string, never> {
   return {};
 }
 
@@ -59,7 +58,7 @@ export default function FormsPage(): JSX.Element {
 
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [selectedFormId, setSelectedFormId] = useState<string | null>(null);
+  const [selectedFormId, setSelectedFormId] = useState<string>();
   const [newFormTitle, setNewFormTitle] = useState("");
   const [newFormSlug, setNewFormSlug] = useState("");
   const [newFormDescription, setNewFormDescription] = useState("");
@@ -94,8 +93,9 @@ export default function FormsPage(): JSX.Element {
       },
     });
 
-    if (createdForm) {
-      navigate(`/dashboard/admin/forms/${createdForm}/edit`);
+    const createdFormId = z.string().min(1).safeParse(createdForm);
+    if (createdFormId.success) {
+      await navigate(`/dashboard/admin/forms/${createdFormId.data}/edit`);
       return;
     }
 
@@ -109,7 +109,7 @@ export default function FormsPage(): JSX.Element {
   };
 
   const handleDelete = async (): Promise<void> => {
-    if (!selectedFormId) {
+    if (selectedFormId === undefined || selectedFormId === "") {
       return;
     }
 
@@ -118,7 +118,7 @@ export default function FormsPage(): JSX.Element {
     });
 
     setIsDeleteDialogOpen(false);
-    setSelectedFormId(null);
+    setSelectedFormId(undefined);
     // The delete mutator invalidates form details, not the cached list.
     refetchForms();
   };
@@ -126,30 +126,6 @@ export default function FormsPage(): JSX.Element {
   const openDeleteDialog = (formId: string): void => {
     setSelectedFormId(formId);
     setIsDeleteDialogOpen(true);
-  };
-
-  // Auto-generate slug from title
-  useEffect(() => {
-    if (newFormTitle) {
-      const slug = newFormTitle
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, "-")
-        .replace(/^-|-$/g, "");
-      setNewFormSlug(slug);
-    }
-  }, [newFormTitle]);
-
-  const getStatusBadge = (status: string): JSX.Element => {
-    switch (status) {
-      case "open":
-        return <Badge variant="default">Open</Badge>;
-      case "closed":
-        return <Badge variant="secondary">Closed</Badge>;
-      case "draft":
-        return <Badge variant="outline">Draft</Badge>;
-      default:
-        return <Badge variant="outline">{status}</Badge>;
-    }
   };
 
   return (
@@ -166,7 +142,11 @@ export default function FormsPage(): JSX.Element {
             <h1 className="text-2xl font-bold">Forms</h1>
             <p className="text-muted-foreground">Create and manage forms</p>
           </div>
-          <Button onClick={() => setIsCreateDialogOpen(true)}>
+          <Button
+            onClick={() => {
+              setIsCreateDialogOpen(true);
+            }}
+          >
             <Plus className="mr-2 h-4 w-4" />
             Create Form
           </Button>
@@ -178,19 +158,21 @@ export default function FormsPage(): JSX.Element {
             <CardDescription>View and manage all forms and their submissions</CardDescription>
           </CardHeader>
           <CardContent>
-            {isLoading ? (
+            {isLoading && (
               <div className="space-y-3">
                 <Skeleton className="h-10 w-full" />
                 <Skeleton className="h-10 w-full" />
                 <Skeleton className="h-10 w-full" />
               </div>
-            ) : !forms || typeof forms === "string" || forms.length === 0 ? (
+            )}
+            {!isLoading && (!Array.isArray(forms) || forms.length === 0) && (
               <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
                 <FileText className="mb-4 h-12 w-12 opacity-50" />
                 <p className="text-lg font-medium">No forms yet</p>
                 <p className="text-sm">Get started by creating your first form</p>
               </div>
-            ) : (
+            )}
+            {!isLoading && Array.isArray(forms) && forms.length > 0 && (
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -228,7 +210,9 @@ export default function FormsPage(): JSX.Element {
                           <Button
                             variant="ghost"
                             size="icon"
-                            onClick={() => openDeleteDialog(form.id)}
+                            onClick={() => {
+                              openDeleteDialog(form.id);
+                            }}
                           >
                             <Trash2 className="h-4 w-4 text-red-600" />
                           </Button>
@@ -259,7 +243,18 @@ export default function FormsPage(): JSX.Element {
                 id="title"
                 placeholder="Contact Form"
                 value={newFormTitle}
-                onChange={(e) => setNewFormTitle(e.target.value)}
+                onChange={(e) => {
+                  const title = e.target.value;
+                  setNewFormTitle(title);
+                  if (title !== "") {
+                    setNewFormSlug(
+                      title
+                        .toLowerCase()
+                        .replaceAll(/[^a-z0-9]+/g, "-")
+                        .replaceAll(/^-|-$/g, ""),
+                    );
+                  }
+                }}
               />
             </div>
             <div className="space-y-2">
@@ -270,7 +265,9 @@ export default function FormsPage(): JSX.Element {
                 id="slug"
                 placeholder="contact-form"
                 value={newFormSlug}
-                onChange={(e) => setNewFormSlug(e.target.value)}
+                onChange={(e) => {
+                  setNewFormSlug(e.target.value);
+                }}
               />
               <p className="text-sm text-muted-foreground">
                 Public URL: /forms/{newFormSlug || "..."}
@@ -282,7 +279,9 @@ export default function FormsPage(): JSX.Element {
                 id="description"
                 placeholder="A brief description of this form..."
                 value={newFormDescription}
-                onChange={(e) => setNewFormDescription(e.target.value)}
+                onChange={(e) => {
+                  setNewFormDescription(e.target.value);
+                }}
                 rows={3}
               />
             </div>
@@ -290,7 +289,16 @@ export default function FormsPage(): JSX.Element {
               <Label htmlFor="status">Status</Label>
               <Select
                 value={newFormStatus}
-                onValueChange={(value) => setNewFormStatus(value as FormStatus)}
+                onValueChange={(value) => {
+                  if (
+                    value === "draft" ||
+                    value === "open" ||
+                    value === "closed" ||
+                    value === "static"
+                  ) {
+                    setNewFormStatus(value);
+                  }
+                }}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select status" />
@@ -304,15 +312,23 @@ export default function FormsPage(): JSX.Element {
             </div>
           </div>
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                setIsCreateDialogOpen(false);
+              }}
+            >
               Cancel
             </Button>
             <Button
               type="button"
-              onClick={handleCreate}
-              disabled={isCreating || !newFormTitle || !newFormSlug}
+              onClick={() => {
+                void handleCreate();
+              }}
+              disabled={(isCreating ?? false) || !newFormTitle || !newFormSlug}
             >
-              {isCreating ? "Creating..." : "Create"}
+              {isCreating === true ? "Creating..." : "Create"}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -329,20 +345,45 @@ export default function FormsPage(): JSX.Element {
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                setIsDeleteDialogOpen(false);
+              }}
+            >
               Cancel
             </Button>
             <Button
               type="button"
               variant="destructive"
-              onClick={handleDelete}
+              onClick={() => {
+                void handleDelete();
+              }}
               disabled={isDeleting}
             >
-              {isDeleting ? "Deleting..." : "Delete"}
+              {isDeleting === true ? "Deleting..." : "Delete"}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
     </>
   );
+}
+
+function getStatusBadge(status: string): JSX.Element {
+  switch (status) {
+    case "open": {
+      return <Badge variant="default">Open</Badge>;
+    }
+    case "closed": {
+      return <Badge variant="secondary">Closed</Badge>;
+    }
+    case "draft": {
+      return <Badge variant="outline">Draft</Badge>;
+    }
+    default: {
+      return <Badge variant="outline">{status}</Badge>;
+    }
+  }
 }

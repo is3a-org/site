@@ -13,10 +13,10 @@ import {
 
 import { auth_schema, otp_schema, stripe_schema } from "./fragno-schema.ts";
 
-const foreignKeyActions: Record<"onUpdate" | "onDelete", UpdateDeleteAction> = {
+const foreignKeyActions = {
   onUpdate: "restrict",
   onDelete: "restrict",
-};
+} satisfies Record<"onUpdate" | "onDelete", UpdateDeleteAction>;
 
 export const membershipTypeEnum = pgEnum("membership_type", ["full", "flex"]);
 

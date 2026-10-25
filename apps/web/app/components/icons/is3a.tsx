@@ -1,9 +1,6 @@
-import type { JSX } from "react";
-import type { SVGProps } from "react";
+import type { JSX, SVGProps } from "react";
 
-interface IS3ALogoProps extends SVGProps<SVGSVGElement> {
-  variant?: "full" | "icon";
-}
+type IS3ALogoProps = SVGProps<SVGSVGElement> & Readonly<{ variant?: "full" | "icon" }>;
 
 export function IS3ALogo({ variant = "full", ...props }: IS3ALogoProps): JSX.Element {
   return (

@@ -1,20 +1,23 @@
+import { z } from "zod";
+
 import type {
   FormField,
   FormBuilderState,
   GeneratedSchemas,
   JsonSchemaProperty,
+  JsonSchemaObject,
   UiSchemaElement,
   FieldType,
   FieldOptions,
+  FormJsonObject,
 } from "./types";
 
 /**
  * Extracts the field name from a UI Schema control scope.
  * E.g., "#/properties/email" -> "email"
  */
-function extractFieldNameFromScope(scope: string): string | null {
-  const match = scope.match(/^#\/properties\/(.+)$/);
-  return match ? match[1] : null;
+function extractFieldNameFromScope(scope: string): string | undefined {
+  return /^#\/properties\/(.+)$/.exec(scope)?.[1];
 }
 
 /**
@@ -51,7 +54,7 @@ function fieldNameToLabel(fieldName: string): string {
 /**
  * Checks if a JSON Schema property type is supported by the form builder.
  */
-function isSupportedType(type: JsonSchemaProperty["type"]): boolean {
+function isSupportedType(type: JsonSchemaObject["type"]): boolean {
   return type === "string" || type === "number" || type === "integer" || type === "boolean";
 }
 
@@ -59,7 +62,10 @@ function isSupportedType(type: JsonSchemaProperty["type"]): boolean {
  * Infers the FieldType from a JSON Schema property and UI Schema options.
  * Returns "unsupported" for types that can't be represented in the builder.
  */
-function inferFieldType(prop: JsonSchemaProperty, uiOptions?: Record<string, unknown>): FieldType {
+function inferFieldType(prop: JsonSchemaProperty, uiOptions?: FormJsonObject): FieldType {
+  if (prop === true || prop === false) {
+    return "unsupported";
+  }
   if (!isSupportedType(prop.type)) {
     return "unsupported";
   }
@@ -73,35 +79,48 @@ function inferFieldType(prop: JsonSchemaProperty, uiOptions?: Record<string, unk
   }
 
   if (prop.type === "string" && prop.enum && prop.enum.length > 0) {
-    return "select";
+    return z.array(z.string()).safeParse(prop.enum).success ? "select" : "unsupported";
   }
 
-  if (prop.type === "string" && prop.format) {
+  if (prop.type === "string" && prop.format !== undefined && prop.format.length > 0) {
     switch (prop.format) {
-      case "email":
+      case "email": {
         return "email";
-      case "date":
+      }
+      case "date": {
         return "date";
-      case "time":
+      }
+      case "time": {
         return "time";
-      case "date-time":
+      }
+      case "date-time": {
         return "datetime";
-      default:
+      }
+      default: {
         return "unsupported";
+      }
     }
   }
 
   switch (prop.type) {
-    case "string":
+    case "string": {
       return "text";
-    case "number":
+    }
+    case "number": {
       return "number";
-    case "integer":
+    }
+    case "integer": {
       return "integer";
-    case "boolean":
+    }
+    case "boolean": {
       return "boolean";
-    default:
+    }
+    case undefined: {
       return "unsupported";
+    }
+    default: {
+      return "unsupported";
+    }
   }
 }
 
@@ -116,40 +135,46 @@ function parseSchemaProperty(
 ): FormField {
   const uiOptions = uiElement?.options;
   const fieldType = inferFieldType(prop, uiOptions);
-  const options: FieldOptions = {};
+  const property = prop === true || prop === false ? undefined : prop;
+  const options: { -readonly [Key in keyof FieldOptions]: FieldOptions[Key] } = {};
 
   if (fieldType === "unsupported") {
-    options.rawJsonSchema = JSON.stringify(prop, null, 2);
+    options.rawJsonSchema = JSON.stringify(prop, undefined, 2);
     if (uiElement) {
-      options.rawUiSchema = JSON.stringify(uiElement, null, 2);
+      options.rawUiSchema = JSON.stringify(uiElement, undefined, 2);
     }
   }
 
-  if (prop.enum && prop.enum.length > 0) {
-    options.enumValues = [...prop.enum];
+  if (property?.enum && property.enum.length > 0) {
+    const enumValues = z.array(z.string()).safeParse(property.enum);
+    if (enumValues.success) {
+      options.enumValues = enumValues.data;
+    }
   }
 
-  if (prop.minimum !== undefined) {
-    options.minimum = prop.minimum;
+  if (property?.minimum !== undefined) {
+    options.minimum = property.minimum;
   }
 
-  if (prop.maximum !== undefined) {
-    options.maximum = prop.maximum;
+  if (property?.maximum !== undefined) {
+    options.maximum = property.maximum;
   }
 
-  if (uiOptions?.placeholder && typeof uiOptions.placeholder === "string") {
+  // oxlint-disable-next-line anti-slop/no-runtime-typeof -- COMPATIBILITY: Parsed JSON renderer options contain a JSON union; placeholder accepts only its string member.
+  if (typeof uiOptions?.placeholder === "string" && uiOptions.placeholder.length > 0) {
     options.placeholder = uiOptions.placeholder;
   }
 
-  if (fieldType === "slider" && typeof prop.default === "number") {
-    options.defaultValue = prop.default;
+  // oxlint-disable-next-line anti-slop/no-runtime-typeof -- COMPATIBILITY: A parsed JSON Schema default is a JSON union; slider defaults accept its number member.
+  if (fieldType === "slider" && typeof property?.default === "number") {
+    options.defaultValue = property.default;
   }
 
   return {
     id: crypto.randomUUID(),
     fieldName,
-    label: prop.title ?? fieldNameToLabel(fieldName),
-    description: prop.description,
+    label: property?.title ?? fieldNameToLabel(fieldName),
+    description: property?.description,
     fieldType,
     required: isRequired ?? false,
     options: Object.keys(options).length > 0 ? options : undefined,
@@ -163,10 +188,11 @@ function parseSchemaProperty(
 export function parseSchemas(schemas: GeneratedSchemas): FormBuilderState {
   const { dataSchema, uiSchema } = schemas;
   const fields: FormField[] = [];
+  const properties = dataSchema.properties ?? {};
   const allElements = collectUiElements(uiSchema);
-  const requiredFields = new Set(dataSchema.required ?? []);
+  const requiredFields = new Set(dataSchema.required);
   const propertyNamesInUi = new Set<string>();
-  const usedLabelNames = new Set(Object.keys(dataSchema.properties));
+  const usedLabelNames = new Set(Object.keys(properties));
   let labelIndex = 1;
 
   const createLabelFieldName = (): string => {
@@ -192,10 +218,11 @@ export function parseSchemas(schemas: GeneratedSchemas): FormBuilderState {
       continue;
     }
 
-    if (element.scope) {
+    if (element.scope !== undefined && element.scope.length > 0) {
       const fieldName = extractFieldNameFromScope(element.scope);
-      const prop = fieldName ? dataSchema.properties[fieldName] : undefined;
-      if (!fieldName || !prop) {
+      const prop =
+        fieldName !== undefined && fieldName.length > 0 ? properties[fieldName] : undefined;
+      if (fieldName === undefined || fieldName.length === 0 || prop === undefined) {
         continue;
       }
 
@@ -204,9 +231,9 @@ export function parseSchemas(schemas: GeneratedSchemas): FormBuilderState {
     }
   }
 
-  for (const fieldName of Object.keys(dataSchema.properties)) {
+  for (const fieldName of Object.keys(properties)) {
     if (!propertyNamesInUi.has(fieldName)) {
-      const prop = dataSchema.properties[fieldName];
+      const prop = properties[fieldName];
       fields.push(parseSchemaProperty(fieldName, prop, undefined, requiredFields.has(fieldName)));
     }
   }

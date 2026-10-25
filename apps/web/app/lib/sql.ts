@@ -1,6 +1,9 @@
+/** SQL parameters are scalar values or dates; query objects never accept arbitrary objects. */
+export type SqlParameter = string | number | boolean | Date | null | undefined;
+
 export interface Query {
-  sql: string;
-  params: unknown[];
+  readonly sql: string;
+  readonly params: readonly SqlParameter[];
 }
 
 /**
@@ -12,7 +15,7 @@ export function replacePlaceholders(query: Query): string {
   const { sql, params } = query;
   let paramIndex = 0;
 
-  return sql.replace(/\?/g, () => {
+  return sql.replaceAll("?", () => {
     if (paramIndex >= params.length) {
       throw new Error(
         `Not enough parameters provided. Expected at least ${paramIndex + 1}, but got ${params.length}`,
@@ -29,30 +32,27 @@ export function replacePlaceholders(query: Query): string {
  * @param value - The value to format
  * @returns The formatted SQL value
  */
-function formatSqlValue(value: unknown): string {
+function formatSqlValue(value: SqlParameter): string {
   if (value === null || value === undefined) {
     return "NULL";
   }
 
+  // oxlint-disable-next-line anti-slop/no-runtime-typeof -- COMPATIBILITY: SQL parameters are a closed scalar/date union; strings require SQL quote escaping.
   if (typeof value === "string") {
     // Escape single quotes by doubling them
-    const escaped = value.replace(/'/g, "''");
+    const escaped = value.replaceAll("'", "''");
     return `'${escaped}'`;
   }
 
+  // oxlint-disable-next-line anti-slop/no-runtime-typeof -- COMPATIBILITY: SQL parameters are a closed scalar/date union; numbers are emitted without quotes.
   if (typeof value === "number") {
     return value.toString();
   }
 
+  // oxlint-disable-next-line anti-slop/no-runtime-typeof -- COMPATIBILITY: SQL parameters are a closed scalar/date union; boolean parameters map to SQL integer literals.
   if (typeof value === "boolean") {
     return value ? "1" : "0";
   }
 
-  if (value instanceof Date) {
-    return `'${value.toISOString()}'`;
-  }
-
-  // For other types, convert to string and treat as string
-  const stringValue = String(value).replace(/'/g, "''");
-  return `'${stringValue}'`;
+  return `'${value.toISOString()}'`;
 }

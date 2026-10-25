@@ -7,6 +7,8 @@ import { Link } from "react-router";
 import { DashboardBreadcrumb } from "~/components/dashboard-breadcrumb";
 import { StripeCustomersTable } from "~/components/stripe-customers-table";
 import { UserRepo } from "~/db/repo/user";
+import type { ReadonlyRouteProps } from "~/fragno/readonly-route-props";
+import { readFormText } from "~/fragno/request-form";
 import { createSimpleAuthServer } from "~/fragno/simple-auth-server";
 import { linkStripeCustomer } from "~/fragno/stripe-durable-object";
 import { cn } from "~/lib/utils";
@@ -28,7 +30,9 @@ type StripeCustomerActionResult =
     }
   | { success: true; user: null; matchType: null };
 
-export async function loader({ context }: Route.LoaderArgs): Promise<StripeCustomersLoaderData> {
+export async function loader({
+  context,
+}: Readonly<Route.LoaderArgs>): Promise<StripeCustomersLoaderData> {
   const userRepo = new UserRepo(context.get(requestContext).db);
   const users = await userRepo.getAllUsers();
   return { users };
@@ -37,15 +41,15 @@ export async function loader({ context }: Route.LoaderArgs): Promise<StripeCusto
 export async function action({
   request,
   context,
-}: Route.ActionArgs): Promise<StripeCustomerActionResult> {
+}: Readonly<Route.ActionArgs>): Promise<StripeCustomerActionResult> {
   const formData = await request.formData();
-  const intent = formData.get("intent") as string;
+  const intent = readFormText(formData, "intent") ?? "";
 
   if (intent === "sync-subscription") {
-    const stripeCustomerId = formData.get("stripeCustomerId") as string;
-    const userId = formData.get("userId") as string | null;
+    const stripeCustomerId = readFormText(formData, "stripeCustomerId") ?? "";
+    const userId = readFormText(formData, "userId");
     const createNewUser = formData.get("createNewUser") === "true";
-    const newUserEmail = formData.get("newUserEmail") as string | null;
+    const newUserEmail = readFormText(formData, "newUserEmail");
 
     const userRepo = new UserRepo(context.get(requestContext).db);
     const auth = createSimpleAuthServer(context.get(requestContext).pool);
@@ -53,7 +57,7 @@ export async function action({
     try {
       let targetUserId: string;
 
-      if (createNewUser && newUserEmail) {
+      if (createNewUser && newUserEmail !== undefined && newUserEmail !== "") {
         // Create new user with auto-generated password
         const password = crypto.randomUUID();
         const response = await auth.callRoute("POST", "/sign-up", {
@@ -72,7 +76,7 @@ export async function action({
           };
         }
         targetUserId = response.data.userId;
-      } else if (userId) {
+      } else if (userId !== undefined && userId !== "") {
         // Use selected user
         targetUserId = userId;
       } else {
@@ -84,7 +88,12 @@ export async function action({
 
       // Check for conflicts - validate user doesn't have a different Stripe customer ID
       const existingUser = await userRepo.getUserById(targetUserId);
-      if (existingUser?.stripeCustomerId && existingUser.stripeCustomerId !== stripeCustomerId) {
+      if (
+        existingUser?.stripeCustomerId !== undefined &&
+        existingUser.stripeCustomerId !== null &&
+        existingUser.stripeCustomerId !== "" &&
+        existingUser.stripeCustomerId !== stripeCustomerId
+      ) {
         return {
           success: false,
           error: `User is already linked to Stripe customer ${existingUser.stripeCustomerId}`,
@@ -100,7 +109,7 @@ export async function action({
           referenceId: targetUserId,
         },
       );
-      if (linkError) {
+      if (linkError !== null && linkError !== "") {
         return { success: false, error: linkError };
       }
 
@@ -115,8 +124,8 @@ export async function action({
   }
 
   if (intent === "check-user") {
-    const stripeCustomerId = formData.get("stripeCustomerId") as string;
-    const stripeCustomerEmail = formData.get("stripeCustomerEmail") as string;
+    const stripeCustomerId = readFormText(formData, "stripeCustomerId") ?? "";
+    const stripeCustomerEmail = readFormText(formData, "stripeCustomerEmail") ?? "";
 
     const userRepo = new UserRepo(context.get(requestContext).db);
 
@@ -142,7 +151,9 @@ export async function action({
 
     return {
       success: true,
+      // oxlint-disable-next-line unicorn/no-null -- COMPATIBILITY: The check-user action JSON includes user: null when no existing user matches.
       user: null,
+      // oxlint-disable-next-line unicorn/no-null -- COMPATIBILITY: The check-user action JSON includes matchType: null when no existing user matches.
       matchType: null,
     };
   }
@@ -151,13 +162,13 @@ export async function action({
 }
 
 export default function DashboardStripe({
-  matches,
+  matches: _matches,
   loaderData,
-  actionData,
-  params,
+  actionData: _actionData,
+  params: _params,
   className,
   ...props
-}: React.ComponentProps<"div"> & Route.ComponentProps): JSX.Element {
+}: React.ComponentProps<"div"> & ReadonlyRouteProps<Route.ComponentProps>): JSX.Element {
   return (
     <>
       <DashboardBreadcrumb>

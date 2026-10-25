@@ -5,6 +5,7 @@ import { UserRepo } from "~/db/repo/user.ts";
 
 import {
   createPostgresPool,
+  resolvePostgresPool,
   createDrizzleDatabase,
   type PostgresPool,
 } from "../db/postgres/is3a-postgres.ts";
@@ -29,7 +30,7 @@ export function createStripeServer(pool: PostgresPool | (() => PostgresPool)): S
     console.warn("STRIPE_WEBHOOK_SECRET is not set");
   }
 
-  const resolvedPool = typeof pool === "function" ? pool() : pool;
+  const resolvedPool = resolvePostgresPool(pool);
   const auth = createSimpleAuthServer(resolvedPool);
 
   const db = createDrizzleDatabase(resolvedPool);
@@ -38,9 +39,10 @@ export function createStripeServer(pool: PostgresPool | (() => PostgresPool)): S
   const getSession = async (headers: Headers): Promise<AuthMeResponse["user"] | null> => {
     const response = await auth.callRoute("GET", "/me", { headers });
 
-    if (response.type === "json" && response.data) {
+    if (response.type === "json") {
       return response.data.user;
     }
+    // oxlint-disable-next-line unicorn/no-null -- COMPATIBILITY: Stripe entity resolution and authentication session lookup require null for an unauthenticated request.
     return null;
   };
 
@@ -58,6 +60,7 @@ export function createStripeServer(pool: PostgresPool | (() => PostgresPool)): S
       resolveEntityFromRequest: async ({ headers }) => {
         const user = await getSession(headers);
         if (!user) {
+          // oxlint-disable-next-line unicorn/no-null -- COMPATIBILITY: Stripe entity resolution and authentication session lookup require null for an unauthenticated request.
           return null;
         }
 
@@ -71,10 +74,10 @@ export function createStripeServer(pool: PostgresPool | (() => PostgresPool)): S
     {
       databaseAdapter: createAdapter(resolvedPool),
     },
-  ).withMiddleware(async ({ path, headers }, { error }) => {
+  ).withMiddleware(async ({ path, headers }, { error }): Promise<Response | undefined> => {
     if (path.startsWith("/admin")) {
       const user = await getSession(headers);
-      if (!user || user.role !== "admin") {
+      if (user?.role !== "admin") {
         return error({ message: "Unauthorized", code: "UNAUTHORIZED" }, 401);
       }
     }

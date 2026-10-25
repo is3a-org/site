@@ -16,7 +16,7 @@ export default async function handleRequest(
   const body = await renderToReadableStream(
     <ServerRouter context={routerContext} url={request.url} />,
     {
-      onError(error: unknown) {
+      onError(error) {
         responseStatusCode = 500;
         // Log streaming rendering errors from inside the shell.  Don't log
         // errors encountered during initial shell rendering since they'll
@@ -31,7 +31,7 @@ export default async function handleRequest(
 
   // Ensure requests from bots and SPA Mode renders wait for all content to load before responding
   // https://react.dev/reference/react-dom/server/renderToPipeableStream#waiting-for-all-content-to-load-for-crawlers-and-static-generation
-  if ((userAgent && isbot(userAgent)) || routerContext.isSpaMode) {
+  if ((userAgent !== null && userAgent !== "" && isbot(userAgent)) || routerContext.isSpaMode) {
     await body.allReady;
   }
 

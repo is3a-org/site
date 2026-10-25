@@ -1,6 +1,8 @@
 import { createFormsClient } from "@fragno-dev/forms/react";
 import { useEffect, useState } from "react";
 
+import { loadAllFormSubmissions } from "./form-submissions";
+
 export const formsClient: ReturnType<typeof createFormsClient> = createFormsClient();
 
 type SubmissionsPage = NonNullable<ReturnType<typeof formsClient.useSubmissions>["data"]>;
@@ -17,60 +19,43 @@ export interface FormSubmissionsState {
  * Loads every submission of a form. The submissions route is paginated, so this follows its
  * cursor until the last page.
  */
+interface LoadedFormSubmissions {
+  readonly formId: string;
+  readonly data: FormSubmission[] | undefined;
+  readonly error: Error | undefined;
+}
+
 export function useAllSubmissions(formId: string): FormSubmissionsState {
-  const [data, setData] = useState<FormSubmission[] | undefined>(undefined);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<Error | undefined>(undefined);
+  const [loaded, setLoaded] = useState<LoadedFormSubmissions>();
 
   useEffect(() => {
     let cancelled = false;
 
-    async function load(): Promise<FormSubmission[]> {
-      const submissions: FormSubmission[] = [];
-      let cursor: string | null = null;
-
-      do {
-        const query = new URLSearchParams({ pageSize: "100" });
-        if (cursor) {
-          query.set("cursor", cursor);
+    async function load(): Promise<void> {
+      try {
+        const submissions = await loadAllFormSubmissions(formId);
+        if (!cancelled) {
+          setLoaded({ formId, data: submissions, error: undefined });
         }
-        const response = await fetch(
-          `/api/forms/admin/forms/${encodeURIComponent(formId)}/submissions?${query}`,
-        );
-        if (!response.ok) {
-          throw new Error(`Failed to load submissions (${response.status})`);
+      } catch (error_) {
+        if (!cancelled) {
+          const error =
+            error_ instanceof Error
+              ? error_
+              : new Error("Failed to load submissions", { cause: error_ });
+          setLoaded({ formId, data: undefined, error });
         }
-        const page = (await response.json()) as SubmissionsPage;
-        submissions.push(...page.submissions);
-        cursor = page.hasNextPage ? page.nextCursor : null;
-      } while (cursor);
-
-      return submissions;
+      }
     }
 
-    setLoading(true);
-    load()
-      .then((submissions) => {
-        if (!cancelled) {
-          setData(submissions);
-          setError(undefined);
-        }
-      })
-      .catch((err: unknown) => {
-        if (!cancelled) {
-          setError(err instanceof Error ? err : new Error(String(err)));
-        }
-      })
-      .finally(() => {
-        if (!cancelled) {
-          setLoading(false);
-        }
-      });
-
+    void load();
     return (): void => {
       cancelled = true;
     };
   }, [formId]);
 
-  return { data, loading, error };
+  if (loaded?.formId !== formId) {
+    return { data: undefined, loading: true, error: undefined };
+  }
+  return { data: loaded.data, loading: false, error: loaded.error };
 }

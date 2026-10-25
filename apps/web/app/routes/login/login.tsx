@@ -15,13 +15,15 @@ import { redirect } from "react-router";
 import { Turnstile } from "@marsidev/react-turnstile";
 
 import { createOtpServer } from "~/fragno/otp-server";
+import type { ReadonlyRouteProps } from "~/fragno/readonly-route-props";
+import { readFormText } from "~/fragno/request-form";
 import { createSimpleAuthServer } from "~/fragno/simple-auth-server";
 import { magicLinkTemplate, sendEmail } from "~/lib/email";
 import { verifyTurnstile } from "~/lib/turnstile";
 import { requestContext } from "~/request-context";
 
 import type { Route } from "./+types/login";
-export function meta(_: Route.MetaArgs): Route.MetaDescriptors {
+export function meta(): Route.MetaDescriptors {
   return [
     { title: "Login - IS3A" },
     { name: "description", content: "Login to your IS3A member account." },
@@ -31,7 +33,7 @@ export function meta(_: Route.MetaArgs): Route.MetaDescriptors {
 export async function loader({
   request,
   context,
-}: Route.LoaderArgs): Promise<Response | undefined> {
+}: Readonly<Route.LoaderArgs>): Promise<Response | undefined> {
   const auth = createSimpleAuthServer(context.get(requestContext).pool);
 
   const response = await auth.callRoute("GET", "/me", {
@@ -41,6 +43,7 @@ export async function loader({
   if (response.type === "json") {
     return redirect("/dashboard/membership");
   }
+  return undefined;
 }
 
 type ActionIntent = "magic-link" | "password";
@@ -62,22 +65,26 @@ interface MagicLinkActionSuccess {
 export async function action({
   request,
   context,
-}: Route.ActionArgs): Promise<Response | LoginActionError | MagicLinkActionSuccess> {
+}: Readonly<Route.ActionArgs>): Promise<Response | LoginActionError | MagicLinkActionSuccess> {
   const auth = createSimpleAuthServer(context.get(requestContext).pool);
   const otp = createOtpServer(context.get(requestContext).pool);
 
   const formData = await request.formData();
-  const intent = (formData.get("intent") as ActionIntent) || "password";
-  const email = formData.get("email") as string;
+  const intent = formData.get("intent") === "magic-link" ? "magic-link" : "password";
+  const email = readFormText(formData, "email") ?? "";
 
   // Verify Turnstile token
-  const turnstileToken = formData.get("cf-turnstile-response") as string | null;
+  const turnstileToken = readFormText(formData, "cf-turnstile-response");
   const clientIp = request.headers.get("CF-Connecting-IP");
-  const turnstileResult = await verifyTurnstile(turnstileToken, clientIp);
+  // oxlint-disable-next-line unicorn/no-null -- COMPATIBILITY: Turnstile verification accepts a nullable token from a missing form field.
+  const turnstileResult = await verifyTurnstile(turnstileToken ?? null, clientIp);
 
   if (!turnstileResult.success) {
     return {
-      error: turnstileResult.error || "Verification failed. Please try again.",
+      error:
+        turnstileResult.error === undefined || turnstileResult.error === ""
+          ? "Verification failed. Please try again."
+          : turnstileResult.error,
       email,
       intent,
     };
@@ -130,7 +137,7 @@ export async function action({
   }
 
   // Password login flow (existing logic)
-  const password = formData.get("password") as string;
+  const password = readFormText(formData, "password") ?? "";
 
   try {
     const response = await auth.callRoute("POST", "/sign-in", {
@@ -159,14 +166,16 @@ export async function action({
   }
 }
 
-export default function Login({ actionData }: Route.ComponentProps): JSX.Element {
+export default function Login({
+  actionData,
+}: ReadonlyRouteProps<Route.ComponentProps>): JSX.Element {
   const [showMagicLinkForm, setShowMagicLinkForm] = useState(actionData?.intent === "magic-link");
-  const [email, setEmail] = useState(actionData?.email || "");
+  const [email, setEmail] = useState(actionData?.email ?? "");
   const [turnstileToken, setTurnstileToken] = useState("");
-  const [turnstileError, setTurnstileError] = useState<string | null>(null);
+  const [turnstileError, setTurnstileError] = useState<string>();
 
   // Show success message after magic link is sent
-  if (actionData?.success && actionData?.intent === "magic-link") {
+  if (actionData?.success === true) {
     return (
       <div className="flex min-h-screen w-full items-center justify-center bg-gray-50 px-4 py-12">
         <div className="flex w-full flex-col items-center">
@@ -204,7 +213,7 @@ export default function Login({ actionData }: Route.ComponentProps): JSX.Element
             <p className="rounded-md bg-amber-50 px-3 py-2 text-sm text-amber-800">
               This website is under construction: this login is for developers only.
             </p>
-            {turnstileError && (
+            {turnstileError !== undefined && turnstileError !== "" && (
               <div className="rounded-md bg-red-50 p-3 text-sm text-red-800">{turnstileError}</div>
             )}
           </CardHeader>
@@ -216,11 +225,13 @@ export default function Login({ actionData }: Route.ComponentProps): JSX.Element
                   <input type="hidden" name="intent" value="magic-link" />
                   <input type="hidden" name="cf-turnstile-response" value={turnstileToken} />
 
-                  {actionData?.error && actionData?.intent === "magic-link" && (
-                    <div className="rounded-md bg-red-50 p-3 text-sm text-red-800">
-                      {actionData.error}
-                    </div>
-                  )}
+                  {actionData?.error !== undefined &&
+                    actionData.error !== "" &&
+                    actionData.intent === "magic-link" && (
+                      <div className="rounded-md bg-red-50 p-3 text-sm text-red-800">
+                        {actionData.error}
+                      </div>
+                    )}
 
                   <div className="space-y-2">
                     <Label htmlFor="magic-email">Email Address</Label>
@@ -230,12 +241,14 @@ export default function Login({ actionData }: Route.ComponentProps): JSX.Element
                       name="email"
                       placeholder="you@example.com"
                       value={email}
-                      onChange={(e) => setEmail(e.target.value)}
+                      onChange={(e) => {
+                        setEmail(e.target.value);
+                      }}
                       required
                     />
                   </div>
 
-                  <Button type="submit" className="w-full" disabled={turnstileError !== null}>
+                  <Button type="submit" className="w-full" disabled={turnstileError !== undefined}>
                     Send Sign-in Link
                   </Button>
                 </form>
@@ -252,7 +265,9 @@ export default function Login({ actionData }: Route.ComponentProps): JSX.Element
 
                 <Button
                   type="button"
-                  onClick={() => setShowMagicLinkForm(false)}
+                  onClick={() => {
+                    setShowMagicLinkForm(false);
+                  }}
                   variant="secondary"
                   className="w-full"
                 >
@@ -266,11 +281,13 @@ export default function Login({ actionData }: Route.ComponentProps): JSX.Element
                   <input type="hidden" name="intent" value="password" />
                   <input type="hidden" name="cf-turnstile-response" value={turnstileToken} />
 
-                  {actionData?.error && actionData?.intent === "password" && (
-                    <div className="rounded-md bg-red-50 p-3 text-sm text-red-800">
-                      {actionData.error}
-                    </div>
-                  )}
+                  {actionData?.error !== undefined &&
+                    actionData.error !== "" &&
+                    actionData.intent === "password" && (
+                      <div className="rounded-md bg-red-50 p-3 text-sm text-red-800">
+                        {actionData.error}
+                      </div>
+                    )}
 
                   <div className="space-y-2">
                     <Label htmlFor="email">Email Address</Label>
@@ -280,7 +297,9 @@ export default function Login({ actionData }: Route.ComponentProps): JSX.Element
                       name="email"
                       placeholder="you@example.com"
                       value={email}
-                      onChange={(e) => setEmail(e.target.value)}
+                      onChange={(e) => {
+                        setEmail(e.target.value);
+                      }}
                       required
                     />
                   </div>
@@ -296,7 +315,7 @@ export default function Login({ actionData }: Route.ComponentProps): JSX.Element
                     />
                   </div>
 
-                  <Button type="submit" className="w-full" disabled={turnstileError !== null}>
+                  <Button type="submit" className="w-full" disabled={turnstileError !== undefined}>
                     Sign In
                   </Button>
                 </form>
@@ -313,7 +332,9 @@ export default function Login({ actionData }: Route.ComponentProps): JSX.Element
 
                 <Button
                   type="button"
-                  onClick={() => setShowMagicLinkForm(true)}
+                  onClick={() => {
+                    setShowMagicLinkForm(true);
+                  }}
                   variant="secondary"
                   className="w-full"
                 >
@@ -333,9 +354,11 @@ export default function Login({ actionData }: Route.ComponentProps): JSX.Element
               siteKey={import.meta.env.VITE_CF_TURNSTILE_SITE_KEY}
               onSuccess={(token) => {
                 setTurnstileToken(token);
-                setTurnstileError(null);
+                setTurnstileError(undefined);
               }}
-              onError={() => setTurnstileError("Could not verify you as human!")}
+              onError={() => {
+                setTurnstileError("Could not verify you as human!");
+              }}
               options={{ size: "invisible" }}
             />
           </CardContent>

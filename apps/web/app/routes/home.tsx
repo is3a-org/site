@@ -6,7 +6,7 @@ import { cn } from "~/lib/utils";
 
 import type { Route } from "./+types/home";
 
-export function meta(_: Route.MetaArgs): Route.MetaDescriptors {
+export function meta(): Route.MetaDescriptors {
   return [
     { title: "IS3A - Information Sciences Association for Amsterdam Alumni" },
     {

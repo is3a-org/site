@@ -17,30 +17,31 @@ function generateId(): string {
  */
 export interface UseFormBuilderOptions {
   /** Initial state for the form builder (takes precedence over initialSchemas) */
-  initialState?: Partial<FormBuilderState>;
+  readonly initialState?: Partial<FormBuilderState>;
   /** Initialize from existing schemas (parsed into FormBuilderState) */
-  initialSchemas?: GeneratedSchemas;
-  onChange?: (schemas: GeneratedSchemas) => void;
+  readonly initialSchemas?: GeneratedSchemas;
+  readonly onChange?: (schemas: GeneratedSchemas) => void;
 }
 
 /** Form builder state, generated schemas, and operations for editing fields. */
 export interface FormBuilderController {
-  state: FormBuilderState;
-  schemas: GeneratedSchemas;
-  addField: (fieldType?: FieldType) => string;
-  updateField: (id: string, updates: Readonly<Partial<Omit<FormField, "id">>>) => void;
-  deleteField: (id: string) => void;
-  moveField: (fromIndex: number, toIndex: number) => void;
-  duplicateField: (id: string) => string | undefined;
-  updateFieldNameFromLabel: (id: string, label: string) => void;
+  readonly state: FormBuilderState;
+  readonly schemas: GeneratedSchemas;
+  readonly addField: (fieldType?: FieldType) => string;
+  readonly updateField: (id: string, updates: Readonly<Partial<Omit<FormField, "id">>>) => void;
+  readonly deleteField: (id: string) => void;
+  readonly moveField: (fromIndex: number, toIndex: number) => void;
+  readonly duplicateField: (id: string) => string | undefined;
+  readonly updateFieldNameFromLabel: (id: string, label: string) => void;
 }
 
 /** Manages form builder fields and calls onChange with regenerated schemas. */
 export function useFormBuilder(options: UseFormBuilderOptions = {}): FormBuilderController {
   const { initialState, initialSchemas, onChange } = options;
   const [state, setState] = useState<FormBuilderState>(() => {
-    if (initialState?.fields?.length) {
-      return { fields: initialState.fields };
+    const initialFields = initialState?.fields;
+    if (initialFields !== undefined && initialFields.length > 0) {
+      return { fields: initialFields };
     }
     if (initialSchemas) {
       return parseSchemas(initialSchemas);
@@ -114,28 +115,28 @@ export function useFormBuilder(options: UseFormBuilderOptions = {}): FormBuilder
   );
 
   const duplicateField = useCallback(
-    (id: string) => {
+    (id: string): string | undefined => {
       const field = state.fields.find((f) => f.id === id);
-      if (!field) {
-        return;
+      let duplicatedFieldId: string | undefined;
+      if (field !== undefined) {
+        const newFieldName = ensureUniqueFieldName(field.fieldName, existingFieldNames);
+
+        const newField: FormField = {
+          ...field,
+          id: generateId(),
+          fieldName: newFieldName,
+          label: `${field.label} (copy)`,
+          options: field.options ? { ...field.options } : undefined,
+        };
+
+        const index = state.fields.findIndex((f) => f.id === id);
+        const fields = [...state.fields];
+        fields.splice(index + 1, 0, newField);
+        updateState({ ...state, fields });
+
+        duplicatedFieldId = newField.id;
       }
-
-      const newFieldName = ensureUniqueFieldName(field.fieldName, existingFieldNames);
-
-      const newField: FormField = {
-        ...field,
-        id: generateId(),
-        fieldName: newFieldName,
-        label: `${field.label} (copy)`,
-        options: field.options ? { ...field.options } : undefined,
-      };
-
-      const index = state.fields.findIndex((f) => f.id === id);
-      const fields = [...state.fields];
-      fields.splice(index + 1, 0, newField);
-      updateState({ ...state, fields });
-
-      return newField.id;
+      return duplicatedFieldId;
     },
     [state, existingFieldNames, updateState],
   );

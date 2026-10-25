@@ -1,7 +1,7 @@
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 
-import { type DrizzleDatabase } from "~/db/postgres/is3a-postgres";
+import type { DrizzleDatabase } from "~/db/postgres/is3a-postgres";
 import { location } from "~/db/postgres/postgres.schema";
 
 export const LocationSchema = z.object({
@@ -25,25 +25,25 @@ export type NewLocation = z.infer<typeof NewLocationSchema>;
 export type StoredLocation = typeof location.$inferSelect;
 
 export class LocationRepo {
-  #db: DrizzleDatabase;
+  readonly #db: DrizzleDatabase;
 
-  constructor(db: DrizzleDatabase) {
+  public constructor(db: DrizzleDatabase) {
     this.#db = db;
   }
 
-  async getAllLocations(): Promise<Location[]> {
-    return await this.#db.select().from(location).orderBy(location.name);
+  public async getAllLocations(): Promise<Location[]> {
+    return this.#db.select().from(location).orderBy(location.name);
   }
 
-  async createLocation(newLocation: NewLocation): Promise<StoredLocation[]> {
-    return await this.#db.insert(location).values(newLocation).returning();
+  public async createLocation(newLocation: NewLocation): Promise<StoredLocation[]> {
+    return this.#db.insert(location).values(newLocation).returning();
   }
 
-  async updateLocation(id: number, data: Partial<NewLocation>): Promise<void> {
+  public async updateLocation(id: number, data: Partial<NewLocation>): Promise<void> {
     await this.#db.update(location).set(data).where(eq(location.id, id));
   }
 
-  async deleteLocation(id: number): Promise<void> {
+  public async deleteLocation(id: number): Promise<void> {
     await this.#db.delete(location).where(eq(location.id, id));
   }
 }

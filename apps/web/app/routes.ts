@@ -1,5 +1,24 @@
 import { type RouteConfig, index, layout, prefix, route } from "@react-router/dev/routes";
 
+const adminRoutes = [
+  route("locations", "routes/dashboard/locations.tsx"),
+  route("users", "routes/dashboard/users.tsx"),
+  route("members", "routes/dashboard/members.tsx"),
+  route("stripe", "routes/dashboard/stripe.tsx"),
+  route("stripe/bulk-import", "routes/dashboard/stripe/bulk-import.tsx"),
+  route("forms", "routes/dashboard/forms.tsx"),
+  route("forms/:id/edit", "routes/dashboard/forms/edit.tsx"),
+  route("forms/:id/submissions", "routes/dashboard/forms/submissions.tsx"),
+  route("forms/:id/export", "routes/dashboard/forms/export.tsx"),
+];
+
+const dashboardRoutes = [
+  index("routes/dashboard/dashboard-home.tsx"),
+  route("membership", "routes/dashboard/membership.tsx"),
+  route("subscribe-confirm", "routes/dashboard/subscribe-confirm.tsx"),
+  ...prefix("admin", [layout("routes/dashboard/admin-layout.tsx", adminRoutes)]),
+];
+
 export default [
   layout("routes/landing/landing-layout.tsx", [
     index("routes/home.tsx"),
@@ -12,26 +31,7 @@ export default [
     ]),
     route("sign-up", "routes/sign-up.tsx"),
   ]),
-  ...prefix("dashboard", [
-    layout("routes/dashboard/dashboard-layout.tsx", [
-      index("routes/dashboard/dashboard-home.tsx"),
-      route("membership", "routes/dashboard/membership.tsx"),
-      route("subscribe-confirm", "routes/dashboard/subscribe-confirm.tsx"),
-      ...prefix("admin", [
-        layout("routes/dashboard/admin-layout.tsx", [
-          route("locations", "routes/dashboard/locations.tsx"),
-          route("users", "routes/dashboard/users.tsx"),
-          route("members", "routes/dashboard/members.tsx"),
-          route("stripe", "routes/dashboard/stripe.tsx"),
-          route("stripe/bulk-import", "routes/dashboard/stripe/bulk-import.tsx"),
-          route("forms", "routes/dashboard/forms.tsx"),
-          route("forms/:id/edit", "routes/dashboard/forms/edit.tsx"),
-          route("forms/:id/submissions", "routes/dashboard/forms/submissions.tsx"),
-          route("forms/:id/export", "routes/dashboard/forms/export.tsx"),
-        ]),
-      ]),
-    ]),
-  ]),
+  ...prefix("dashboard", [layout("routes/dashboard/dashboard-layout.tsx", dashboardRoutes)]),
   route("forms/:slug", "routes/forms.tsx"),
   route("api/simple-auth/*", "routes/api/simple-auth.tsx"),
   route("api/otp/*", "routes/api/otp.tsx"),

@@ -12,7 +12,7 @@ const navLinks = [
   { to: "/team", label: "Team" },
 ];
 
-const navLinkClass = ({ isActive }: { isActive: boolean }): string =>
+const navLinkClass = ({ isActive }: { readonly isActive: boolean }): string =>
   cn(
     "font-pt-sans text-base leading-[normal] transition-colors hover:text-black/80",
     isActive ? "font-bold text-black/80" : "text-black/64",
@@ -25,10 +25,14 @@ export default function LandingLayout(): JSX.Element {
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
-    const onScroll = (): void => setScrolled(window.scrollY > 0);
+    const onScroll = (): void => {
+      setScrolled(window.scrollY > 0);
+    };
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
-    return (): void => window.removeEventListener("scroll", onScroll);
+    return (): void => {
+      window.removeEventListener("scroll", onScroll);
+    };
   }, []);
 
   return (
@@ -43,7 +47,9 @@ export default function LandingLayout(): JSX.Element {
         <nav className="-mb-px flex h-14 items-center pr-6 pl-[11px] md:pl-4">
           <button
             className="-m-2 mr-[-7px] p-2 text-black/64 hover:text-black/80 md:hidden"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            onClick={() => {
+              setMobileMenuOpen(!mobileMenuOpen);
+            }}
             aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
           >
             {mobileMenuOpen ? <X /> : <Menu />}
@@ -83,7 +89,9 @@ export default function LandingLayout(): JSX.Element {
                   to={to}
                   end
                   className={(state) => cn("block py-2", navLinkClass(state))}
-                  onClick={() => setMobileMenuOpen(false)}
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                  }}
                 >
                   {label}
                 </NavLink>

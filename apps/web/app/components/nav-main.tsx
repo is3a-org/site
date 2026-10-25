@@ -14,33 +14,28 @@ import {
   SidebarMenuSubItem,
   useSidebar,
 } from "@is3a/design-system/sidebar";
-import { ChevronRight, type LucideIcon } from "lucide-react";
-import type { JSX } from "react";
+import { ChevronRight } from "lucide-react";
+import type { ComponentProps, JSXElementConstructor, JSX } from "react";
 import { Link } from "react-router";
 
-export function NavMain({
-  items,
-}: {
-  items: {
-    title: string;
-    url: string;
-    icon?: LucideIcon;
-    isActive?: boolean;
-    adminOnly?: boolean;
-    items?: {
-      title: string;
-      url: string;
-    }[];
-  }[];
-}): JSX.Element {
+interface NavigationItem {
+  readonly title: string;
+  readonly url: string;
+  readonly icon?: JSXElementConstructor<ComponentProps<"svg">>;
+  readonly isActive?: boolean;
+  readonly adminOnly?: boolean;
+  readonly items?: readonly Readonly<{ title: string; url: string }>[];
+}
+
+export function NavMain({ items }: Readonly<{ items: readonly NavigationItem[] }>): JSX.Element {
   const { setOpenMobile } = useSidebar();
 
   // Split items into regular and admin sections
-  const regularItems = items.filter((item) => !item.adminOnly);
-  const adminItems = items.filter((item) => item.adminOnly);
+  const regularItems = items.filter((item) => item.adminOnly !== true);
+  const adminItems = items.filter((item) => item.adminOnly === true);
 
-  const renderMenuItem = (item: (typeof items)[0]): JSX.Element =>
-    item.items?.length ? (
+  const renderMenuItem = (item: NavigationItem): JSX.Element =>
+    item.items !== undefined && item.items.length > 0 ? (
       <Collapsible
         key={item.title}
         asChild
@@ -57,10 +52,15 @@ export function NavMain({
           </CollapsibleTrigger>
           <CollapsibleContent>
             <SidebarMenuSub>
-              {item.items?.map((subItem) => (
+              {item.items.map((subItem) => (
                 <SidebarMenuSubItem key={subItem.title}>
                   <SidebarMenuSubButton asChild>
-                    <Link to={subItem.url} onClick={() => setOpenMobile(false)}>
+                    <Link
+                      to={subItem.url}
+                      onClick={() => {
+                        setOpenMobile(false);
+                      }}
+                    >
                       <span>{subItem.title}</span>
                     </Link>
                   </SidebarMenuSubButton>
@@ -73,7 +73,12 @@ export function NavMain({
     ) : (
       <SidebarMenuItem key={item.title}>
         <SidebarMenuButton asChild tooltip={item.title}>
-          <Link to={item.url} onClick={() => setOpenMobile(false)}>
+          <Link
+            to={item.url}
+            onClick={() => {
+              setOpenMobile(false);
+            }}
+          >
             {item.icon && <item.icon />}
             <span>{item.title}</span>
           </Link>
@@ -86,7 +91,7 @@ export function NavMain({
       {/* Regular navigation items */}
       {regularItems.length > 0 && (
         <SidebarGroup>
-          <SidebarMenu>{regularItems.map(renderMenuItem)}</SidebarMenu>
+          <SidebarMenu>{regularItems.map((item) => renderMenuItem(item))}</SidebarMenu>
         </SidebarGroup>
       )}
 
@@ -94,7 +99,7 @@ export function NavMain({
       {adminItems.length > 0 && (
         <SidebarGroup>
           <SidebarGroupLabel>Admin</SidebarGroupLabel>
-          <SidebarMenu>{adminItems.map(renderMenuItem)}</SidebarMenu>
+          <SidebarMenu>{adminItems.map((item) => renderMenuItem(item))}</SidebarMenu>
         </SidebarGroup>
       )}
     </>

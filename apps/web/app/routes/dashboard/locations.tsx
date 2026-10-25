@@ -28,16 +28,15 @@ import {
 } from "@is3a/design-system/table";
 import { Plus, Pencil, Trash2, MapPin, Mail, Globe, Calendar } from "lucide-react";
 import type { JSX } from "react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Form, useNavigation } from "react-router";
+import { z } from "zod";
 
 import { DashboardBreadcrumb } from "~/components/dashboard-breadcrumb";
-import {
-  LocationRepo,
-  NewLocationSchema,
-  type Location,
-  type NewLocation,
-} from "~/db/repo/locations";
+import { parseLocationFormData } from "~/db/repo/location-form";
+import { LocationRepo, type Location, type NewLocation } from "~/db/repo/locations";
+import type { ReadonlyRouteProps } from "~/fragno/readonly-route-props";
+import { readFormText } from "~/fragno/request-form";
 import { requestContext } from "~/request-context";
 
 import type { Route } from "./+types/locations";
@@ -50,7 +49,9 @@ type LocationActionResult =
   | { success: true; errors?: never }
   | { success: false; errors?: Partial<Record<keyof NewLocation, string[]>> };
 
-export async function loader({ context }: Route.LoaderArgs): Promise<LocationsLoaderData> {
+export async function loader({
+  context,
+}: Readonly<Route.LoaderArgs>): Promise<LocationsLoaderData> {
   const locations = await new LocationRepo(context.get(requestContext).db).getAllLocations();
   return { locations };
 }
@@ -58,30 +59,18 @@ export async function loader({ context }: Route.LoaderArgs): Promise<LocationsLo
 export async function action({
   request,
   context,
-}: Route.ActionArgs): Promise<LocationActionResult> {
+}: Readonly<Route.ActionArgs>): Promise<LocationActionResult> {
   const formData = await request.formData();
   const intent = formData.get("intent");
   const repo = new LocationRepo(context.get(requestContext).db);
 
   if (intent === "create") {
-    const data = Object.fromEntries(formData.entries());
-    const rawData = {
-      name: data.name,
-      email: data.email === "" ? null : data.email,
-      address: data.address === "" ? null : data.address,
-      website: data.website === "" ? null : data.website,
-      seasonSummer: data.seasonSummer === "on",
-      seasonAutumn: data.seasonAutumn === "on",
-      seasonWinter: data.seasonWinter === "on",
-      seasonSpring: data.seasonSpring === "on",
-    };
-
-    const result = NewLocationSchema.safeParse(rawData);
+    const result = parseLocationFormData(formData);
 
     if (!result.success) {
       return {
         success: false,
-        errors: result.error.flatten().fieldErrors,
+        errors: z.flattenError(result.error).fieldErrors,
       };
     }
 
@@ -91,26 +80,13 @@ export async function action({
   }
 
   if (intent === "update") {
-    const data = Object.fromEntries(formData.entries());
-    const id = parseInt(data.id as string);
-
-    const rawData = {
-      name: data.name,
-      email: data.email === "" ? null : data.email,
-      address: data.address === "" ? null : data.address,
-      website: data.website === "" ? null : data.website,
-      seasonSummer: data.seasonSummer === "on",
-      seasonAutumn: data.seasonAutumn === "on",
-      seasonWinter: data.seasonWinter === "on",
-      seasonSpring: data.seasonSpring === "on",
-    };
-
-    const result = NewLocationSchema.safeParse(rawData);
+    const id = Number(readFormText(formData, "id"));
+    const result = parseLocationFormData(formData);
 
     if (!result.success) {
       return {
         success: false,
-        errors: result.error.flatten().fieldErrors,
+        errors: z.flattenError(result.error).fieldErrors,
       };
     }
 
@@ -120,7 +96,7 @@ export async function action({
   }
 
   if (intent === "delete") {
-    const id = parseInt(formData.get("id") as string);
+    const id = Number(readFormText(formData, "id"));
     await repo.deleteLocation(id);
     return { success: true };
   }
@@ -128,17 +104,20 @@ export async function action({
   return { success: false };
 }
 
-export default function LocationsPage({ loaderData }: Route.ComponentProps): JSX.Element {
+export default function LocationsPage({
+  loaderData,
+}: ReadonlyRouteProps<Route.ComponentProps>): JSX.Element {
   const { locations } = loaderData;
   const navigation = useNavigation();
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
+  const [selectedLocation, setSelectedLocation] = useState<Readonly<Location>>();
   const [wasSubmitting, setWasSubmitting] = useState(false);
+  const [previousNavigationState, setPreviousNavigationState] = useState(navigation.state);
 
-  // Track submission state
-  useEffect(() => {
+  if (previousNavigationState !== navigation.state) {
+    setPreviousNavigationState(navigation.state);
     if (navigation.state === "submitting") {
       setWasSubmitting(true);
     } else if (navigation.state === "idle" && wasSubmitting) {
@@ -148,14 +127,14 @@ export default function LocationsPage({ loaderData }: Route.ComponentProps): JSX
       }
       setWasSubmitting(false);
     }
-  }, [navigation.state, wasSubmitting, isDeleteDialogOpen]);
+  }
 
-  const handleEdit = (location: Location): void => {
+  const handleEdit = (location: Readonly<Location>): void => {
     setSelectedLocation(location);
     setIsEditDialogOpen(true);
   };
 
-  const handleDelete = (location: Location): void => {
+  const handleDelete = (location: Readonly<Location>): void => {
     setSelectedLocation(location);
     setIsDeleteDialogOpen(true);
   };
@@ -174,7 +153,11 @@ export default function LocationsPage({ loaderData }: Route.ComponentProps): JSX
             <h1 className="text-2xl font-bold">Locations</h1>
             <p className="text-muted-foreground">Manage event locations</p>
           </div>
-          <Button onClick={() => setIsCreateDialogOpen(true)}>
+          <Button
+            onClick={() => {
+              setIsCreateDialogOpen(true);
+            }}
+          >
             <Plus className="mr-2 h-4 w-4" />
             Add Location
           </Button>
@@ -207,11 +190,11 @@ export default function LocationsPage({ loaderData }: Route.ComponentProps): JSX
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {locations.map((loc: Location) => (
+                  {locations.map((loc) => (
                     <TableRow key={loc.id}>
                       <TableCell className="font-medium">{loc.name}</TableCell>
                       <TableCell>
-                        {loc.email ? (
+                        {loc.email !== undefined && loc.email !== null && loc.email !== "" ? (
                           <div className="flex items-center gap-1 text-sm">
                             <Mail className="h-3 w-3" />
                             {loc.email}
@@ -221,14 +204,14 @@ export default function LocationsPage({ loaderData }: Route.ComponentProps): JSX
                         )}
                       </TableCell>
                       <TableCell>
-                        {loc.address ? (
+                        {loc.address !== undefined && loc.address !== null && loc.address !== "" ? (
                           <span className="text-sm">{loc.address}</span>
                         ) : (
                           <span className="text-sm text-muted-foreground">—</span>
                         )}
                       </TableCell>
                       <TableCell>
-                        {loc.website ? (
+                        {loc.website !== undefined && loc.website !== null && loc.website !== "" ? (
                           <a
                             href={loc.website}
                             target="_blank"
@@ -270,10 +253,22 @@ export default function LocationsPage({ loaderData }: Route.ComponentProps): JSX
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-2">
-                          <Button variant="ghost" size="icon" onClick={() => handleEdit(loc)}>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => {
+                              handleEdit(loc);
+                            }}
+                          >
                             <Pencil className="h-4 w-4" />
                           </Button>
-                          <Button variant="ghost" size="icon" onClick={() => handleDelete(loc)}>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => {
+                              handleDelete(loc);
+                            }}
+                          >
                             <Trash2 className="h-4 w-4 text-red-600" />
                           </Button>
                         </div>
@@ -326,7 +321,9 @@ export default function LocationsPage({ loaderData }: Route.ComponentProps): JSX
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={() => setIsDeleteDialogOpen(false)}
+                  onClick={() => {
+                    setIsDeleteDialogOpen(false);
+                  }}
                 >
                   Cancel
                 </Button>
@@ -350,28 +347,29 @@ function LocationFormDialog({
   intent,
   location,
 }: {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  title: string;
-  description: string;
-  intent: "create" | "update";
-  location?: Location;
+  readonly open: boolean;
+  readonly onOpenChange: (open: boolean) => void;
+  readonly title: string;
+  readonly description: string;
+  readonly intent: "create" | "update";
+  readonly location?: Readonly<Location>;
 }): JSX.Element {
   const navigation = useNavigation();
   const isSubmitting = navigation.state === "submitting";
+  const submitLabel = intent === "create" ? "Create" : "Update";
 
   // Track when submission completes
-  const [wasSubmitting, setWasSubmitting] = useState(false);
+  const wasSubmitting = useRef(false);
 
   useEffect(() => {
     if (isSubmitting) {
-      setWasSubmitting(true);
-    } else if (!isSubmitting && wasSubmitting && open) {
-      // Submission completed, close the dialog
+      wasSubmitting.current = true;
+    } else if (wasSubmitting.current && open) {
+      // Submission completed, close the dialog.
       onOpenChange(false);
-      setWasSubmitting(false);
+      wasSubmitting.current = false;
     }
-  }, [isSubmitting, wasSubmitting, open, onOpenChange]);
+  }, [isSubmitting, open, onOpenChange]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -406,7 +404,7 @@ function LocationFormDialog({
                 name="email"
                 type="email"
                 placeholder="contact@location.com"
-                defaultValue={location?.email || ""}
+                defaultValue={location?.email ?? ""}
               />
             </div>
 
@@ -416,7 +414,7 @@ function LocationFormDialog({
                 id="address"
                 name="address"
                 placeholder="123 Main St, City, State"
-                defaultValue={location?.address || ""}
+                defaultValue={location?.address ?? ""}
               />
             </div>
 
@@ -427,7 +425,7 @@ function LocationFormDialog({
                 name="website"
                 type="url"
                 placeholder="https://location.com"
-                defaultValue={location?.website || ""}
+                defaultValue={location?.website ?? ""}
               />
             </div>
 
@@ -438,7 +436,7 @@ function LocationFormDialog({
                   <Checkbox
                     id="seasonSummer"
                     name="seasonSummer"
-                    defaultChecked={location?.seasonSummer || false}
+                    defaultChecked={location?.seasonSummer ?? false}
                   />
                   <Label htmlFor="seasonSummer" className="cursor-pointer font-normal">
                     Summer
@@ -448,7 +446,7 @@ function LocationFormDialog({
                   <Checkbox
                     id="seasonAutumn"
                     name="seasonAutumn"
-                    defaultChecked={location?.seasonAutumn || false}
+                    defaultChecked={location?.seasonAutumn ?? false}
                   />
                   <Label htmlFor="seasonAutumn" className="cursor-pointer font-normal">
                     Autumn
@@ -458,7 +456,7 @@ function LocationFormDialog({
                   <Checkbox
                     id="seasonWinter"
                     name="seasonWinter"
-                    defaultChecked={location?.seasonWinter || false}
+                    defaultChecked={location?.seasonWinter ?? false}
                   />
                   <Label htmlFor="seasonWinter" className="cursor-pointer font-normal">
                     Winter
@@ -468,7 +466,7 @@ function LocationFormDialog({
                   <Checkbox
                     id="seasonSpring"
                     name="seasonSpring"
-                    defaultChecked={location?.seasonSpring || false}
+                    defaultChecked={location?.seasonSpring ?? false}
                   />
                   <Label htmlFor="seasonSpring" className="cursor-pointer font-normal">
                     Spring
@@ -482,13 +480,15 @@ function LocationFormDialog({
             <Button
               type="button"
               variant="outline"
-              onClick={() => onOpenChange(false)}
+              onClick={() => {
+                onOpenChange(false);
+              }}
               disabled={isSubmitting}
             >
               Cancel
             </Button>
             <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? "Saving..." : intent === "create" ? "Create" : "Update"}
+              {isSubmitting ? "Saving..." : submitLabel}
             </Button>
           </DialogFooter>
         </Form>

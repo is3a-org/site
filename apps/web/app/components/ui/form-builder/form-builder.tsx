@@ -10,13 +10,13 @@ import { useFormBuilder } from "./use-form-builder";
 
 export interface FormBuilderProps {
   /** Initial state for the form builder (takes precedence over defaultSchemas) */
-  defaultValue?: FormBuilderState;
+  readonly defaultValue?: FormBuilderState;
   /** Initialize from existing schemas (parsed into FormBuilderState) */
-  defaultSchemas?: GeneratedSchemas;
+  readonly defaultSchemas?: GeneratedSchemas;
   /** Callback when schemas change */
-  onChange?: (schemas: GeneratedSchemas) => void;
+  readonly onChange?: (schemas: GeneratedSchemas) => void;
   /** Additional class name */
-  className?: string;
+  readonly className?: string;
 }
 
 export function FormBuilder({
@@ -54,14 +54,30 @@ export function FormBuilder({
               key={field.id}
               field={field}
               index={index}
-              onUpdate={(updates) => updateField(field.id, updates)}
-              onUpdateLabel={(label) => updateFieldNameFromLabel(field.id, label)}
-              onDelete={() => deleteField(field.id)}
-              onDuplicate={() => duplicateField(field.id)}
-              onMoveUp={index > 0 ? (): void => moveField(index, index - 1) : undefined}
+              onUpdate={(updates) => {
+                updateField(field.id, updates);
+              }}
+              onUpdateLabel={(label) => {
+                updateFieldNameFromLabel(field.id, label);
+              }}
+              onDelete={() => {
+                deleteField(field.id);
+              }}
+              onDuplicate={() => {
+                duplicateField(field.id);
+              }}
+              onMoveUp={
+                index > 0
+                  ? (): void => {
+                      moveField(index, index - 1);
+                    }
+                  : undefined
+              }
               onMoveDown={
                 index < state.fields.length - 1
-                  ? (): void => moveField(index, index + 1)
+                  ? (): void => {
+                      moveField(index, index + 1);
+                    }
                   : undefined
               }
             />
@@ -69,7 +85,14 @@ export function FormBuilder({
         </div>
       )}
 
-      <Button type="button" variant="outline" className="w-full" onClick={() => handleAddField()}>
+      <Button
+        type="button"
+        variant="outline"
+        className="w-full"
+        onClick={() => {
+          handleAddField();
+        }}
+      >
         <Plus className="mr-2 size-4" />
         Add Field
       </Button>

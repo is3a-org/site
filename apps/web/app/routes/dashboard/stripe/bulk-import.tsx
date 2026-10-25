@@ -10,6 +10,8 @@ import type Stripe from "stripe";
 import { BulkImportWizard } from "~/components/bulk-import-wizard";
 import { DashboardBreadcrumb } from "~/components/dashboard-breadcrumb";
 import { UserRepo } from "~/db/repo/user";
+import type { ReadonlyRouteProps } from "~/fragno/readonly-route-props";
+import { parseStripeCustomerIds, readFormText } from "~/fragno/request-form";
 import { createSimpleAuthServer } from "~/fragno/simple-auth-server";
 import { linkStripeCustomer } from "~/fragno/stripe-durable-object";
 import { createStripeClient } from "~/lib/stripe.server";
@@ -38,7 +40,9 @@ type StripeBulkImportActionResult =
     }
   | { success: true; results: StripeCustomerImportResult[]; message: string };
 
-export async function loader({ context }: Route.LoaderArgs): Promise<StripeBulkImportLoaderData> {
+export async function loader({
+  context,
+}: Readonly<Route.LoaderArgs>): Promise<StripeBulkImportLoaderData> {
   const userRepo = new UserRepo(context.get(requestContext).db);
 
   // Fetch existing users for matching
@@ -62,13 +66,13 @@ export async function loader({ context }: Route.LoaderArgs): Promise<StripeBulkI
 export async function action({
   request,
   context,
-}: Route.ActionArgs): Promise<StripeBulkImportActionResult> {
+}: Readonly<Route.ActionArgs>): Promise<StripeBulkImportActionResult> {
   const formData = await request.formData();
-  const intent = formData.get("intent") as string;
+  const intent = readFormText(formData, "intent") ?? "";
 
   if (intent === "bulk-sync-subscription") {
-    const customerIdsJson = formData.get("customerIds") as string;
-    const customerIds = JSON.parse(customerIdsJson) as string[];
+    const customerIdsJson = readFormText(formData, "customerIds") ?? "";
+    const customerIds = parseStripeCustomerIds(customerIdsJson);
 
     const userRepo = new UserRepo(context.get(requestContext).db);
     const auth = createSimpleAuthServer(context.get(requestContext).pool);
@@ -92,11 +96,11 @@ export async function action({
 
         const customerEmail = customer.email;
         console.log(
-          `[Bulk Import] Starting match for Stripe customer ${customerId} with email: ${customerEmail || "none"}`,
+          `[Bulk Import] Starting match for Stripe customer ${customerId} with email: ${customerEmail === null || customerEmail === "" ? "none" : customerEmail}`,
         );
 
         // Check if user already exists
-        let targetUserId: string | null = null;
+        let targetUserId: string | undefined;
 
         // First check by Stripe customer ID
         console.log(`[Bulk Import] Attempting to match by Stripe customer ID: ${customerId}`);
@@ -107,7 +111,11 @@ export async function action({
         }
 
         // If not found and customer has email, check by email
-        if (!targetUserId && customerEmail) {
+        if (
+          (targetUserId === undefined || targetUserId === "") &&
+          customerEmail !== null &&
+          customerEmail !== ""
+        ) {
           console.log(
             `[Bulk Import] No match by Stripe ID, attempting to match by email: ${customerEmail}`,
           );
@@ -119,9 +127,9 @@ export async function action({
         }
 
         // If still no user found, create one
-        if (!targetUserId) {
+        if (targetUserId === undefined || targetUserId === "") {
           console.log(`[Bulk Import] No existing user found, attempting to create new user`);
-          if (!customerEmail) {
+          if (customerEmail === null || customerEmail === "") {
             return {
               success: false,
               error: `Stripe customer ${customerId} has no email address and cannot be auto-created`,
@@ -152,7 +160,7 @@ export async function action({
           console.log(`[Bulk Import] Created new user: ${targetUserId}`);
         }
 
-        if (!targetUserId) {
+        if (targetUserId === "") {
           return {
             success: false,
             error: `Failed to resolve user for Stripe customer ${customerId}`,
@@ -164,7 +172,12 @@ export async function action({
 
         // Check for conflicts - validate user doesn't have a different Stripe customer ID
         const existingUser = await userRepo.getUserById(targetUserId);
-        if (existingUser?.stripeCustomerId && existingUser.stripeCustomerId !== customerId) {
+        if (
+          existingUser?.stripeCustomerId !== undefined &&
+          existingUser.stripeCustomerId !== null &&
+          existingUser.stripeCustomerId !== "" &&
+          existingUser.stripeCustomerId !== customerId
+        ) {
           return {
             success: false,
             error: `User ${targetUserId} is already linked to Stripe customer ${existingUser.stripeCustomerId}`,
@@ -181,7 +194,7 @@ export async function action({
             referenceId: targetUserId,
           },
         );
-        if (linkError) {
+        if (linkError !== null && linkError !== "") {
           return { success: false, error: linkError, results };
         }
 
@@ -212,7 +225,9 @@ export async function action({
   return { success: false, error: "Invalid intent" };
 }
 
-export default function BulkImportPage({ loaderData }: Route.ComponentProps): JSX.Element {
+export default function BulkImportPage({
+  loaderData,
+}: ReadonlyRouteProps<Route.ComponentProps>): JSX.Element {
   return (
     <>
       <DashboardBreadcrumb>

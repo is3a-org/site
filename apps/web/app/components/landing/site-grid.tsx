@@ -1,5 +1,4 @@
-import type { JSX } from "react";
-import type { CSSProperties, ReactNode } from "react";
+import type { JSX, CSSProperties, ReactNode } from "react";
 
 import { cn } from "~/lib/utils";
 
@@ -18,7 +17,7 @@ export function SiteSection({
   gridClassName,
   style,
   children,
-}: SiteSectionProps): JSX.Element {
+}: Readonly<SiteSectionProps>): JSX.Element {
   return (
     <section className={cn("py-6", className)} style={style}>
       <div className="mx-auto w-full max-w-[1280px] px-2 md:px-12">
@@ -31,10 +30,10 @@ export function SiteSection({
 export function SiteColumn({
   className,
   children,
-}: {
+}: Readonly<{
   className?: string;
   children: ReactNode;
-}): JSX.Element {
+}>): JSX.Element {
   return <div className={cn("col-span-12 px-[11.5px]", className)}>{children}</div>;
 }
 

@@ -6,6 +6,7 @@ import { createAdapter } from "./database-adapter.ts";
 export function createOtpServer(pool: PostgresPool | (() => PostgresPool)): OtpFragment {
   return createOtpFragment(
     {
+      // oxlint-disable-next-line typescript/require-await -- COMPATIBILITY: The existing log-only email transport must retain the Promise<void> callback contract without sending real mail.
       sendEmail: async ({ to, subject, body }) => {
         console.log(`Sending email to ${to} with subject ${subject} and body ${body}`);
       },

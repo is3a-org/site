@@ -35,11 +35,15 @@ import { useState } from "react";
 import { Link } from "react-router";
 
 import { DashboardBreadcrumb } from "~/components/dashboard-breadcrumb";
+import { formJsonObjectSchema } from "~/components/ui/form-builder/form-schema-contracts";
+import type { FormJsonObject } from "~/components/ui/form-builder/types";
 import { formsClient, useAllSubmissions } from "~/lib/forms-client";
 
 import type { Route } from "./+types/submissions";
 
-export default function FormSubmissionsPage({ params }: Route.ComponentProps): JSX.Element {
+export default function FormSubmissionsPage({
+  params,
+}: Readonly<Pick<Route.ComponentProps, "params">>): JSX.Element {
   const { data: form, loading: isLoadingForm } = formsClient.useFormById({
     path: { id: params.id },
   });
@@ -50,14 +54,11 @@ export default function FormSubmissionsPage({ params }: Route.ComponentProps): J
 
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
-  const [selectedSubmissionId, setSelectedSubmissionId] = useState<string | null>(null);
-  const [selectedSubmissionData, setSelectedSubmissionData] = useState<Record<
-    string,
-    unknown
-  > | null>(null);
+  const [selectedSubmissionId, setSelectedSubmissionId] = useState<string>();
+  const [selectedSubmissionData, setSelectedSubmissionData] = useState<FormJsonObject>();
 
   const handleDelete = async (): Promise<void> => {
-    if (!selectedSubmissionId) {
+    if (selectedSubmissionId === undefined || selectedSubmissionId === "") {
       return;
     }
 
@@ -66,8 +67,8 @@ export default function FormSubmissionsPage({ params }: Route.ComponentProps): J
     });
 
     setIsDeleteDialogOpen(false);
-    setSelectedSubmissionId(null);
-    window.location.reload();
+    setSelectedSubmissionId(undefined);
+    globalThis.location.reload();
   };
 
   const openDeleteDialog = (submissionId: string): void => {
@@ -75,8 +76,8 @@ export default function FormSubmissionsPage({ params }: Route.ComponentProps): J
     setIsDeleteDialogOpen(true);
   };
 
-  const openViewDialog = (data: Record<string, unknown>): void => {
-    setSelectedSubmissionData(data);
+  const openViewDialog = (data: FormJsonObject): void => {
+    setSelectedSubmissionData(formJsonObjectSchema.parse(data));
     setIsViewDialogOpen(true);
   };
 
@@ -92,15 +93,13 @@ export default function FormSubmissionsPage({ params }: Route.ComponentProps): J
         </BreadcrumbItem>
         <BreadcrumbSeparator />
         <BreadcrumbItem>
-          {isLoading ? (
-            <Skeleton className="h-4 w-24" />
-          ) : form ? (
+          {isLoading && <Skeleton className="h-4 w-24" />}
+          {!isLoading && form && (
             <BreadcrumbLink asChild>
               <Link to={`/dashboard/admin/forms/${form.id}/edit`}>{form.title}</Link>
             </BreadcrumbLink>
-          ) : (
-            <BreadcrumbPage>Not Found</BreadcrumbPage>
           )}
+          {!isLoading && !form && <BreadcrumbPage>Not Found</BreadcrumbPage>}
         </BreadcrumbItem>
         <BreadcrumbSeparator />
         <BreadcrumbItem>
@@ -152,19 +151,20 @@ export default function FormSubmissionsPage({ params }: Route.ComponentProps): J
                   <Skeleton className="h-4 w-24" />
                 ) : (
                   <>
-                    {submissionsList.length} submission{submissionsList.length !== 1 ? "s" : ""}
+                    {submissionsList.length} submission{submissionsList.length === 1 ? "" : "s"}
                   </>
                 )}
               </CardDescription>
             </CardHeader>
             <CardContent>
-              {isLoading ? (
+              {isLoading && (
                 <div className="space-y-3">
                   <Skeleton className="h-10 w-full" />
                   <Skeleton className="h-10 w-full" />
                   <Skeleton className="h-10 w-full" />
                 </div>
-              ) : submissionsList.length === 0 ? (
+              )}
+              {!isLoading && submissionsList.length === 0 && (
                 <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
                   <ClipboardList className="mb-4 h-12 w-12 opacity-50" />
                   <p className="text-lg font-medium">No submissions yet</p>
@@ -172,7 +172,8 @@ export default function FormSubmissionsPage({ params }: Route.ComponentProps): J
                     Submissions will appear here when users fill out the form
                   </p>
                 </div>
-              ) : (
+              )}
+              {!isLoading && submissionsList.length > 0 && (
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -184,7 +185,7 @@ export default function FormSubmissionsPage({ params }: Route.ComponentProps): J
                   </TableHeader>
                   <TableBody>
                     {submissionsList.map((submission) => {
-                      const data = submission.data as Record<string, unknown>;
+                      const data = submission.data;
                       return (
                         <TableRow key={submission.id}>
                           <TableCell>{new Date(submission.submittedAt).toLocaleString()}</TableCell>
@@ -203,14 +204,18 @@ export default function FormSubmissionsPage({ params }: Route.ComponentProps): J
                               <Button
                                 variant="ghost"
                                 size="icon"
-                                onClick={() => openViewDialog(data)}
+                                onClick={() => {
+                                  openViewDialog(formJsonObjectSchema.parse(data));
+                                }}
                               >
                                 <Eye className="h-4 w-4" />
                               </Button>
                               <Button
                                 variant="ghost"
                                 size="icon"
-                                onClick={() => openDeleteDialog(submission.id)}
+                                onClick={() => {
+                                  openDeleteDialog(submission.id);
+                                }}
                               >
                                 <Trash2 className="h-4 w-4 text-red-600" />
                               </Button>
@@ -235,10 +240,15 @@ export default function FormSubmissionsPage({ params }: Route.ComponentProps): J
             <DialogDescription>Full submission data</DialogDescription>
           </DialogHeader>
           <pre className="overflow-auto rounded-md bg-muted p-4 text-sm">
-            {JSON.stringify(selectedSubmissionData, null, 2)}
+            {JSON.stringify(selectedSubmissionData, undefined, 2)}
           </pre>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsViewDialogOpen(false)}>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setIsViewDialogOpen(false);
+              }}
+            >
               Close
             </Button>
           </DialogFooter>
@@ -255,11 +265,22 @@ export default function FormSubmissionsPage({ params }: Route.ComponentProps): J
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setIsDeleteDialogOpen(false);
+              }}
+            >
               Cancel
             </Button>
-            <Button variant="destructive" onClick={handleDelete} disabled={isDeleting}>
-              {isDeleting ? "Deleting..." : "Delete"}
+            <Button
+              variant="destructive"
+              onClick={() => {
+                void handleDelete();
+              }}
+              disabled={isDeleting ?? false}
+            >
+              {isDeleting === true ? "Deleting..." : "Delete"}
             </Button>
           </DialogFooter>
         </DialogContent>
