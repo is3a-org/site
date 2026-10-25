@@ -285,34 +285,15 @@ export const totpRoutesFactory = defineRoutes<typeof otpFragmentDefinition>().cr
         handler: async function ({ input }, { json, error }) {
           const { userId, code } = await input.valid();
 
-          // Step 1: Verify the backup code and get the expected/next states
-          const [verifyResult] = await this.handlerTx()
-            .withServiceCalls(() => [services.verifyBackupCode(userId, code)])
+          const [result] = await this.handlerTx()
+            .withServiceCalls(() => [services.consumeBackupCode(userId, code)])
             .execute();
 
-          if (!verifyResult.valid) {
+          if (!result.valid) {
             return error({ message: "Invalid backup code", code: "backup_code_invalid" }, 401);
           }
 
-          // Step 2: Atomically consume with compare-and-swap
-          // This fails if another request modified backupCodes between steps
-          if (verifyResult.expectedBackupCodes && verifyResult.nextBackupCodes) {
-            const [consumeResult] = await this.handlerTx()
-              .withServiceCalls(() => [
-                services.consumeBackupCode(
-                  userId,
-                  verifyResult.expectedBackupCodes,
-                  verifyResult.nextBackupCodes,
-                ),
-              ])
-              .execute();
-
-            if (!consumeResult.success) {
-              return error({ message: "Invalid backup code", code: "backup_code_invalid" }, 401);
-            }
-          }
-
-          return json({ valid: true });
+          return json(result);
         },
       }),
 

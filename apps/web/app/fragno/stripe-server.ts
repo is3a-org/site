@@ -12,6 +12,11 @@ import { createSimpleAuthServer } from "./simple-auth-server.ts";
 
 type StripeFragment = ReturnType<typeof createStripeFragment>;
 
+/**
+ * Creates the Stripe fragment. The fragment processes webhooks with durable hooks, so requests and
+ * service calls that write to it must go through `StripeFragmentDurableObject`, which hosts the
+ * hook dispatcher. See `~/fragno/stripe-durable-object.ts`.
+ */
 export function createStripeServer(pool: PostgresPool | (() => PostgresPool)): StripeFragment {
   const stripeSecret = process.env.STRIPE_SECRET_KEY;
   if (!stripeSecret) {
@@ -33,7 +38,7 @@ export function createStripeServer(pool: PostgresPool | (() => PostgresPool)): S
     const response = await auth.callRoute("GET", "/me", { headers });
 
     if (response.type === "json" && response.data) {
-      return response.data;
+      return response.data.user;
     }
     return null;
   };
@@ -42,45 +47,35 @@ export function createStripeServer(pool: PostgresPool | (() => PostgresPool)): S
     {
       stripeSecretKey: stripeSecret || "stripe-secrets-unset",
       webhookSecret: stripeWebhookSecret || "stripe-secrets-unset",
-      stripeClientOptions: {
-        apiVersion: "2025-10-29.clover",
-      },
 
-      // Link Stripe customers to your users
-      onStripeCustomerCreated: async (stripeCustomerId, referenceId) => {
-        userRepo.setStripeCustomerId(referenceId, stripeCustomerId);
+      // Keep the app's own user -> Stripe customer link in sync with the fragment's
+      onCustomerLinked: async ({ customerId, referenceId }) => {
+        await userRepo.setStripeCustomerId(referenceId, customerId);
       },
 
       // Resolves the authenticated entity from the request
       resolveEntityFromRequest: async ({ headers }) => {
-        const session = await getSession(headers);
-
-        if (!session) {
-          throw new Error("Unauthorized??");
-        }
-        // FIXME: Fetching user twice, in the userRepo and getSession
-        const user = await userRepo.getUserById(session.userId);
+        const user = await getSession(headers);
         if (!user) {
-          throw new Error("User not found");
+          return null;
         }
 
         return {
           referenceId: user.id,
-          customerEmail: session.email,
-          stripeCustomerId: user.stripeCustomerId ?? undefined,
-          stripeMetadata: {},
+          customerEmail: user.email,
+          customerMetadata: {},
         };
       },
-      enableAdminRoutes: true,
     },
     {
       databaseAdapter: createAdapter(resolvedPool),
     },
   ).withMiddleware(async ({ path, headers }, { error }) => {
-    const user = await getSession(headers);
-
-    if (path.startsWith("/admin") && (!user || user.role !== "admin")) {
-      return error({ message: "Unauthorized", code: "UNAUTHORIZED" }, 401);
+    if (path.startsWith("/admin")) {
+      const user = await getSession(headers);
+      if (!user || user.role !== "admin") {
+        return error({ message: "Unauthorized", code: "UNAUTHORIZED" }, 401);
+      }
     }
 
     return undefined;

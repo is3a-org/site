@@ -24,7 +24,7 @@ import { useState } from "react";
 import { DashboardBreadcrumb } from "~/components/dashboard-breadcrumb";
 import { MembershipPlans } from "~/components/membership-plans";
 import { createSimpleAuthServer } from "~/fragno/simple-auth-server";
-import { createStripeServer } from "~/fragno/stripe-server";
+import { getStripeFragment } from "~/fragno/stripe-durable-object";
 import { getMembershipByPriceId } from "~/lib/memberships";
 import { simpleAuthClient } from "~/lib/simple-auth-client";
 import { stripeFragmentClient } from "~/lib/stripe-client";
@@ -202,8 +202,8 @@ const getPaymentWarningConfig = (status?: string) => {
   }
 };
 
-const redirectToStripe = (response?: { redirect?: boolean; url?: string }) => {
-  if (response?.redirect && response.url) {
+const redirectToStripe = (response?: { url?: string }) => {
+  if (response?.url) {
     window.location.href = response.url;
   }
 };
@@ -222,8 +222,9 @@ export async function loader({ context, request }: Route.LoaderArgs) {
   });
 
   if (response.type === "json" && response.data) {
-    const frag = createStripeServer(context.pool);
-    const subscriptions = await frag.services.getSubscriptionsByReferenceId(response.data.userId);
+    const subscriptions = await getStripeFragment(
+      context.cloudflare.env,
+    ).getSubscriptionsByReferenceId(response.data.user.id);
     // Get the first subscription (most apps only have one per customer)
     const subscription = subscriptions[0] || null;
     return { subscription };
@@ -302,9 +303,9 @@ export default function DashboardSubscribe({
 
   const status = subscription?.status;
   const hasSubscription = !!subscription;
-  const membership = getMembershipByPriceId(subscription?.stripePriceId);
+  const membership = getMembershipByPriceId(subscription?.priceId);
   const isScheduledToCancel = subscription?.cancelAtPeriodEnd || subscription?.cancelAt !== null;
-  const renewalDate = subscription?.periodEnd;
+  const renewalDate = subscription?.currentPeriodEnd;
   const cancelDate = subscription?.cancelAt;
   const trialEndDate = subscription?.trialEnd;
   const statusMeta = getStatusMeta(status, isScheduledToCancel);
@@ -329,13 +330,13 @@ export default function DashboardSubscribe({
   const errors = [cancelError, error, createPortalError].filter((err) => err != null);
 
   const handleUncancel = async () => {
-    if (!subscription?.stripePriceId) {
+    if (!subscription?.priceId) {
       return;
     }
 
     const response = await upgradeSubscription({
       body: {
-        priceId: subscription.stripePriceId,
+        priceId: subscription.priceId,
         quantity: 1,
         successUrl: `${window.location.origin}/dashboard/subscribe-confirm`,
         cancelUrl: `${window.location.origin}/dashboard/membership`,
@@ -414,11 +415,11 @@ export default function DashboardSubscribe({
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
                   <p className="text-sm font-medium">Email</p>
-                  <p className="text-sm text-muted-foreground">{userData.email}</p>
+                  <p className="text-sm text-muted-foreground">{userData.user.email}</p>
                 </div>
                 <div>
                   <p className="text-sm font-medium">Role</p>
-                  <p className="text-sm text-muted-foreground capitalize">{userData.role}</p>
+                  <p className="text-sm text-muted-foreground capitalize">{userData.user.role}</p>
                 </div>
               </div>
             ) : (

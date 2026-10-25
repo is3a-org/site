@@ -184,7 +184,7 @@ export const otpFragmentDefinition = defineFragment<OtpFragmentConfig>("one-time
           .build();
       },
 
-      verifyBackupCode: function (userId: string, code: string) {
+      consumeBackupCode: function (userId: string, code: string) {
         return this.serviceTx(otpSchema)
           .retrieve((uow) =>
             uow.findFirst("totp_secret", (b) =>
@@ -193,7 +193,7 @@ export const otpFragmentDefinition = defineFragment<OtpFragmentConfig>("one-time
           )
           .transformRetrieve(async ([totpRecord]) => {
             if (!totpRecord) {
-              return { valid: false };
+              return null;
             }
 
             const backupCodes: string[] = JSON.parse(totpRecord.backupCodes);
@@ -203,47 +203,24 @@ export const otpFragmentDefinition = defineFragment<OtpFragmentConfig>("one-time
               if (isValid) {
                 const nextBackupCodes = [...backupCodes];
                 nextBackupCodes.splice(i, 1);
-                return {
-                  valid: true,
-                  expectedBackupCodes: backupCodes,
-                  nextBackupCodes,
-                };
+                return { totpRecord, nextBackupCodes };
               }
             }
 
-            return { valid: false };
+            return null;
           })
-          .build();
-      },
-
-      consumeBackupCode: function (
-        userId: string,
-        expectedBackupCodes: string[],
-        nextBackupCodes: string[],
-      ) {
-        const expectedJson = JSON.stringify(expectedBackupCodes);
-
-        return this.serviceTx(otpSchema)
-          .retrieve((uow) =>
-            uow.findFirst("totp_secret", (b) =>
-              b.whereIndex("idx_totp_user", (eb) => eb("userId", "=", userId)),
-            ),
-          )
-          .mutate(({ uow, retrieveResult: [totpRecord] }) => {
-            if (!totpRecord) {
-              return { success: false };
+          .mutate(({ uow, retrieveResult: match }) => {
+            if (!match) {
+              return { valid: false };
             }
 
-            // Compare-and-swap: only update if current state matches expected snapshot
-            if (totpRecord.backupCodes !== expectedJson) {
-              return { success: false };
-            }
-
-            uow.update("totp_secret", totpRecord.id, (b) =>
-              b.set({ backupCodes: JSON.stringify(nextBackupCodes) }).check(),
+            // The version check fails the transaction if another request consumed a code since
+            // the retrieve, so a backup code can only be used once.
+            uow.update("totp_secret", match.totpRecord.id, (b) =>
+              b.set({ backupCodes: JSON.stringify(match.nextBackupCodes) }).check(),
             );
 
-            return { success: true };
+            return { valid: true };
           })
           .build();
       },

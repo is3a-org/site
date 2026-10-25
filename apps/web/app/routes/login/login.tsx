@@ -30,7 +30,6 @@ export async function loader({ request, context }: Route.LoaderArgs) {
   const auth = createSimpleAuthServer(context.pool);
 
   const response = await auth.callRoute("GET", "/me", {
-    query: { sessionId: request.url.split("?")[1] },
     headers: request.headers,
   });
 

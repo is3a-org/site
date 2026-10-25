@@ -1,13 +1,13 @@
 diff --git a/package.json b/package.json
-index a3397999764d17ebb7528f74638ef5d41572753a..e0e97638446ed6f2e9faebe94ea17e6d164790b9 100644
+index 0b4bfac39cab9e9f29e7965d0f458ff821e7ca19..9c628de9756812bc6b22bbc3967d746ef3f43bbd 100644
 --- a/package.json
 +++ b/package.json
-@@ -40,7 +40,7 @@
+@@ -54,7 +54,7 @@
+       "default": "./dist/integrations/nuxt.js"
      },
      "./rollup": {
-       "development": "./src/integrations/rollup.ts",
 -      "types": "./dist/integrations/rollup.d.ts",
-+      "types": "./dist/integrations/rollup-Dsrn1HSH.d.ts",
++      "types": "./dist/integrations/rollup-CgxMLzCk.d.ts",
        "default": "./dist/integrations/rollup.js"
      },
      "./rspack": {

@@ -9,24 +9,29 @@ import { BulkImportWizard } from "~/components/bulk-import-wizard";
 import { DashboardBreadcrumb } from "~/components/dashboard-breadcrumb";
 import { UserRepo } from "~/db/repo/user";
 import { createSimpleAuthServer } from "~/fragno/simple-auth-server";
-import { createStripeServer } from "~/fragno/stripe-server";
+import { linkStripeCustomer } from "~/fragno/stripe-durable-object";
+import { createStripeClient } from "~/lib/stripe.server";
 
 import type { Route } from "./+types/bulk-import";
 
 export async function loader({ context }: Route.LoaderArgs) {
   const userRepo = new UserRepo(context.db);
-  const stripe = createStripeServer(context.pool);
 
   // Fetch existing users for matching
   const users = await userRepo.getAllUsers();
 
   // Fetch Stripe customers
-  const stripeClient = stripe.services.getStripeClient();
+  const stripeClient = createStripeClient();
   const customers = await stripeClient.customers.list({ limit: 100 });
 
   return {
     users,
-    stripeCustomers: customers.data,
+    stripeCustomers: customers.data.map(({ id, email, name, created }) => ({
+      id,
+      email,
+      name,
+      created,
+    })),
   };
 }
 
@@ -40,8 +45,7 @@ export async function action({ request, context }: Route.ActionArgs) {
 
     const userRepo = new UserRepo(context.db);
     const auth = createSimpleAuthServer(context.pool);
-    const stripe = createStripeServer(context.pool);
-    const stripeClient = stripe.services.getStripeClient();
+    const stripeClient = createStripeClient();
 
     const results: Array<{
       customerId: string;
@@ -146,11 +150,14 @@ export async function action({ request, context }: Route.ActionArgs) {
           };
         }
 
-        // Link user to Stripe customer
-        await userRepo.setStripeCustomerId(targetUserId, customerId);
-
-        // Sync subscription from Stripe
-        await stripe.services.syncStripeSubscriptions(targetUserId, customerId);
+        // Link user to Stripe customer and sync their subscription from Stripe
+        const linkError = await linkStripeCustomer(context.cloudflare.env, userRepo, {
+          customerId,
+          referenceId: targetUserId,
+        });
+        if (linkError) {
+          return { success: false, error: linkError, results };
+        }
 
         results.push({
           customerId,

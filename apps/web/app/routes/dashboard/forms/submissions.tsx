@@ -34,7 +34,7 @@ import { useState } from "react";
 import { Link } from "react-router";
 
 import { DashboardBreadcrumb } from "~/components/dashboard-breadcrumb";
-import { formsClient } from "~/lib/forms-client";
+import { formsClient, useAllSubmissions } from "~/lib/forms-client";
 
 import type { Route } from "./+types/submissions";
 
@@ -42,9 +42,7 @@ export default function FormSubmissionsPage({ params }: Route.ComponentProps) {
   const { data: form, loading: isLoadingForm } = formsClient.useFormById({
     path: { id: params.id },
   });
-  const { data: submissions, loading: isLoadingSubmissions } = formsClient.useSubmissions({
-    path: { id: params.id },
-  });
+  const { data: submissions, loading: isLoadingSubmissions } = useAllSubmissions(params.id);
   const isLoading = isLoadingForm || isLoadingSubmissions;
 
   const { mutate: deleteSubmission, loading: isDeleting } = formsClient.useDeleteSubmission();

@@ -13,9 +13,8 @@ import { useSearchParams } from "react-router";
 import { useNavigate } from "react-router";
 
 import { DashboardBreadcrumb } from "~/components/dashboard-breadcrumb";
-import { UserRepo } from "~/db/repo/user";
 import { createSimpleAuthServer } from "~/fragno/simple-auth-server";
-import { createStripeServer } from "~/fragno/stripe-server";
+import { getStripeFragment } from "~/fragno/stripe-durable-object";
 import { cn } from "~/lib/utils";
 
 import type { Route } from "./+types/subscribe-confirm";
@@ -31,15 +30,7 @@ export async function loader({ context, request }: Route.LoaderArgs) {
     return { status: "error", message: "Could not retrieve data for user" };
   }
 
-  const userRepo = new UserRepo(context.db);
-  const user = await userRepo.getUserById(response.data.userId);
-  if (!user || !user.stripeCustomerId) {
-    console.error("User not found or missing Stripe customer ID");
-    return { status: "error", message: "Could not retrieve data for user" };
-  }
-
-  const stripe = createStripeServer(context.pool);
-  await stripe.services.syncStripeSubscriptions(user.id, user.stripeCustomerId);
+  await getStripeFragment(context.cloudflare.env).syncSubscriptions(response.data.user.id);
   return { status: "success", message: "Subscription status up-to-date" };
 }
 

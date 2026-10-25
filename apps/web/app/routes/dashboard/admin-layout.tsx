@@ -8,12 +8,11 @@ export async function loader({ context, request }: Route.LoaderArgs) {
   const auth = createSimpleAuthServer(context.pool);
 
   const response = await auth.callRoute("GET", "/me", {
-    query: { sessionId: request.url.split("?")[1] },
     headers: request.headers,
   });
 
   if (response.type === "json") {
-    const { role } = response.data;
+    const { role } = response.data.user;
 
     // Check if user is admin
     if (role !== "admin") {

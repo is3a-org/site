@@ -13,11 +13,11 @@
     "stripe:webhook": "stripe listen --forward-to localhost:5173/api/stripe/webhook"
   },
   "dependencies": {
-    "@fragno-dev/auth": "0.0.14",
-    "@fragno-dev/db": "0.3.0",
-    "@fragno-dev/forms": "0.1.0",
-    "@fragno-dev/jsonforms-shadcn-renderers": "0.0.2",
-    "@fragno-dev/stripe": "2.0.0",
+    "@fragno-dev/auth": "0.0.0-canary-40098233613-1-20261024132858",
+    "@fragno-dev/db": "0.0.0-canary-40098233613-1-20261024132858",
+    "@fragno-dev/forms": "0.0.0-canary-40098233613-1-20261024132858",
+    "@fragno-dev/jsonforms-shadcn-renderers": "0.0.0-canary-40098233613-1-20261024132858",
+    "@fragno-dev/stripe": "0.0.0-canary-40098233613-1-20261024132858",
     "@is3a/design-system": "workspace:*",
     "@is3a/one-time-password-fragment": "workspace:*",
     "@jsonforms/core": "^3.7.0",
@@ -36,11 +36,12 @@
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-router": "^7.18.4",
+    "stripe": "^23.0.1",
     "zod": "^4.1.12"
   },
   "devDependencies": {
     "@cloudflare/vite-plugin": "^1.65.0",
-    "@fragno-dev/cli": "0.2.1",
+    "@fragno-dev/cli": "0.0.0-canary-40098233613-1-20261024132858",
     "@react-router/dev": "^7.18.4",
     "@tailwindcss/vite": "^4.1.16",
     "@types/node": "^22.19.0",

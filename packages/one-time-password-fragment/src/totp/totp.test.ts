@@ -5,6 +5,7 @@ import { buildDatabaseFragmentsTest } from "@fragno-dev/test";
 
 import { otpFragmentDefinition } from "..";
 import { ottRoutesFactory } from "../ott/ott";
+import { otpSchema } from "../schema";
 import { totpRoutesFactory } from "./totp";
 
 describe("TOTP (Time-based One-Time Password)", async () => {
@@ -50,9 +51,15 @@ describe("TOTP (Time-based One-Time Password)", async () => {
       expect(response.data.backupCodes).toHaveLength(10);
 
       // Check in the db it actually got created
-      const secret = await fragment.deps.db.findFirst("totp_secret", (b) =>
-        b.whereIndex("primary", () => true),
-      );
+      const [secret] = await test.inContext(async function () {
+        return this.handlerTx()
+          .retrieve(({ forSchema }) =>
+            forSchema(otpSchema).findFirst("totp_secret", (b) =>
+              b.whereIndex("primary", () => true),
+            ),
+          )
+          .execute();
+      });
 
       expect(secret?.secret).toBe(response.data.secret);
 

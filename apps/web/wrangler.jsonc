@@ -18,6 +18,21 @@
       "invocation_logs": true,
     },
   },
+  "durable_objects": {
+    "bindings": [
+      {
+        // Hosts the Stripe fragment and processes its durable hooks (webhook events)
+        "name": "STRIPE_FRAGMENT",
+        "class_name": "StripeFragmentDurableObject",
+      },
+    ],
+  },
+  "migrations": [
+    {
+      "tag": "v1",
+      "new_sqlite_classes": ["StripeFragmentDurableObject"],
+    },
+  ],
   "d1_databases": [
     {
       "binding": "IS3A_D1",

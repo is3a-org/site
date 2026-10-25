@@ -8,9 +8,6 @@ export function createSimpleAuthServer(
 ): ReturnType<typeof createAuthFragment> {
   return createAuthFragment(
     {
-      sendEmail: async ({ to, subject, body }) => {
-        console.log(`Sending email to ${to} with subject ${subject} and body ${body}`);
-      },
       cookieOptions: {
         sameSite: "Lax", // Needed because Stripe will redirect back to us and we lose auth otherwise
       },
