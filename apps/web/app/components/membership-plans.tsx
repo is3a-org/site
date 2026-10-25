@@ -1,3 +1,4 @@
+import { Alert, AlertDescription, AlertTitle } from "@is3a/design-system/alert";
 import { Button } from "@is3a/design-system/button";
 import {
   Card,
@@ -41,10 +42,10 @@ export function MembershipPlans(): JSX.Element {
   return (
     <div className="space-y-8">
       {error && (
-        <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-red-800">
-          <p className="font-semibold">Error</p>
-          <p className="text-sm">{error.message}</p>
-        </div>
+        <Alert variant="destructive" role="alert">
+          <AlertTitle>Error</AlertTitle>
+          <AlertDescription>{error.message}</AlertDescription>
+        </Alert>
       )}
 
       <div className="grid gap-8 lg:max-w-5xl lg:grid-cols-2">

@@ -1,3 +1,4 @@
+import { Alert, AlertDescription } from "@is3a/design-system/alert";
 import { Button } from "@is3a/design-system/button";
 import {
   Card,
@@ -14,6 +15,7 @@ import { useMemo, useState } from "react";
 import { JsonForms } from "@jsonforms/react";
 
 import { formRenderers } from "~/components/forms/renderers";
+import { IS3ALogo } from "~/components/icons/is3a";
 import {
   dataSchemaSchema,
   uiSchemaElementSchema,
@@ -152,7 +154,7 @@ export default function PublicFormPage({
   if (formError) {
     return (
       <StatusPage
-        icon={<XCircle className="h-16 w-16 text-red-500" />}
+        icon={<XCircle className="h-16 w-16 text-destructive" />}
         title={formError.code}
         message={formError.message}
       />
@@ -162,7 +164,7 @@ export default function PublicFormPage({
   if (form?.status === "closed") {
     return (
       <StatusPage
-        icon={<XCircle className="h-16 w-16 text-gray-400" />}
+        icon={<XCircle className="h-16 w-16 text-muted-foreground" />}
         title="Form Closed"
         message="This form is no longer accepting submissions."
       />
@@ -172,7 +174,7 @@ export default function PublicFormPage({
   if (submitResponse !== undefined && submitResponse !== "") {
     return (
       <StatusPage
-        icon={<CheckCircle2 className="h-16 w-16 text-green-500" />}
+        icon={<CheckCircle2 className="h-16 w-16 text-success" />}
         title="Thank You!"
         message="Your submission has been received successfully."
         action={
@@ -200,7 +202,7 @@ export default function PublicFormPage({
       <div className="space-y-4">
         <Card>
           {isDraft && (
-            <div className="flex items-center gap-2 rounded-t-lg border-b bg-yellow-50 px-4 py-3 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-200">
+            <div className="-mt-5 flex items-center gap-2 rounded-t-lg border-b border-warning/25 bg-warning-muted px-4 py-3 text-warning">
               <AlertTriangle className="h-5 w-5" />
               <span className="text-sm font-medium">
                 This form is in draft mode. Submissions are disabled.
@@ -208,7 +210,7 @@ export default function PublicFormPage({
             </div>
           )}
           <CardHeader className="space-y-4">
-            <img src="/is3a.svg" alt="IS3A logo" className="h-10 w-auto" />
+            <IS3ALogo aria-hidden className="h-10 w-auto self-start" />
             <CardTitle className="text-3xl leading-tight font-bold">{form.title}</CardTitle>
             {form.description !== undefined &&
               form.description !== null &&
@@ -223,11 +225,13 @@ export default function PublicFormPage({
         <Card>
           <CardContent className="pt-6">
             {submitError && (
-              <div className="mb-4 rounded-md border border-red-200 bg-red-50 p-4 text-red-800">
-                {submitError.message === ""
-                  ? "Failed to submit form. Please try again."
-                  : submitError.message}
-              </div>
+              <Alert variant="destructive" role="alert" className="mb-4">
+                <AlertDescription>
+                  {submitError.message === ""
+                    ? "Failed to submit form. Please try again."
+                    : submitError.message}
+                </AlertDescription>
+              </Alert>
             )}
 
             <JsonForms

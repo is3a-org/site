@@ -16,7 +16,7 @@ import {
 } from "@is3a/design-system/sidebar";
 import { ChevronRight } from "lucide-react";
 import type { ComponentProps, JSXElementConstructor, JSX } from "react";
-import { Link } from "react-router";
+import { NavLink } from "react-router";
 
 interface NavigationItem {
   readonly title: string;
@@ -53,7 +53,7 @@ export function NavMain({ items }: Readonly<{ items: readonly NavigationItem[] }
               <SidebarMenuSubItem key={subItem.title}>
                 <SidebarMenuSubButton
                   render={
-                    <Link
+                    <NavLink
                       to={subItem.url}
                       onClick={() => {
                         setOpenMobile(false);
@@ -73,8 +73,10 @@ export function NavMain({ items }: Readonly<{ items: readonly NavigationItem[] }
         <SidebarMenuButton
           tooltip={item.title}
           render={
-            <Link
+            // NavLink sets aria-current on the current page, which draws the sidebar bracket.
+            <NavLink
               to={item.url}
+              end={item.url === "/dashboard"}
               onClick={() => {
                 setOpenMobile(false);
               }}

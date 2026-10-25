@@ -91,12 +91,12 @@ export default function DashboardSubscribeConfirm({
             <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full">
               {status === "success" ? (
                 isSad ? (
-                  <HeartCrack className="h-16 w-16 text-orange-600" />
+                  <HeartCrack className="h-16 w-16 text-warning" />
                 ) : (
-                  <CheckCircle2 className="h-16 w-16 text-green-600" />
+                  <CheckCircle2 className="h-16 w-16 text-success" />
                 )
               ) : (
-                <XCircle className="h-16 w-16 text-red-600" />
+                <XCircle className="h-16 w-16 text-destructive" />
               )}
             </div>
             <CardTitle className="text-2xl">

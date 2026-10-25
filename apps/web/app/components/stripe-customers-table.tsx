@@ -82,7 +82,7 @@ export function StripeCustomersTable({
   }
 
   if (error) {
-    return <div className="text-red-600">Error loading customers: {error.message}</div>;
+    return <div className="text-destructive">Error loading customers: {error.message}</div>;
   }
 
   if (!data?.customers) {

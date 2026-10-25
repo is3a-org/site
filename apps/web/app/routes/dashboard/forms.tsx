@@ -223,7 +223,7 @@ export default function FormsPage(): JSX.Element {
                               openDeleteDialog(form.id);
                             }}
                           >
-                            <Trash2 className="h-4 w-4 text-red-600" />
+                            <Trash2 className="h-4 w-4 text-destructive" />
                           </Button>
                         </div>
                       </TableCell>
@@ -246,7 +246,7 @@ export default function FormsPage(): JSX.Element {
           <div className="space-y-4 py-4">
             <div className="space-y-2">
               <Label htmlFor="title">
-                Title <span className="text-red-600">*</span>
+                Title <span className="text-destructive">*</span>
               </Label>
               <Input
                 id="title"
@@ -268,7 +268,7 @@ export default function FormsPage(): JSX.Element {
             </div>
             <div className="space-y-2">
               <Label htmlFor="slug">
-                Slug <span className="text-red-600">*</span>
+                Slug <span className="text-destructive">*</span>
               </Label>
               <Input
                 id="slug"
@@ -384,7 +384,7 @@ export default function FormsPage(): JSX.Element {
 function getStatusBadge(status: string): JSX.Element {
   switch (status) {
     case "open": {
-      return <Badge variant="default">Open</Badge>;
+      return <Badge variant="success">Open</Badge>;
     }
     case "closed": {
       return <Badge variant="secondary">Closed</Badge>;
