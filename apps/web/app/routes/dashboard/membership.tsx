@@ -378,15 +378,6 @@ export default function DashboardSubscribe({
           <h2 className="text-3xl font-bold tracking-tight">
             {hasSubscription ? "Your Membership" : "Membership Plans"}
           </h2>
-          {import.meta.env.PROD && (
-            <div className="rounded-lg border border-amber-300 bg-amber-50 p-4">
-              <p className="text-sm font-medium text-amber-900">
-                <strong>⚠️ Read-only Mode:</strong> The Stripe API key is currently read-only, so
-                creating/updating/cancelling subscriptions will not work.
-              </p>
-            </div>
-          )}
-
           {!hasSubscription && (
             <p className="max-w-3xl text-lg text-muted-foreground">
               We organize networking events at least once every three months. To cover the costs for
