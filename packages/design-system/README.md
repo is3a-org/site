@@ -75,6 +75,7 @@ When adding or changing a component:
 3. Check both themes and narrow viewports, including portaled content where relevant.
 4. Run formatting, type checks, and the static Storybook build.
 
-The workspace lint policy still applies, with rule violations reported as warnings. Moving the
-existing components here does not suppress their pre-existing findings; formatting and compiler
-errors remain blocking.
+The workspace lint policy is enforced as errors for components, stories, and tests. React and DOM
+capabilities retain their owner types when deep readonly conversion would break ref forwarding.
+Exact-line compatibility exceptions preserve the public grouping, tooltip, updater, and cookie
+contracts; colocated tests cover them. Run `vp run test` alongside the checks above.
