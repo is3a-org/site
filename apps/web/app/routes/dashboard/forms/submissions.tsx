@@ -1,3 +1,4 @@
+import { Badge } from "@is3a/design-system/badge";
 import {
   BreadcrumbItem,
   BreadcrumbLink,
@@ -20,6 +21,15 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@is3a/design-system/dialog";
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+} from "@is3a/design-system/sheet";
 import { Skeleton } from "@is3a/design-system/skeleton";
 import {
   Table,
@@ -29,17 +39,80 @@ import {
   TableHeader,
   TableRow,
 } from "@is3a/design-system/table";
-import { ArrowLeft, Trash2, Eye, ClipboardList, Download } from "lucide-react";
+import { ArrowLeft, ChevronRight, ClipboardList, Download, Trash2 } from "lucide-react";
 import type { JSX } from "react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Link } from "react-router";
 
 import { DashboardBreadcrumb } from "~/components/dashboard-breadcrumb";
-import { formJsonObjectSchema } from "~/components/ui/form-builder/form-schema-contracts";
-import type { FormJsonObject } from "~/components/ui/form-builder/types";
+import {
+  dataSchemaSchema,
+  formJsonObjectSchema,
+  uiSchemaElementSchema,
+} from "~/components/ui/form-builder/form-schema-contracts";
+import type { FormJsonObject, FormJsonValue } from "~/components/ui/form-builder/types";
 import { formsClient, useAllSubmissions } from "~/lib/forms-client";
+import {
+  displaySubmissionValue,
+  submissionFields,
+  type SubmissionField,
+} from "~/lib/submission-fields";
 
 import type { Route } from "./+types/submissions";
+
+interface ViewedSubmission {
+  readonly id: string;
+  readonly formVersion: number;
+  readonly submittedAt: Date;
+  readonly data: FormJsonObject;
+}
+
+/** The table shows the first few fields; the detail panel shows all of them. */
+const tableFieldCount = 3;
+
+const dateFormat = new Intl.DateTimeFormat("en-GB", { dateStyle: "medium" });
+const timeFormat = new Intl.DateTimeFormat("en-GB", { timeStyle: "short" });
+const fullDateFormat = new Intl.DateTimeFormat("en-GB", {
+  dateStyle: "long",
+  timeStyle: "short",
+});
+
+function SubmissionValue({
+  value,
+  field,
+  truncate,
+}: Readonly<{
+  value: FormJsonValue | undefined;
+  field: SubmissionField;
+  truncate?: boolean;
+}>): JSX.Element {
+  const display = displaySubmissionValue(value, field);
+  const truncateClass = truncate === true ? "block max-w-56 truncate" : "break-words";
+  if (display.kind === "empty") {
+    return <span className="text-muted-foreground">—</span>;
+  }
+  if (display.kind === "link") {
+    return (
+      <a
+        href={display.href}
+        target={display.href.startsWith("mailto:") ? undefined : "_blank"}
+        rel="noopener noreferrer"
+        title={truncate === true ? display.text : undefined}
+        className={`${truncateClass} underline decoration-primary/40 decoration-1 underline-offset-4 hover:decoration-primary`}
+      >
+        {display.text}
+      </a>
+    );
+  }
+  return (
+    <span
+      title={truncate === true ? display.text : undefined}
+      className={`${truncateClass} whitespace-pre-line`}
+    >
+      {display.text}
+    </span>
+  );
+}
 
 export default function FormSubmissionsPage({
   params,
@@ -49,39 +122,56 @@ export default function FormSubmissionsPage({
   });
   const { data: submissions, loading: isLoadingSubmissions } = useAllSubmissions(params.id);
   const isLoading = isLoadingForm || isLoadingSubmissions;
-
   const { mutate: deleteSubmission, loading: isDeleting } = formsClient.useDeleteSubmission();
 
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
-  const [selectedSubmissionId, setSelectedSubmissionId] = useState<string>();
-  const [selectedSubmissionData, setSelectedSubmissionData] = useState<FormJsonObject>();
+  const [deleteSubmissionId, setDeleteSubmissionId] = useState<string>();
+  const [viewedSubmission, setViewedSubmission] = useState<ViewedSubmission>();
+
+  // Submissions store arbitrary JSON; anything that isn't a JSON object shows as empty.
+  const submissionsList = useMemo(
+    () =>
+      (submissions ?? []).map((submission) => {
+        const data = formJsonObjectSchema.safeParse(submission.data);
+        return { ...submission, data: data.success ? data.data : {} };
+      }),
+    [submissions],
+  );
+  const fields = useMemo(() => {
+    const dataSchema = dataSchemaSchema.safeParse(form?.dataSchema);
+    const uiSchema = uiSchemaElementSchema.safeParse(form?.uiSchema);
+    return submissionFields(
+      dataSchema.success ? dataSchema.data : undefined,
+      uiSchema.success ? uiSchema.data : undefined,
+      submissionsList,
+    );
+  }, [form, submissionsList]);
+  const tableFields = fields.slice(0, tableFieldCount);
+  // Only worth a column once the form has been changed after people submitted it.
+  const showVersion = new Set(submissionsList.map((s) => s.formVersion)).size > 1;
 
   const handleDelete = async (): Promise<void> => {
-    if (selectedSubmissionId === undefined || selectedSubmissionId === "") {
+    if (deleteSubmissionId === undefined || deleteSubmissionId === "") {
       return;
     }
-
     await deleteSubmission({
-      path: { id: selectedSubmissionId },
+      path: { id: deleteSubmissionId },
     });
-
     setIsDeleteDialogOpen(false);
-    setSelectedSubmissionId(undefined);
+    setDeleteSubmissionId(undefined);
     globalThis.location.reload();
   };
 
   const openDeleteDialog = (submissionId: string): void => {
-    setSelectedSubmissionId(submissionId);
+    setDeleteSubmissionId(submissionId);
     setIsDeleteDialogOpen(true);
   };
 
-  const openViewDialog = (data: FormJsonObject): void => {
-    setSelectedSubmissionData(formJsonObjectSchema.parse(data));
-    setIsViewDialogOpen(true);
-  };
-
-  const submissionsList = submissions ?? [];
+  const firstField = fields.at(0);
+  const viewedTitle =
+    viewedSubmission === undefined || firstField === undefined
+      ? undefined
+      : displaySubmissionValue(viewedSubmission.data[firstField.key], firstField);
 
   return (
     <>
@@ -92,7 +182,10 @@ export default function FormSubmissionsPage({
         <BreadcrumbSeparator />
         <BreadcrumbItem>
           {isLoading && <Skeleton className="h-4 w-24" />}
-          {!isLoading && form && (
+          {!isLoading && form && form.status === "static" && (
+            <BreadcrumbPage>{form.title}</BreadcrumbPage>
+          )}
+          {!isLoading && form && form.status !== "static" && (
             <BreadcrumbLink render={<Link to={`/dashboard/admin/forms/${form.id}/edit`} />}>
               {form.title}
             </BreadcrumbLink>
@@ -115,11 +208,12 @@ export default function FormSubmissionsPage({
         </div>
       ) : (
         <div className="flex flex-1 flex-col gap-6 p-4">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-4">
               <Button
                 variant="ghost"
                 size="icon"
+                aria-label="Back to forms"
                 render={<Link to="/dashboard/admin/forms" />}
                 nativeButton={false}
               >
@@ -178,47 +272,65 @@ export default function FormSubmissionsPage({
                 <Table>
                   <TableHeader>
                     <TableRow>
+                      {tableFields.map((field) => (
+                        <TableHead key={field.key}>{field.title}</TableHead>
+                      ))}
                       <TableHead>Submitted</TableHead>
-                      <TableHead>Version</TableHead>
-                      <TableHead>Data</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
+                      {showVersion && <TableHead>Version</TableHead>}
+                      <TableHead className="w-0">
+                        <span className="sr-only">Actions</span>
+                      </TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {submissionsList.map((submission) => {
-                      const data = submission.data;
+                      const submittedAt = new Date(submission.submittedAt);
                       return (
                         <TableRow key={submission.id}>
-                          <TableCell>{new Date(submission.submittedAt).toLocaleString()}</TableCell>
-                          <TableCell>
-                            <code className="rounded bg-muted px-2 py-1 text-xs">
-                              v{submission.formVersion}
-                            </code>
+                          {tableFields.map((field, index) => (
+                            <TableCell
+                              key={field.key}
+                              className={index === 0 ? "font-medium" : undefined}
+                            >
+                              <SubmissionValue
+                                value={submission.data[field.key]}
+                                field={field}
+                                truncate
+                              />
+                            </TableCell>
+                          ))}
+                          <TableCell className="whitespace-nowrap tabular-nums">
+                            {dateFormat.format(submittedAt)}
+                            <span className="ml-2 text-muted-foreground">
+                              {timeFormat.format(submittedAt)}
+                            </span>
                           </TableCell>
+                          {showVersion && (
+                            <TableCell>
+                              <Badge variant="outline">v{submission.formVersion}</Badge>
+                            </TableCell>
+                          )}
                           <TableCell>
-                            <code className="inline-block max-w-sm truncate rounded bg-muted px-2 py-1 text-xs">
-                              {JSON.stringify(data)}
-                            </code>
-                          </TableCell>
-                          <TableCell className="text-right">
-                            <div className="flex justify-end gap-2">
+                            <div className="flex justify-end gap-1">
                               <Button
                                 variant="ghost"
-                                size="icon"
+                                size="sm"
                                 onClick={() => {
-                                  openViewDialog(formJsonObjectSchema.parse(data));
+                                  setViewedSubmission(submission);
                                 }}
                               >
-                                <Eye className="h-4 w-4" />
+                                View
+                                <ChevronRight aria-hidden className="size-4" />
                               </Button>
                               <Button
                                 variant="ghost"
-                                size="icon"
+                                size="icon-sm"
+                                aria-label="Delete submission"
                                 onClick={() => {
                                   openDeleteDialog(submission.id);
                                 }}
                               >
-                                <Trash2 className="h-4 w-4 text-destructive" />
+                                <Trash2 className="size-4 text-destructive" />
                               </Button>
                             </div>
                           </TableCell>
@@ -233,28 +345,55 @@ export default function FormSubmissionsPage({
         </div>
       )}
 
-      {/* View Dialog */}
-      <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
-        <DialogContent className="max-h-[80vh] overflow-y-auto sm:max-w-[600px]">
-          <DialogHeader>
-            <DialogTitle>Submission Details</DialogTitle>
-            <DialogDescription>Full submission data</DialogDescription>
-          </DialogHeader>
-          <pre className="overflow-auto rounded-md bg-muted p-4 text-sm">
-            {JSON.stringify(selectedSubmissionData, undefined, 2)}
-          </pre>
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => {
-                setIsViewDialogOpen(false);
-              }}
-            >
-              Close
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {/* Detail panel: every field, labelled from the form's schema */}
+      <Sheet
+        open={viewedSubmission !== undefined}
+        onOpenChange={(open) => {
+          if (!open) {
+            setViewedSubmission(undefined);
+          }
+        }}
+      >
+        <SheetContent className="w-full sm:max-w-md">
+          {viewedSubmission !== undefined && (
+            <>
+              <SheetHeader>
+                <SheetTitle className="text-2xl">
+                  {viewedTitle?.kind === "text" ? viewedTitle.text : "Submission"}
+                </SheetTitle>
+                <SheetDescription>
+                  Submitted {fullDateFormat.format(new Date(viewedSubmission.submittedAt))}
+                  {showVersion && ` · version ${viewedSubmission.formVersion}`}
+                </SheetDescription>
+              </SheetHeader>
+              <dl className="grid flex-1 content-start gap-5 text-sm">
+                {fields.map((field) => (
+                  <div key={field.key} className="grid gap-1 border-t border-border pt-4">
+                    <dt className="text-muted-foreground">{field.title}</dt>
+                    <dd className="text-base">
+                      <SubmissionValue value={viewedSubmission.data[field.key]} field={field} />
+                    </dd>
+                  </div>
+                ))}
+              </dl>
+              <SheetFooter className="flex-row justify-between">
+                <Button
+                  variant="destructive"
+                  onClick={() => {
+                    const { id } = viewedSubmission;
+                    setViewedSubmission(undefined);
+                    openDeleteDialog(id);
+                  }}
+                >
+                  <Trash2 aria-hidden />
+                  Delete
+                </Button>
+                <SheetClose render={<Button variant="outline" />}>Close</SheetClose>
+              </SheetFooter>
+            </>
+          )}
+        </SheetContent>
+      </Sheet>
 
       {/* Delete Dialog */}
       <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
