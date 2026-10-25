@@ -45,6 +45,9 @@ jobs:
       - name: Check types
         run: vp run types:check
 
+      - name: Enforce lint after generated builds
+        run: vp run lint
+
   test:
     runs-on: ubuntu-latest
     steps:

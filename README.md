@@ -38,12 +38,12 @@ vp run storybook    # Start the component workshop on port 6006
 vp run storybook:build # Build just the static Storybook
 vp run build:watch  # Rebuild the library on changes (use a second terminal)
 vp run types:check  # Generate Worker/route types and type-check all packages
-vp check            # Formatting and type checks; lint findings are warnings
+vp check            # Check formatting, lint policy, and types
 vp run check        # Build dependencies/generate types, then run all static checks
 vp run ready        # Full validation: static checks, tests, and production build
-vp lint             # Lint codebase with Oxlint
+vp run lint         # Enforce the full lint policy with zero warnings allowed
 vp fmt              # Format code with Oxfmt (including Tailwind class sorting)
-vp run test         # Build the library, run its tests, and check Stripe CLI guardrails
+vp run test         # Run package, app, tooling, lint-policy, and Stripe guardrail tests
 vp test run         # Run all configured test projects directly
 vp run stripe -- version # Run the repo-local, sandbox-only Stripe CLI
 vp run stripe:webhook # Forward sandbox webhooks to the development server
@@ -57,11 +57,16 @@ also be run directly, e.g. `vp run @is3a/web#build` or `vp run @is3a/web#preview
 
 - **Monorepo**: pnpm workspaces with Vite+ task dependencies and local build/test caching
 - **Code Quality**: `vp install` sets up a staged-files-only hook (`vp staged` → `vp fmt`, then
-  `vp check`). Formatting is automatic; advisory lint does not rewrite application code. Builds and
-  tests are explicit via `vp run ready`, not part of pre-commit. Inspect with `vp hooks status`.
+  `vp check`). Formatting is automatic; lint and compiler findings block the check. Builds and tests
+  run through `vp run ready`. Inspect the staged hook with `vp hooks status`.
 - **Linting**: Uses the TypeScript/Unicorn rules and vendored `anti-slop` plugin from
-  `brand-intelligence`, with rule violations reported as warnings while the backlog is addressed.
-  Formatting and compiler errors still block checks and commits; type-aware linting remains enabled.
+  `brand-intelligence`, plus React/hooks, accessibility, imports, promises, and Vitest checks. All
+  selected rules are errors, with type-aware linting and a zero-warning limit. The same policy
+  covers application code, packages, tests, and maintained tooling; only generated output and
+  dependencies are excluded. Framework-owned mutable capabilities have explicit type-owner
+  allowances. Required JSON/database nulls and established framework APIs have exact-line
+  `COMPATIBILITY` explanations and regression tests. The lint-policy tests audit those exceptions
+  and verify real violations fail.
 - **Dependency patch**: `patches/@fragno-dev__unplugin-fragno@0.0.9.patch` corrects the Rollup
   integration’s declaration export to the file actually shipped in that release. This keeps native
   type checking enabled without suppressing the missing declaration error.
