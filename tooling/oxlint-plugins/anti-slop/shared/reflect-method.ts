@@ -1,9 +1,11 @@
-import type { ESTree, Scope, SourceCode, Variable } from "vite-plus/lint/plugins";
+import type { ESTree, Scope, Variable } from "vite-plus/lint/plugins";
+
+import type { LintSourceCodeReader } from "./lint-source-code-reader.ts";
 
 function resolveVariable(
-  sourceCode: SourceCode,
+  sourceCode: LintSourceCodeReader,
   identifier: ESTree.IdentifierReference,
-): Variable | null {
+): Variable | undefined {
   let scope: Scope | null = sourceCode.getScope(identifier);
   while (scope !== null) {
     const variable = scope.set.get(identifier.name);
@@ -12,10 +14,10 @@ function resolveVariable(
     }
     scope = scope.upper;
   }
-  return null;
+  return undefined;
 }
 
-function isGlobalReflect(sourceCode: SourceCode, expression: ESTree.Expression): boolean {
+function isGlobalReflect(sourceCode: LintSourceCodeReader, expression: ESTree.Expression): boolean {
   if (expression.type !== "Identifier" || expression.name !== "Reflect") {
     return false;
   }
@@ -23,12 +25,12 @@ function isGlobalReflect(sourceCode: SourceCode, expression: ESTree.Expression):
     return true;
   }
   const variable = resolveVariable(sourceCode, expression);
-  return variable === null || variable.defs.length === 0;
+  return variable === undefined || variable.defs.length === 0;
 }
 
 /** Reports whether a call target names one method on the global Reflect object. */
 export function isGlobalReflectMethodCall(
-  sourceCode: SourceCode,
+  sourceCode: LintSourceCodeReader,
   callee: ESTree.Expression,
   methodName: string,
 ): boolean {

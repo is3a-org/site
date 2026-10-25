@@ -30,6 +30,9 @@ export default defineConfig({
         dependsOn: ["@is3a/one-time-password-fragment#build"],
         cache: false,
       },
+      test: {
+        command: "vp test run --config vitest.config.ts",
+      },
     },
   },
   plugins: lazyPlugins(() => [

@@ -37,7 +37,7 @@ export const noConditionalEmptyObjectSpreadRule = defineRule({
   },
   create(context) {
     return {
-      SpreadElement(node) {
+      SpreadElement(node): void {
         if (node.parent.type !== "ObjectExpression") {
           return;
         }

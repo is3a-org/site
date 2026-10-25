@@ -17,7 +17,7 @@ export const noReflectApplyRule = defineRule({
   },
   create(context) {
     return {
-      CallExpression(node) {
+      CallExpression(node): void {
         if (node.callee.type === "Super" || node.callee.type === "V8IntrinsicExpression") {
           return;
         }

@@ -10,8 +10,8 @@
     "db:postgres:push": "drizzle-kit push --config postgres.drizzle.config.ts",
     "db:postgres:generate": "drizzle-kit generate --config postgres.drizzle.config.ts",
     "db:postgres:migrate": "drizzle-kit migrate --config postgres.drizzle.config.ts",
-    "stripe": "node --env-file-if-exists=.env ../../tooling/stripe.mjs",
-    "stripe:webhook": "node --env-file=.env ../../tooling/stripe.mjs listen --all-snapshot"
+    "stripe": "node --env-file-if-exists=.env ../../tooling/stripe.mts",
+    "stripe:webhook": "node --env-file=.env ../../tooling/stripe.mts listen --all-snapshot"
   },
   "dependencies": {
     "@fragno-dev/auth": "0.0.0-canary-40098233613-1-20261024132858",

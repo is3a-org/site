@@ -1,6 +1,11 @@
 {
   "extends": "./tsconfig.json",
-  "include": ["vite.config.ts", "postgres.drizzle.config.ts", "is3a-d1.drizzle.config.ts"],
+  "include": [
+    "vite.config.ts",
+    "vitest.config.ts",
+    "postgres.drizzle.config.ts",
+    "is3a-d1.drizzle.config.ts"
+  ],
   "compilerOptions": {
     "composite": true,
     "strict": true,
