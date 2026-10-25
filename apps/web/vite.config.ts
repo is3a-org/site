@@ -48,11 +48,6 @@ export default defineConfig({
   resolve: {
     tsconfigPaths: true,
     alias: {
-      // Fragno JSON Forms renderers still import the app-style shadcn paths.
-      "@/components/ui": path.resolve(
-        import.meta.dirname,
-        "../../packages/design-system/src/components",
-      ),
       "@/components": path.resolve(import.meta.dirname, "./app/components"),
       "@/lib": path.resolve(import.meta.dirname, "./app/lib"),
     },

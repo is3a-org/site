@@ -11,8 +11,8 @@ export default meta;
 export function MembershipDetails(): ReactElement {
   return (
     <Collapsible className="max-w-md space-y-3">
-      <CollapsibleTrigger asChild>
-        <Button variant="outline">Membership details</Button>
+      <CollapsibleTrigger render={<Button variant="outline" />}>
+        Membership details
       </CollapsibleTrigger>
       <CollapsibleContent className="rounded-md border p-4 text-sm">
         Your membership gives you access to association activities and updates.

@@ -71,7 +71,7 @@ test("sidebar tooltip text preserves the menu button while its real portal is cl
 
   expect(markup).toContain('data-slot="sidebar-menu-button"');
   expect(markup).toContain('aria-label="Members menu"');
-  expect(markup).toContain('data-state="closed"');
+  expect(markup).toContain('data-base-ui-tooltip-trigger=""');
   expect(markup).not.toContain('data-slot="tooltip-content"');
   expect(markup).not.toContain("Member details");
   expect(markup).toContain(">Members</button>");
@@ -96,7 +96,7 @@ test("sidebar accepts tooltip content props without leaking them onto the menu b
 
   expect(markup).toContain('data-slot="sidebar-menu-button"');
   expect(markup).toContain('aria-label="Customers menu"');
-  expect(markup).toContain('data-state="closed"');
+  expect(markup).toContain('data-base-ui-tooltip-trigger=""');
   expect(markup).toContain(">Customers</button>");
   expect(markup).not.toContain("custom-tooltip");
   expect(markup).not.toContain("Customer information");
@@ -111,5 +111,5 @@ test("an empty sidebar tooltip keeps the existing button-only output", () => {
   );
 
   expect(markup).toContain('data-slot="sidebar-menu-button"');
-  expect(markup).not.toContain('data-state="closed"');
+  expect(markup).not.toContain('data-base-ui-tooltip-trigger=""');
 });

@@ -180,11 +180,9 @@ export default function DashboardStripe({
       <div className={cn("flex flex-1 flex-col gap-6 p-4", className)} {...props}>
         <div className="flex items-center justify-between">
           <h2 className="text-2xl font-bold">Stripe Customers</h2>
-          <Button asChild>
-            <Link to="/dashboard/admin/stripe/bulk-import">
-              <Upload className="mr-2 h-4 w-4" />
-              Bulk Import
-            </Link>
+          <Button render={<Link to="/dashboard/admin/stripe/bulk-import" />} nativeButton={false}>
+            <Upload className="mr-2 h-4 w-4" />
+            Bulk Import
           </Button>
         </div>
         <StripeCustomersTable users={loaderData.users} />

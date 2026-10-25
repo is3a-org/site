@@ -1,81 +1,94 @@
 # IS3A design system
 
-Shared React components and theme tokens for the IS3A website. The package structure follows
-`brand-intelligence`, while preserving this application's Radix/shadcn components, APIs, and visual
-identity. There is one implementation of each component, used by both the app and Storybook.
+IS3A-owned React components built directly on `@base-ui/react`. Base UI supplies keyboard
+navigation, focus management, accessible states, and overlay positioning. This package owns the
+markup composition, visual tokens, sizing, and component APIs. The website and Storybook consume the
+same source.
 
 ## Commands
 
 From the workspace root:
 
 ```bash
-vp run storybook                         # Workshop on port 6006
-vp run storybook --port 6016             # Override the port
-vp run storybook:build                   # Static output in storybook-static/
-vp run @is3a/design-system#types:check    # Check components, stories, and Storybook config
+vp run storybook
+vp run storybook:build
+vp run @is3a/design-system#types:check
+vp test run --project design-system
 ```
 
-The root `vp run build` includes the static Storybook build. The web app consumes source directly,
-so it does not need the Storybook output to build or run. Generated output is ignored by Git,
-formatting, and linting. Storybook telemetry is disabled.
+The web app consumes source directly; it does not depend on the static Storybook output.
 
-## Using components
+## Composition
+
+Import components from their package subpaths:
 
 ```tsx
 import { Button } from "@is3a/design-system/button";
-import { Card, CardContent } from "@is3a/design-system/card";
-import { cn } from "@is3a/design-system/cn";
+import { Dialog, DialogTrigger } from "@is3a/design-system/dialog";
+
+<Dialog>
+  <DialogTrigger render={<Button />}>Edit membership</DialogTrigger>
+</Dialog>
+
+// IS3A non-native buttons retain navigation-link semantics.
+<Button render={<Link to="/dashboard" />} nativeButton={false}>
+  Dashboard
+</Button>
 ```
 
-Each file in `src/components/` is a public component subpath. Shared hooks live under `src/hooks/`.
-Keep imports within the package relative; do not import app routes, app utilities, or app aliases.
+Use Base UI's `render` prop to compose elements without extra DOM wrappers. Custom render targets
+must forward their ref and incoming props. State selectors follow Base UI's attributes, such as
+`data-checked`, `data-active`, `data-open`, and `data-popup-open`.
 
-The web app retains a compatibility alias from `@/components/ui/*` to this package for
-`@fragno-dev/jsonforms-shadcn-renderers`. Application code should use the package imports directly.
-The app's `cn` export is a compatibility re-export of this package's utility.
+Select roots expose Base UI's nullable value callback. Supply `items` with labels so selected text
+is available before the popup mounts, including during server rendering:
 
-The app and package `components.json` files point shared shadcn components and utilities here rather
-than creating a second copy under the app.
+```tsx
+<Select
+  value={plan}
+  items={{ full: "Full membership", flex: "Flex membership" }}
+  onValueChange={(value) => {
+    if (value !== null) setPlan(value);
+  }}
+>
+  {/* Trigger, value, and popup items */}
+</Select>
+```
 
-## Theme
+Checkboxes use boolean `checked` plus a separate `indeterminate` prop. Tooltip providers use
+`delay`. Sliders accept arrays, including ranges, with `onValueChange` and `onValueCommitted`.
 
-In a consumer's Tailwind entry:
+Native semantic elements handle cards, tables, labels, breadcrumbs, and textareas. DayPicker
+provides the calendar because Base UI does not currently provide one. Application-specific JSON
+Forms renderers live in `apps/web/app/components/forms/` and use this package's controls.
+
+## Visual language
+
+- White and charcoal surfaces, with IS3A logo red (`#bd1900`) for primary actions and selection.
+- Inter for application UI; PT Sans and Merriweather remain available for the public site.
+- Compact 8px surface corners, smaller control corners, structural borders, and overlay shadows.
+- Minimum 40px button/input height, visible focus rings, explicit disabled/invalid states.
+- Short, interruptible overlay transitions, disabled under reduced motion.
+- Semantic light/dark tokens; no separate component theme implementation.
 
 ```css
 @import "tailwindcss";
 @import "@is3a/design-system/theme.css";
 ```
 
-The theme registers its component sources with Tailwind, includes animation utilities, and owns:
+The theme registers all shared utility sources, including `control-styles.ts`. Consumers load font
+files themselves. Add `dark` to the document element to switch themes. The app content root uses
+`isolation: isolate`, while portals render outside it. The body is positioned relatively so absolute
+modal backdrops cover the visual viewport on mobile Safari.
 
-- Semantic surface, text, action, border, focus, chart, and sidebar tokens.
-- The existing IS3A red scale (logo color: red 800, `#bd1900`).
-- Inter, PT Sans, and Merriweather font stacks.
-- Shared radii and light/dark variables.
+## Adding components
 
-The theme declares font stacks; consumers load the font files. Storybook's
-`.storybook/preview-head.html` matches the web app's existing Google Fonts links, with system
-fallbacks if those fonts are unavailable.
+1. Choose a Base UI primitive when behavior or accessibility requires one; otherwise use HTML.
+2. Assemble and style it here using the semantic theme and shared interaction styles.
+3. Keep app imports out of the package.
+4. Add colocated stories for normal, disabled, invalid, and selected states as applicable.
+5. Test keyboard interaction, focus restoration, composition, and native form behavior.
+6. Run type checks, lint, tests, and both production builds.
 
-Use semantic utilities such as `bg-background`, `text-muted-foreground`, and `border-border`. Use
-the brand red scale for existing public-site treatments rather than replacing the dashboard's
-neutral action tokens. Add a `dark` class to the document element for dark mode. Storybook's theme
-toolbar does this at the document level so dialogs, menus, and other portaled content inherit it.
-
-## Stories
-
-Stories sit beside their components as `*.stories.tsx`. Foundations live directly under `src/`. The
-workshop covers every shared primitive, plus selected, disabled, validation, and empty states.
-Overlays and controls are interactive; they do not call application APIs.
-
-When adding or changing a component:
-
-1. Keep the component independent of the app and preserve accessible names and keyboard behavior.
-2. Add or update its colocated stories, including important states.
-3. Check both themes and narrow viewports, including portaled content where relevant.
-4. Run formatting, type checks, and the static Storybook build.
-
-The workspace lint policy is enforced as errors for components, stories, and tests. React and DOM
-capabilities retain their owner types when deep readonly conversion would break ref forwarding.
-Exact-line compatibility exceptions preserve the public grouping, tooltip, updater, and cookie
-contracts; colocated tests cover them. Run `vp run test` alongside the checks above.
+Base UI props preserve library-owned refs, events, and render callbacks rather than recursively
+freezing those capabilities. The lint policy allows those upstream types explicitly.

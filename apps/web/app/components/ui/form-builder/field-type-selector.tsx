@@ -19,6 +19,7 @@ export function FieldTypeSelector({ value, onChange }: FieldTypeSelectorProps): 
   return (
     <Select
       value={value}
+      items={FIELD_TYPES.map((field) => ({ value: field.type, label: field.label }))}
       onValueChange={(selected) => {
         const fieldType = FIELD_TYPES.find((option) => option.type === selected);
         if (fieldType !== undefined) {
@@ -26,7 +27,7 @@ export function FieldTypeSelector({ value, onChange }: FieldTypeSelectorProps): 
         }
       }}
     >
-      <SelectTrigger data-slot="field-type-selector" className="w-[180px]">
+      <SelectTrigger aria-label="Field type" data-slot="field-type-selector" className="w-[180px]">
         <SelectValue placeholder="Select type" />
       </SelectTrigger>
       <SelectContent>

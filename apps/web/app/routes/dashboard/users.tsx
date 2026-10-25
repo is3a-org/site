@@ -183,7 +183,7 @@ export default function UsersPage(): JSX.Element {
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="-ml-3 h-8 data-[state=open]:bg-accent"
+                            className="-ml-3 h-8 data-popup-open:bg-accent"
                             onClick={() => {
                               toggleSort("email");
                             }}
@@ -196,7 +196,7 @@ export default function UsersPage(): JSX.Element {
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="-ml-3 h-8 data-[state=open]:bg-accent"
+                            className="-ml-3 h-8 data-popup-open:bg-accent"
                             onClick={() => {
                               toggleSort("createdAt");
                             }}
@@ -236,6 +236,7 @@ export default function UsersPage(): JSX.Element {
                             </TableCell>
                             <TableCell>
                               <Select
+                                items={{ user: "User", admin: "Admin" }}
                                 value={user.role}
                                 onValueChange={(newRole) => {
                                   if (newRole === "admin" || newRole === "user") {
@@ -244,7 +245,10 @@ export default function UsersPage(): JSX.Element {
                                 }}
                                 disabled={updateRoleLoading}
                               >
-                                <SelectTrigger className="h-8 w-[110px]">
+                                <SelectTrigger
+                                  aria-label={`Role for ${user.email}`}
+                                  className="h-8 w-[110px]"
+                                >
                                   <SelectValue placeholder="Change role" />
                                 </SelectTrigger>
                                 <SelectContent>

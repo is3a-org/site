@@ -40,7 +40,7 @@ export function Layout({ children }: { readonly children: React.ReactNode }): JS
         <Links />
       </head>
       <body>
-        {children}
+        <div className="is3a-root">{children}</div>
         <ScrollRestoration />
         <Scripts />
       </body>

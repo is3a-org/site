@@ -1,108 +1,59 @@
+import { useRender } from "@base-ui/react/use-render";
 import { ChevronRight, MoreHorizontal } from "lucide-react";
-import * as React from "react";
-
-import { Slot } from "@radix-ui/react-slot";
+import type { ComponentProps, JSX } from "react";
 
 import { cn } from "../cn";
-
-function Breadcrumb({ ...props }: React.ComponentProps<"nav">): React.JSX.Element {
-  return <nav aria-label="breadcrumb" data-slot="breadcrumb" {...props} />;
+import { focus } from "../control-styles";
+export function Breadcrumb(props: ComponentProps<"nav">): JSX.Element {
+  return <nav aria-label="Breadcrumb" {...props} />;
 }
-
-function BreadcrumbList({ className, ...props }: React.ComponentProps<"ol">): React.JSX.Element {
+export function BreadcrumbList({ className, ...props }: ComponentProps<"ol">): JSX.Element {
   return (
     <ol
-      data-slot="breadcrumb-list"
-      className={cn(
-        "flex flex-wrap items-center gap-1.5 text-sm break-words text-muted-foreground sm:gap-2.5",
+      className={cn("flex flex-wrap items-center gap-2 text-sm text-muted-foreground", className)}
+      {...props}
+    />
+  );
+}
+export function BreadcrumbItem({ className, ...props }: ComponentProps<"li">): JSX.Element {
+  return <li className={cn("inline-flex items-center gap-2", className)} {...props} />;
+}
+export function BreadcrumbLink({
+  render,
+  ref,
+  className,
+  ...props
+}: useRender.ComponentProps<"a">): JSX.Element {
+  return useRender({
+    defaultTagName: "a",
+    render,
+    ref,
+    props: {
+      ...props,
+      className: cn(
+        "rounded-sm underline-offset-4 hover:text-primary hover:underline",
+        focus,
         className,
-      )}
-      {...props}
-    />
+      ),
+    },
+  });
+}
+export function BreadcrumbPage({ className, ...props }: ComponentProps<"span">): JSX.Element {
+  return (
+    <span aria-current="page" className={cn("font-medium text-foreground", className)} {...props} />
   );
 }
-
-function BreadcrumbItem({ className, ...props }: React.ComponentProps<"li">): React.JSX.Element {
+export function BreadcrumbSeparator({ children, ...props }: ComponentProps<"li">): JSX.Element {
   return (
-    <li
-      data-slot="breadcrumb-item"
-      className={cn("inline-flex items-center gap-1.5", className)}
-      {...props}
-    />
-  );
-}
-
-function BreadcrumbLink({
-  asChild,
-  className,
-  ...props
-}: React.ComponentProps<"a"> & {
-  asChild?: boolean;
-}): React.JSX.Element {
-  const Comp = asChild === true ? Slot : "a";
-
-  return (
-    <Comp
-      data-slot="breadcrumb-link"
-      className={cn("transition-colors hover:text-foreground", className)}
-      {...props}
-    />
-  );
-}
-
-function BreadcrumbPage({ className, ...props }: React.ComponentProps<"span">): React.JSX.Element {
-  return (
-    <span
-      data-slot="breadcrumb-page"
-      aria-current="page"
-      className={cn("font-normal text-foreground", className)}
-      {...props}
-    />
-  );
-}
-
-function BreadcrumbSeparator({
-  children,
-  className,
-  ...props
-}: React.ComponentProps<"li">): React.JSX.Element {
-  return (
-    <li
-      data-slot="breadcrumb-separator"
-      role="presentation"
-      aria-hidden="true"
-      className={cn("[&>svg]:size-3.5", className)}
-      {...props}
-    >
-      {children ?? <ChevronRight />}
+    <li role="presentation" aria-hidden="true" {...props}>
+      {children ?? <ChevronRight className="size-3.5" />}
     </li>
   );
 }
-
-function BreadcrumbEllipsis({
-  className,
-  ...props
-}: React.ComponentProps<"span">): React.JSX.Element {
+export function BreadcrumbEllipsis(props: ComponentProps<"span">): JSX.Element {
   return (
-    <span
-      data-slot="breadcrumb-ellipsis"
-      role="presentation"
-      aria-hidden="true"
-      className={cn("flex size-9 items-center justify-center", className)}
-      {...props}
-    >
+    <span aria-hidden="true" {...props}>
       <MoreHorizontal className="size-4" />
-      <span className="sr-only">More</span>
     </span>
   );
 }
-
-export {
-  Breadcrumb,
-  BreadcrumbList,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-  BreadcrumbEllipsis,
-};

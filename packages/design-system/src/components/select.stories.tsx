@@ -20,7 +20,14 @@ export function Default(): ReactElement {
   return (
     <div className="grid max-w-sm gap-2">
       <Label htmlFor="plan">Membership plan</Label>
-      <Select defaultValue="full">
+      <Select
+        defaultValue="full"
+        items={{
+          full: "Full membership",
+          flex: "Flex membership",
+          unavailable: "Unavailable plan",
+        }}
+      >
         <SelectTrigger id="plan" className="w-full">
           <SelectValue placeholder="Choose a plan" />
         </SelectTrigger>

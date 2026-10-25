@@ -20,9 +20,7 @@ export default meta;
 export function MemberDetails(): ReactElement {
   return (
     <Sheet>
-      <SheetTrigger asChild>
-        <Button variant="outline">View member</Button>
-      </SheetTrigger>
+      <SheetTrigger render={<Button variant="outline" />}>View member</SheetTrigger>
       <SheetContent>
         <SheetHeader>
           <SheetTitle>Alex de Vries</SheetTitle>
@@ -32,9 +30,7 @@ export function MemberDetails(): ReactElement {
           <p>alex@example.com</p>
         </div>
         <SheetFooter>
-          <SheetClose asChild>
-            <Button variant="outline">Close</Button>
-          </SheetClose>
+          <SheetClose render={<Button variant="outline" />}>Close</SheetClose>
         </SheetFooter>
       </SheetContent>
     </Sheet>
@@ -43,9 +39,7 @@ export function MemberDetails(): ReactElement {
 export function Left(): ReactElement {
   return (
     <Sheet>
-      <SheetTrigger asChild>
-        <Button variant="outline">Open navigation</Button>
-      </SheetTrigger>
+      <SheetTrigger render={<Button variant="outline" />}>Open navigation</SheetTrigger>
       <SheetContent side="left">
         <SheetHeader>
           <SheetTitle>IS3A</SheetTitle>

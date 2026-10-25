@@ -87,16 +87,14 @@ export default function FormSubmissionsPage({
     <>
       <DashboardBreadcrumb>
         <BreadcrumbItem>
-          <BreadcrumbLink asChild>
-            <Link to="/dashboard/admin/forms">Forms</Link>
-          </BreadcrumbLink>
+          <BreadcrumbLink render={<Link to="/dashboard/admin/forms" />}>Forms</BreadcrumbLink>
         </BreadcrumbItem>
         <BreadcrumbSeparator />
         <BreadcrumbItem>
           {isLoading && <Skeleton className="h-4 w-24" />}
           {!isLoading && form && (
-            <BreadcrumbLink asChild>
-              <Link to={`/dashboard/admin/forms/${form.id}/edit`}>{form.title}</Link>
+            <BreadcrumbLink render={<Link to={`/dashboard/admin/forms/${form.id}/edit`} />}>
+              {form.title}
             </BreadcrumbLink>
           )}
           {!isLoading && !form && <BreadcrumbPage>Not Found</BreadcrumbPage>}
@@ -110,21 +108,22 @@ export default function FormSubmissionsPage({
       {!isLoading && !form ? (
         <div className="flex flex-1 flex-col items-center justify-center gap-4 p-4">
           <p className="text-muted-foreground">Form not found</p>
-          <Button asChild>
-            <Link to="/dashboard/admin/forms">
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to Forms
-            </Link>
+          <Button render={<Link to="/dashboard/admin/forms" />} nativeButton={false}>
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back to Forms
           </Button>
         </div>
       ) : (
         <div className="flex flex-1 flex-col gap-6 p-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <Button variant="ghost" size="icon" asChild>
-                <Link to="/dashboard/admin/forms">
-                  <ArrowLeft className="h-4 w-4" />
-                </Link>
+              <Button
+                variant="ghost"
+                size="icon"
+                render={<Link to="/dashboard/admin/forms" />}
+                nativeButton={false}
+              >
+                <ArrowLeft className="h-4 w-4" />
               </Button>
               <div>
                 <h1 className="text-2xl font-bold">Submissions</h1>
@@ -135,11 +134,13 @@ export default function FormSubmissionsPage({
                 )}
               </div>
             </div>
-            <Button asChild disabled={isLoading || submissionsList.length === 0}>
-              <Link to={form ? `/dashboard/admin/forms/${form.id}/export` : "#"}>
-                <Download className="mr-2 h-4 w-4" />
-                Export
-              </Link>
+            <Button
+              disabled={isLoading || submissionsList.length === 0}
+              render={<Link to={form ? `/dashboard/admin/forms/${form.id}/export` : "#"} />}
+              nativeButton={false}
+            >
+              <Download className="mr-2 h-4 w-4" />
+              Export
             </Button>
           </div>
 

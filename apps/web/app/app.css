@@ -1,12 +1,2 @@
 @import "tailwindcss" source(".");
 @import "@is3a/design-system/theme.css";
-@source "../node_modules/@fragno-dev/jsonforms-shadcn-renderers";
-
-html,
-body {
-  @apply bg-white dark:bg-gray-950;
-
-  @media (prefers-color-scheme: dark) {
-    color-scheme: dark;
-  }
-}

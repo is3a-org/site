@@ -11,9 +11,9 @@ import { CheckCircle2, XCircle, AlertTriangle } from "lucide-react";
 import type { JSX, ReactNode } from "react";
 import { useMemo, useState } from "react";
 
-import { shadcnRenderers, shadcnCells } from "@fragno-dev/jsonforms-shadcn-renderers";
 import { JsonForms } from "@jsonforms/react";
 
+import { formRenderers } from "~/components/forms/renderers";
 import {
   dataSchemaSchema,
   uiSchemaElementSchema,
@@ -234,8 +234,8 @@ export default function PublicFormPage({
               schema={renderedSchemas?.dataSchema}
               uischema={renderedSchemas?.uiSchema}
               data={formData}
-              renderers={shadcnRenderers}
-              cells={shadcnCells}
+              renderers={formRenderers}
+
               onChange={({ data, errors }) => {
                 setFormData(formRenderDataSchema.parse(data ?? {}));
                 setFormErrorCount(errors?.length ?? 0);

@@ -58,8 +58,8 @@ export function Disabled(): ReactElement {
 }
 export function AsLink(): ReactElement {
   return (
-    <Button asChild>
-      <a href="#membership">View membership</a>
+    <Button render={<a href="#membership" aria-label="View membership" />} nativeButton={false}>
+      View membership
     </Button>
   );
 }

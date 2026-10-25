@@ -27,7 +27,7 @@ export function Checked(): ReactElement {
 export function Indeterminate(): ReactElement {
   return (
     <div className="flex items-center gap-2">
-      <Checkbox id="select-all" checked="indeterminate" />
+      <Checkbox id="select-all" indeterminate />
       <Label htmlFor="select-all">Select all members</Label>
     </div>
   );

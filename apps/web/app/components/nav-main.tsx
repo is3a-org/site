@@ -38,50 +38,52 @@ export function NavMain({ items }: Readonly<{ items: readonly NavigationItem[] }
     item.items !== undefined && item.items.length > 0 ? (
       <Collapsible
         key={item.title}
-        asChild
         defaultOpen={item.isActive}
         className="group/collapsible"
+        render={<SidebarMenuItem />}
       >
-        <SidebarMenuItem>
-          <CollapsibleTrigger asChild>
-            <SidebarMenuButton tooltip={item.title}>
-              {item.icon && <item.icon />}
-              <span>{item.title}</span>
-              <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
-            </SidebarMenuButton>
-          </CollapsibleTrigger>
-          <CollapsibleContent>
-            <SidebarMenuSub>
-              {item.items.map((subItem) => (
-                <SidebarMenuSubItem key={subItem.title}>
-                  <SidebarMenuSubButton asChild>
+        <CollapsibleTrigger render={<SidebarMenuButton tooltip={item.title} />}>
+          {item.icon && <item.icon />}
+          <span>{item.title}</span>
+          <ChevronRight className="ml-auto transition-transform duration-200 group-data-open/collapsible:rotate-90" />
+        </CollapsibleTrigger>
+        <CollapsibleContent>
+          <SidebarMenuSub>
+            {item.items.map((subItem) => (
+              <SidebarMenuSubItem key={subItem.title}>
+                <SidebarMenuSubButton
+                  render={
                     <Link
                       to={subItem.url}
                       onClick={() => {
                         setOpenMobile(false);
                       }}
-                    >
-                      <span>{subItem.title}</span>
-                    </Link>
-                  </SidebarMenuSubButton>
-                </SidebarMenuSubItem>
-              ))}
-            </SidebarMenuSub>
-          </CollapsibleContent>
-        </SidebarMenuItem>
+                    />
+                  }
+                >
+                  <span>{subItem.title}</span>
+                </SidebarMenuSubButton>
+              </SidebarMenuSubItem>
+            ))}
+          </SidebarMenuSub>
+        </CollapsibleContent>
       </Collapsible>
     ) : (
       <SidebarMenuItem key={item.title}>
-        <SidebarMenuButton asChild tooltip={item.title}>
-          <Link
-            to={item.url}
-            onClick={() => {
-              setOpenMobile(false);
-            }}
-          >
-            {item.icon && <item.icon />}
-            <span>{item.title}</span>
-          </Link>
+        <SidebarMenuButton
+          tooltip={item.title}
+          render={
+            <Link
+              to={item.url}
+              onClick={() => {
+                setOpenMobile(false);
+              }}
+            />
+          }
+          nativeButton={false}
+        >
+          {item.icon && <item.icon />}
+          <span>{item.title}</span>
         </SidebarMenuButton>
       </SidebarMenuItem>
     );

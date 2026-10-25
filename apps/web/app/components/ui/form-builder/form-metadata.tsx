@@ -71,6 +71,7 @@ export function FormMetadataEditor({
       <div className="space-y-2">
         <Label htmlFor="form-status">Status</Label>
         <Select
+          items={STATUS_OPTIONS}
           value={value.status}
           onValueChange={(selected) => {
             const status = STATUS_OPTIONS.find((option) => option.value === selected);

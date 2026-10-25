@@ -182,8 +182,15 @@ export function SyncSubscriptionDialog({
               <div className="space-y-2">
                 <Label htmlFor="user-select">Select User</Label>
                 <Select
+                  items={[
+                    { value: "__create_new__", label: "Create New User" },
+                    ...allUsers.map((user) => ({ value: user.id, label: user.email })),
+                  ]}
                   value={selectedUserId}
                   onValueChange={(value) => {
+                    if (value === null) {
+                      return;
+                    }
                     if (value === "__create_new__") {
                       setCreateNew(true);
                       setSelectedUserId("");

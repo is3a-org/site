@@ -11,12 +11,12 @@ export default meta;
 
 export function MembershipInfo(): ReactElement {
   return (
-    <TooltipProvider delayDuration={150}>
+    <TooltipProvider delay={150}>
       <Tooltip>
-        <TooltipTrigger asChild>
-          <Button variant="outline" size="icon" aria-label="About flex membership">
-            <Info />
-          </Button>
+        <TooltipTrigger
+          render={<Button variant="outline" size="icon" aria-label="About flex membership" />}
+        >
+          <Info />
         </TooltipTrigger>
         <TooltipContent>
           <p>Flex membership offers a flexible way to join IS3A.</p>

@@ -111,67 +111,75 @@ export function FieldCard({
             <TooltipProvider>
               <div className="flex items-center gap-1">
                 <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      className="size-8"
-                      onClick={onMoveUp}
-                      disabled={!onMoveUp}
-                    >
-                      <ChevronUp className="size-4" />
-                      <span className="sr-only">Move up</span>
-                    </Button>
+                  <TooltipTrigger
+                    render={
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="size-8"
+                        onClick={onMoveUp}
+                        disabled={!onMoveUp}
+                      />
+                    }
+                  >
+                    <ChevronUp className="size-4" />
+                    <span className="sr-only">Move up</span>
                   </TooltipTrigger>
                   <TooltipContent>Move up</TooltipContent>
                 </Tooltip>
 
                 <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      className="size-8"
-                      onClick={onMoveDown}
-                      disabled={!onMoveDown}
-                    >
-                      <ChevronDown className="size-4" />
-                      <span className="sr-only">Move down</span>
-                    </Button>
+                  <TooltipTrigger
+                    render={
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="size-8"
+                        onClick={onMoveDown}
+                        disabled={!onMoveDown}
+                      />
+                    }
+                  >
+                    <ChevronDown className="size-4" />
+                    <span className="sr-only">Move down</span>
                   </TooltipTrigger>
                   <TooltipContent>Move down</TooltipContent>
                 </Tooltip>
 
                 <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      className="size-8"
-                      onClick={onDuplicate}
-                    >
-                      <Copy className="size-4" />
-                      <span className="sr-only">Duplicate</span>
-                    </Button>
+                  <TooltipTrigger
+                    render={
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="size-8"
+                        onClick={onDuplicate}
+                      />
+                    }
+                  >
+                    <Copy className="size-4" />
+                    <span className="sr-only">Duplicate</span>
                   </TooltipTrigger>
                   <TooltipContent>Duplicate</TooltipContent>
                 </Tooltip>
 
                 <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      className="size-8 text-destructive hover:text-destructive"
-                      onClick={onDelete}
-                    >
-                      <Trash2 className="size-4" />
-                      <span className="sr-only">Delete</span>
-                    </Button>
+                  <TooltipTrigger
+                    render={
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="size-8 text-destructive hover:text-destructive"
+                        onClick={onDelete}
+                      />
+                    }
+                  >
+                    <Trash2 className="size-4" />
+                    <span className="sr-only">Delete</span>
                   </TooltipTrigger>
                   <TooltipContent>Delete</TooltipContent>
                 </Tooltip>
