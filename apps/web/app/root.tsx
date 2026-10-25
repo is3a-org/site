@@ -10,6 +10,8 @@ import {
   ScrollRestoration,
 } from "react-router";
 
+import { colorSchemeScript } from "~/lib/color-scheme";
+
 import type { Route } from "./+types/root";
 
 export const links: Route.LinksFunction = () => [
@@ -27,10 +29,12 @@ export const links: Route.LinksFunction = () => [
 
 export function Layout({ children }: { readonly children: React.ReactNode }): JSX.Element {
   return (
-    <html lang="en">
+    // The head script sets the theme class before hydration, so React must not reset it.
+    <html lang="en" suppressHydrationWarning>
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <script dangerouslySetInnerHTML={{ __html: colorSchemeScript }} />
         <Meta />
         <Links />
       </head>

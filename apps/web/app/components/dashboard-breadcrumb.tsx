@@ -9,6 +9,8 @@ import { Separator } from "@is3a/design-system/separator";
 import { SidebarTrigger } from "@is3a/design-system/sidebar";
 import type { JSX } from "react";
 
+import { ThemeSwitch } from "~/components/theme-switch";
+
 export function DashboardBreadcrumb({
   children,
 }: Readonly<{ children: React.ReactNode }>): JSX.Element {
@@ -27,6 +29,7 @@ export function DashboardBreadcrumb({
           </BreadcrumbList>
         </Breadcrumb>
       </div>
+      <ThemeSwitch className="mr-2 ml-auto" />
     </header>
   );
 }
