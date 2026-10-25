@@ -24,7 +24,9 @@ export function TooltipContent({
         <Primitive.Popup
           data-slot="tooltip-content"
           className={cn(
-            "max-w-64 rounded-md bg-foreground px-3 py-2 text-xs leading-relaxed text-background shadow-md",
+            // Hide on close rather than waiting for unmount, which needs an animation frame that
+            // throttled or embedded browsers may not deliver.
+            "max-w-64 rounded-md bg-foreground px-3 py-2 text-xs leading-relaxed text-background shadow-md data-closed:hidden",
             className,
           )}
           {...props}
