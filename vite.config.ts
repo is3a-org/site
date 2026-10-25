@@ -6,7 +6,7 @@ export default defineConfig({
   },
   staged: {
     // Format automatically, but report advisory lint without rewriting application code.
-    "*": ["vp fmt", "vp check"],
+    "*": ["vp fmt --no-error-on-unmatched-pattern", "vp check --no-error-on-unmatched-pattern"],
   },
   fmt: {
     ignorePatterns: [
