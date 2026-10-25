@@ -2,6 +2,7 @@ import type { AuthMeResponse } from "@fragno-dev/auth";
 import { createStripeFragment } from "@fragno-dev/stripe";
 
 import { UserRepo } from "~/db/repo/user.ts";
+import { readServerEnvironmentVariable } from "~/lib/server-environment";
 
 import {
   createPostgresPool,
@@ -20,12 +21,12 @@ type StripeFragment = ReturnType<typeof createStripeFragment>;
  * hook dispatcher. See `~/fragno/stripe-durable-object.ts`.
  */
 export function createStripeServer(pool: PostgresPool | (() => PostgresPool)): StripeFragment {
-  const stripeSecret = process.env.STRIPE_SECRET_KEY;
+  const stripeSecret = readServerEnvironmentVariable("STRIPE_SECRET_KEY");
   if (!stripeSecret) {
     console.warn("STRIPE_SECRET_KEY is not set");
   }
 
-  const stripeWebhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+  const stripeWebhookSecret = readServerEnvironmentVariable("STRIPE_WEBHOOK_SECRET");
   if (!stripeWebhookSecret) {
     console.warn("STRIPE_WEBHOOK_SECRET is not set");
   }

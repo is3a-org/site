@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { readServerEnvironmentVariable } from "./server-environment";
+
 const TURNSTILE_VERIFY_URL = "https://challenges.cloudflare.com/turnstile/v0/siteverify";
 
 const turnstileVerifyResponseSchema = z.object({
@@ -19,7 +21,7 @@ export async function verifyTurnstile(
   remoteIp?: string | null,
   fetcher: typeof fetch = fetch,
 ): Promise<TurnstileResult> {
-  const secretKey = process.env.CF_TURNSTILE_SECRET_KEY;
+  const secretKey = readServerEnvironmentVariable("CF_TURNSTILE_SECRET_KEY");
 
   if (!secretKey) {
     console.warn("CF_TURNSTILE_SECRET_KEY is not configured, assume not required");
