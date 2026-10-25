@@ -32,18 +32,19 @@ import { Form, useNavigation } from "react-router";
 
 import { DashboardBreadcrumb } from "~/components/dashboard-breadcrumb";
 import { LocationRepo, NewLocationSchema, type Location } from "~/db/repo/locations";
+import { requestContext } from "~/request-context";
 
 import type { Route } from "./+types/locations";
 
 export async function loader({ context }: Route.LoaderArgs) {
-  const locations = await new LocationRepo(context.db).getAllLocations();
+  const locations = await new LocationRepo(context.get(requestContext).db).getAllLocations();
   return { locations };
 }
 
 export async function action({ request, context }: Route.ActionArgs) {
   const formData = await request.formData();
   const intent = formData.get("intent");
-  const repo = new LocationRepo(context.db);
+  const repo = new LocationRepo(context.get(requestContext).db);
 
   if (intent === "create") {
     const data = Object.fromEntries(formData.entries());

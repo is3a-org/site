@@ -23,7 +23,7 @@
     "update:fragno": "vp list -r | grep fragno | cut -d' ' -f1 | sort -u | xargs -I {} vp update {}@latest -r"
   },
   "devDependencies": {
-    "typescript": "5.9.2",
+    "typescript": "7.0.2",
     "vite": "catalog:",
     "vite-plus": "catalog:",
     "wrangler": "^4.152.0"
@@ -31,21 +31,5 @@
   "engines": {
     "node": "^22.22.1 || ^24.11.0 || >=26.0.0"
   },
-  "packageManager": "pnpm@10.0.0",
-  "pnpm": {
-    "overrides": {
-      "vite@*": "npm:@voidzero-dev/vite-plus-core@1.4.0"
-    },
-    "peerDependencyRules": {
-      "allowAny": [
-        "vite"
-      ],
-      "allowedVersions": {
-        "vite": "*"
-      }
-    },
-    "patchedDependencies": {
-      "@fragno-dev/unplugin-fragno@0.0.9": "patches/@fragno-dev__unplugin-fragno@0.0.9.patch"
-    }
-  }
+  "packageManager": "pnpm@12.15.0"
 }

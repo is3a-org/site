@@ -29,6 +29,7 @@ import { getMembershipByPriceId } from "~/lib/memberships";
 import { simpleAuthClient } from "~/lib/simple-auth-client";
 import { stripeFragmentClient } from "~/lib/stripe-client";
 import { cn } from "~/lib/utils";
+import { requestContext } from "~/request-context";
 
 import type { Route } from "./+types/membership";
 
@@ -216,14 +217,14 @@ const ErrorAlert = ({ message }: { message: string }) => (
 );
 
 export async function loader({ context, request }: Route.LoaderArgs) {
-  const auth = createSimpleAuthServer(context.pool);
+  const auth = createSimpleAuthServer(context.get(requestContext).pool);
   const response = await auth.callRoute("GET", "/me", {
     headers: request.headers,
   });
 
   if (response.type === "json" && response.data) {
     const subscriptions = await getStripeFragment(
-      context.cloudflare.env,
+      context.get(requestContext).cloudflare.env,
     ).getSubscriptionsByReferenceId(response.data.user.id);
     // Get the first subscription (most apps only have one per customer)
     const subscription = subscriptions[0] || null;

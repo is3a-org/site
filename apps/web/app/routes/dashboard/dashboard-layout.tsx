@@ -19,6 +19,7 @@ import { AlertCircle } from "lucide-react";
 import { isRouteErrorResponse, Outlet, redirect } from "react-router";
 
 import { createSimpleAuthServer } from "~/fragno/simple-auth-server";
+import { requestContext } from "~/request-context";
 import { DashboardNavigationSidebar } from "~/routes/dashboard/dashboard-sidebar";
 
 import type { Route } from "./+types/dashboard-layout";
@@ -28,7 +29,7 @@ export function meta(_: Route.MetaArgs) {
 }
 
 export async function loader({ context, request }: Route.LoaderArgs) {
-  const auth = createSimpleAuthServer(context.pool);
+  const auth = createSimpleAuthServer(context.get(requestContext).pool);
 
   const response = await auth.callRoute("GET", "/me", {
     headers: request.headers,

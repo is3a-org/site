@@ -17,6 +17,7 @@ import { createOtpServer } from "~/fragno/otp-server";
 import { createSimpleAuthServer } from "~/fragno/simple-auth-server";
 import { magicLinkTemplate, sendEmail } from "~/lib/email";
 import { verifyTurnstile } from "~/lib/turnstile";
+import { requestContext } from "~/request-context";
 
 import type { Route } from "./+types/login";
 export function meta(_: Route.MetaArgs) {
@@ -27,7 +28,7 @@ export function meta(_: Route.MetaArgs) {
 }
 
 export async function loader({ request, context }: Route.LoaderArgs) {
-  const auth = createSimpleAuthServer(context.pool);
+  const auth = createSimpleAuthServer(context.get(requestContext).pool);
 
   const response = await auth.callRoute("GET", "/me", {
     headers: request.headers,
@@ -41,8 +42,8 @@ export async function loader({ request, context }: Route.LoaderArgs) {
 type ActionIntent = "magic-link" | "password";
 
 export async function action({ request, context }: Route.ActionArgs) {
-  const auth = createSimpleAuthServer(context.pool);
-  const otp = createOtpServer(context.pool);
+  const auth = createSimpleAuthServer(context.get(requestContext).pool);
+  const otp = createOtpServer(context.get(requestContext).pool);
 
   const formData = await request.formData();
   const intent = (formData.get("intent") as ActionIntent) || "password";

@@ -16,11 +16,12 @@ import { DashboardBreadcrumb } from "~/components/dashboard-breadcrumb";
 import { createSimpleAuthServer } from "~/fragno/simple-auth-server";
 import { getStripeFragment } from "~/fragno/stripe-durable-object";
 import { cn } from "~/lib/utils";
+import { requestContext } from "~/request-context";
 
 import type { Route } from "./+types/subscribe-confirm";
 
 export async function loader({ context, request }: Route.LoaderArgs) {
-  const auth = createSimpleAuthServer(context.pool);
+  const auth = createSimpleAuthServer(context.get(requestContext).pool);
   const response = await auth.callRoute("GET", "/me", {
     headers: request.headers,
   });
@@ -30,7 +31,9 @@ export async function loader({ context, request }: Route.LoaderArgs) {
     return { status: "error", message: "Could not retrieve data for user" };
   }
 
-  await getStripeFragment(context.cloudflare.env).syncSubscriptions(response.data.user.id);
+  await getStripeFragment(context.get(requestContext).cloudflare.env).syncSubscriptions(
+    response.data.user.id,
+  );
   return { status: "success", message: "Subscription status up-to-date" };
 }
 

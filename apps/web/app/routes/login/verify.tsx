@@ -11,6 +11,7 @@ import { redirect, Link } from "react-router";
 
 import { createOtpServer } from "~/fragno/otp-server";
 import { createSimpleAuthServer } from "~/fragno/simple-auth-server";
+import { requestContext } from "~/request-context";
 
 import type { Route } from "./+types/verify";
 
@@ -30,8 +31,8 @@ export async function loader({ request, context }: Route.LoaderArgs) {
     return { error: "Invalid link. The sign-in link is missing required parameters." };
   }
 
-  const auth = createSimpleAuthServer(context.pool);
-  const otp = createOtpServer(context.pool);
+  const auth = createSimpleAuthServer(context.get(requestContext).pool);
+  const otp = createOtpServer(context.get(requestContext).pool);
 
   // Lookup user by email
   const user = await auth.inContext(async function () {
