@@ -7,6 +7,7 @@ import {
   type PostgresPool,
 } from "../db/postgres/is3a-postgres.ts";
 import { createAdapter } from "./database-adapter.ts";
+import { membershipRequestForm } from "./membership-request-form.ts";
 import { createSimpleAuthServer } from "./simple-auth-server.ts";
 
 type FormsFragment = ReturnType<typeof createFormsFragment>;
@@ -26,7 +27,7 @@ export function createFormsServer(pool: PostgresPool | (() => PostgresPool)): Fo
 
   return createFormsFragment(
     {
-      staticForms: [],
+      staticForms: [membershipRequestForm],
     },
     { databaseAdapter: createAdapter(resolvedPool) },
   ).withMiddleware(async ({ path, headers }, { error }): Promise<Response | undefined> => {

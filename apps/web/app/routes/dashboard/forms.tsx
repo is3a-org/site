@@ -200,14 +200,17 @@ export default function FormsPage(): JSX.Element {
                           >
                             <ExternalLink className="h-4 w-4" />
                           </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            render={<Link to={`/dashboard/admin/forms/${form.id}/edit`} />}
-                            nativeButton={false}
-                          >
-                            <Pencil className="h-4 w-4" />
-                          </Button>
+                          {/* Built-in forms are defined in code and can't be edited here. */}
+                          {form.status !== "static" && (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              render={<Link to={`/dashboard/admin/forms/${form.id}/edit`} />}
+                              nativeButton={false}
+                            >
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                          )}
                           <Button
                             variant="ghost"
                             size="icon"
@@ -216,15 +219,17 @@ export default function FormsPage(): JSX.Element {
                           >
                             <ClipboardList className="h-4 w-4" />
                           </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => {
-                              openDeleteDialog(form.id);
-                            }}
-                          >
-                            <Trash2 className="h-4 w-4 text-destructive" />
-                          </Button>
+                          {form.status !== "static" && (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => {
+                                openDeleteDialog(form.id);
+                              }}
+                            >
+                              <Trash2 className="h-4 w-4 text-destructive" />
+                            </Button>
+                          )}
                         </div>
                       </TableCell>
                     </TableRow>
@@ -391,6 +396,9 @@ function getStatusBadge(status: string): JSX.Element {
     }
     case "draft": {
       return <Badge variant="outline">Draft</Badge>;
+    }
+    case "static": {
+      return <Badge variant="secondary">Built in</Badge>;
     }
     default: {
       return <Badge variant="outline">{status}</Badge>;
