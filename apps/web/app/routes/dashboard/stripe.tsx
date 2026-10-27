@@ -7,6 +7,7 @@ import { Link } from "react-router";
 import { DashboardBreadcrumb } from "~/components/dashboard-breadcrumb";
 import { StripeCustomersTable } from "~/components/stripe-customers-table";
 import { UserRepo } from "~/db/repo/user";
+import { requireAdmin } from "~/fragno/admin-auth.server";
 import type { ReadonlyRouteProps } from "~/fragno/readonly-route-props";
 import { readFormText } from "~/fragno/request-form";
 import { createSimpleAuthServer } from "~/fragno/simple-auth-server";
@@ -42,6 +43,7 @@ export async function action({
   request,
   context,
 }: Readonly<Route.ActionArgs>): Promise<StripeCustomerActionResult> {
+  await requireAdmin(request, context.get(requestContext).pool);
   const formData = await request.formData();
   const intent = readFormText(formData, "intent") ?? "";
 
