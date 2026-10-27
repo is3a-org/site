@@ -12,6 +12,7 @@ import { UserRepo } from "~/db/repo/user";
 import { createFormsServer } from "./forms-server";
 import { createSimpleAuthServer } from "./simple-auth-server";
 import { createStripeServer } from "./stripe-server";
+import { runSubscriptionSync } from "./stripe-subscription-sync";
 
 interface StripeFragmentRuntime {
   userRepo: UserRepo;
@@ -83,7 +84,9 @@ export class StripeFragmentDurableObject extends DurableObject<CloudflareEnv> {
 
   public async syncSubscriptions(referenceId: string): Promise<void> {
     const { stripe } = this.#runtime;
-    await stripe.callServices(() => stripe.services.syncSubscriptions(referenceId));
+    await runSubscriptionSync(async () => {
+      await stripe.callServices(() => stripe.services.syncSubscriptions(referenceId));
+    });
   }
 
   public async linkCustomer(link: Readonly<StripeCustomerLink>): Promise<LinkCustomerResult> {
