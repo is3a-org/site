@@ -4,6 +4,8 @@ import { customer_stripe, user_auth, subscription_stripe } from "~/db/postgres/f
 import type { DrizzleDatabase } from "~/db/postgres/is3a-postgres";
 import { user_stripe } from "~/db/postgres/postgres.schema";
 
+import { summarizeUserMemberships, type UserSubscriptionSummary } from "./user-memberships";
+
 /** User membership summary with nullable fields from the Stripe left joins. */
 export interface UserMembershipSummary extends Pick<
   typeof user_auth.$inferSelect,
@@ -13,6 +15,10 @@ export interface UserMembershipSummary extends Pick<
   subscriptionId: typeof subscription_stripe.$inferSelect.id | null;
   subscriptionStatus: typeof subscription_stripe.$inferSelect.status | null;
   subscriptionStripePriceId: typeof subscription_stripe.$inferSelect.priceId | null;
+}
+
+export interface UserMembershipWithHistory extends UserMembershipSummary {
+  readonly subscriptions: readonly UserSubscriptionSummary[];
 }
 
 /** User membership details include the current subscription billing period. */
@@ -36,8 +42,8 @@ export class UserRepo {
     this.#db = db;
   }
 
-  public async getAllUsers(): Promise<UserMembershipSummary[]> {
-    return this.#db
+  public async getAllUsers(): Promise<UserMembershipWithHistory[]> {
+    const rows = await this.#db
       .select({
         id: user_auth.id,
         email: user_auth.email,
@@ -46,11 +52,14 @@ export class UserRepo {
         subscriptionId: subscription_stripe.id,
         subscriptionStatus: subscription_stripe.status,
         subscriptionStripePriceId: subscription_stripe.priceId,
+        subscriptionPeriodEnd: subscription_stripe.currentPeriodEnd,
+        subscriptionCreatedAt: subscription_stripe.createdAt,
       })
       .from(user_auth)
       .leftJoin(user_stripe, eq(user_stripe.userId, user_auth.id))
       .leftJoin(subscription_stripe, eq(subscription_stripe.referenceId, user_auth.id))
       .orderBy(user_auth.email);
+    return summarizeUserMemberships(rows);
   }
 
   public async setStripeCustomerId(userId: string, stripeCustomerId: string): Promise<void> {

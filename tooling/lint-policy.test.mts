@@ -144,6 +144,8 @@ const approvedCompatibilityManifest = {
     "unicorn/no-null": {
       "apps/web/app/components/forms/renderers.tsx": 1,
       "apps/web/app/db/repo/location-form.ts": 3,
+      "apps/web/app/db/repo/user-memberships.test.ts": 6,
+      "apps/web/app/db/repo/user-memberships.ts": 3,
       "apps/web/app/db/repo/user.ts": 3,
       "apps/web/app/fragno/forms-server.ts": 1,
       "apps/web/app/fragno/stripe-durable-object.ts": 1,
