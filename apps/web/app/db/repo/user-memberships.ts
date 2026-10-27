@@ -3,6 +3,9 @@ import type { UserMembershipWithHistory } from "./user";
 export interface MembershipRow extends Omit<UserMembershipWithHistory, "subscriptions"> {
   readonly subscriptionPeriodEnd: Date | null;
   readonly subscriptionCreatedAt: Date | null;
+  readonly subscriptionCancelAtPeriodEnd: boolean | null;
+  readonly subscriptionCancelAt: Date | null;
+  readonly subscriptionEndedAt: Date | null;
 }
 
 export interface UserSubscriptionSummary {
@@ -11,6 +14,9 @@ export interface UserSubscriptionSummary {
   readonly priceId: string;
   readonly periodEnd: Date;
   readonly createdAt: Date;
+  readonly cancelAtPeriodEnd: boolean;
+  readonly cancelAt: Date | null;
+  readonly endedAt: Date | null;
 }
 
 const statusOrder = [
@@ -59,6 +65,9 @@ export function summarizeUserMemberships(
         priceId: row.subscriptionStripePriceId,
         periodEnd: row.subscriptionPeriodEnd,
         createdAt: row.subscriptionCreatedAt,
+        cancelAtPeriodEnd: row.subscriptionCancelAtPeriodEnd ?? false,
+        cancelAt: row.subscriptionCancelAt,
+        endedAt: row.subscriptionEndedAt,
       });
     }
     const sorted = subscriptions.toSorted(compareSubscriptions);
@@ -66,6 +75,7 @@ export function summarizeUserMemberships(
     users.set(row.id, {
       id: row.id,
       email: row.email,
+      role: row.role,
       createdAt: row.createdAt,
       stripeCustomerId: row.stripeCustomerId,
       // oxlint-disable-next-line unicorn/no-null -- COMPATIBILITY: Membership summaries preserve nullable subscription columns.
