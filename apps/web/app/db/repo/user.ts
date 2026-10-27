@@ -25,6 +25,7 @@ export interface UserMembershipSummary extends Pick<
 }
 
 export interface UserMembershipWithHistory extends UserMembershipSummary {
+  readonly role: typeof user_auth.$inferSelect.role;
   readonly subscriptions: readonly UserSubscriptionSummary[];
 }
 
@@ -54,6 +55,7 @@ export class UserRepo {
       .select({
         id: user_auth.id,
         email: user_auth.email,
+        role: user_auth.role,
         createdAt: user_auth.createdAt,
         stripeCustomerId: user_stripe.stripeCustomerId,
         subscriptionId: subscription_stripe.id,
@@ -61,6 +63,9 @@ export class UserRepo {
         subscriptionStripePriceId: subscription_stripe.priceId,
         subscriptionPeriodEnd: subscription_stripe.currentPeriodEnd,
         subscriptionCreatedAt: subscription_stripe.createdAt,
+        subscriptionCancelAtPeriodEnd: subscription_stripe.cancelAtPeriodEnd,
+        subscriptionCancelAt: subscription_stripe.cancelAt,
+        subscriptionEndedAt: subscription_stripe.endedAt,
       })
       .from(user_auth)
       .leftJoin(user_stripe, eq(user_stripe.userId, user_auth.id))

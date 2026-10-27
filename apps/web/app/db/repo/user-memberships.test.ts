@@ -5,6 +5,7 @@ import { summarizeUserMemberships, type MembershipRow } from "./user-memberships
 const active: MembershipRow = {
   id: "member",
   email: "member@example.com",
+  role: "user",
   createdAt: new Date("2025-01-01"),
   stripeCustomerId: "cus_member",
   subscriptionId: "sub_current",
@@ -12,6 +13,11 @@ const active: MembershipRow = {
   subscriptionStripePriceId: "price_full",
   subscriptionPeriodEnd: new Date("2027-01-01"),
   subscriptionCreatedAt: new Date("2026-01-01"),
+  subscriptionCancelAtPeriodEnd: false,
+  // oxlint-disable-next-line unicorn/no-null -- COMPATIBILITY: Stripe stores no cancellation date for a renewing subscription.
+  subscriptionCancelAt: null,
+  // oxlint-disable-next-line unicorn/no-null -- COMPATIBILITY: Stripe stores no end date for a running subscription.
+  subscriptionEndedAt: null,
 };
 
 describe("Member account summaries", () => {
@@ -51,6 +57,8 @@ describe("Member account summaries", () => {
       subscriptionPeriodEnd: null,
       // oxlint-disable-next-line unicorn/no-null -- COMPATIBILITY: SQL left joins yield null for an absent subscription timestamp.
       subscriptionCreatedAt: null,
+      // oxlint-disable-next-line unicorn/no-null -- COMPATIBILITY: SQL left joins yield null for an absent subscription flag.
+      subscriptionCancelAtPeriodEnd: null,
     };
     const members = summarizeUserMemberships([active, noSubscription]);
     expect(members).toHaveLength(2);
