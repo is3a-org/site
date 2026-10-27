@@ -35,6 +35,25 @@ describe("Authentication and billing form inputs", () => {
     },
   );
 
+  it("normalizes and deduplicates customer IDs without changing their first-seen order", () => {
+    expect(parseStripeCustomerIds('[" cus_first ","cus_second","cus_first"]')).toEqual([
+      "cus_first",
+      "cus_second",
+    ]);
+  });
+
+  it.each(["[]", '["not-a-customer"]', '[""]', '["cus_bad/id"]'])(
+    "rejects unsafe or empty selections: %s",
+    (selection) => {
+      expect(() => parseStripeCustomerIds(selection)).toThrow(ZodError);
+    },
+  );
+
+  it("enforces the selection limit on the server before doing work", () => {
+    const oversized = Array.from({ length: 51 }, (_, index) => `cus_${index}`);
+    expect(() => parseStripeCustomerIds(JSON.stringify(oversized))).toThrow(ZodError);
+  });
+
   it("rejects invalid JSON before a bulk import begins", () => {
     expect(() => parseStripeCustomerIds("invalid JSON")).toThrow(SyntaxError);
   });
