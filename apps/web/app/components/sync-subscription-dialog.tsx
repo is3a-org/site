@@ -55,7 +55,11 @@ export function SyncSubscriptionDialog({
   allUsers,
 }: SyncSubscriptionDialogProps): JSX.Element {
   const userByStripeId = allUsers.find((user) => user.stripeCustomerId === customer.id);
-  const matchedUser = userByStripeId ?? allUsers.find((user) => user.email === customer.email);
+  const matchedUser =
+    userByStripeId ??
+    allUsers.find(
+      (user) => user.email.trim().toLowerCase() === customer.email?.trim().toLowerCase(),
+    );
   const matchType = userByStripeId === undefined ? "email" : "stripeCustomerId";
   const [step, setStep] = useState<Step>("select-user");
   const [selectedUserId, setSelectedUserId] = useState(matchedUser?.id ?? "");
@@ -142,7 +146,8 @@ export function SyncSubscriptionDialog({
         <DialogHeader>
           <DialogTitle>Sync Stripe Subscription</DialogTitle>
           <DialogDescription>
-            Link this Stripe customer to a user and sync their subscription data.
+            Link this Stripe customer to an account and queue subscription sync. Existing billing is
+            unchanged.
           </DialogDescription>
         </DialogHeader>
 

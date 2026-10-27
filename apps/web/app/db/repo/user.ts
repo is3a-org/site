@@ -1,8 +1,15 @@
-import { and, eq, isNotNull, isNull } from "drizzle-orm";
+import { and, desc, eq, inArray, isNotNull, isNull, sql } from "drizzle-orm";
 
-import { customer_stripe, user_auth, subscription_stripe } from "~/db/postgres/fragno-schema";
+import {
+  customer_stripe,
+  fragno_hooks,
+  user_auth,
+  subscription_stripe,
+} from "~/db/postgres/fragno-schema";
 import type { DrizzleDatabase } from "~/db/postgres/is3a-postgres";
 import { user_stripe } from "~/db/postgres/postgres.schema";
+import type { CustomerLink, CustomerSyncState } from "~/lib/bulk-import";
+import { resolveCustomerSyncState } from "~/lib/stripe-sync-state";
 
 import { summarizeUserMemberships, type UserSubscriptionSummary } from "./user-memberships";
 
@@ -60,6 +67,51 @@ export class UserRepo {
       .leftJoin(subscription_stripe, eq(subscription_stripe.referenceId, user_auth.id))
       .orderBy(user_auth.email);
     return summarizeUserMemberships(rows);
+  }
+
+  /** Inspect actual sync hooks, not merely the presence of an application customer link. */
+  public async getStripeSyncStates(links: readonly CustomerLink[]): Promise<CustomerSyncState[]> {
+    if (links.length === 0) {
+      return [];
+    }
+    const ids = links.map((link) => link.customerId);
+    const hookCustomerId = sql<string>`${fragno_hooks.payload}->>'customerId'`;
+    const hookFilter = and(
+      eq(fragno_hooks.namespace, "stripe"),
+      eq(fragno_hooks.hookName, "syncCustomerSubscriptions"),
+      inArray(hookCustomerId, ids),
+    );
+    const [customers, subscriptions, hooks] = await Promise.all([
+      this.#db
+        .select({ id: customer_stripe.id, referenceId: customer_stripe.referenceId })
+        .from(customer_stripe)
+        .where(inArray(customer_stripe.id, ids)),
+      this.#db
+        .select({
+          customerId: subscription_stripe.customerId,
+          referenceId: subscription_stripe.referenceId,
+        })
+        .from(subscription_stripe)
+        .where(inArray(subscription_stripe.customerId, ids)),
+      this.#db
+        .selectDistinctOn([hookCustomerId], {
+          customerId: hookCustomerId,
+          id: fragno_hooks.id,
+          status: fragno_hooks.status,
+          error: fragno_hooks.error,
+        })
+        .from(fragno_hooks)
+        .where(hookFilter)
+        .orderBy(hookCustomerId, desc(fragno_hooks.createdAt), desc(fragno_hooks._internalId)),
+    ]);
+    return links.map((link) => {
+      const customer = customers.find((row) => row.id === link.customerId);
+      const hook = hooks.find((row) => row.customerId === link.customerId);
+      const hasSubscriptions = subscriptions.some(
+        (row) => row.customerId === link.customerId && row.referenceId === link.referenceId,
+      );
+      return resolveCustomerSyncState(link, customer?.referenceId, hook, hasSubscriptions);
+    });
   }
 
   public async setStripeCustomerId(userId: string, stripeCustomerId: string): Promise<void> {

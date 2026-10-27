@@ -11,7 +11,7 @@ import { requireAdmin } from "~/fragno/admin-auth.server";
 import type { ReadonlyRouteProps } from "~/fragno/readonly-route-props";
 import { readFormText } from "~/fragno/request-form";
 import { createSimpleAuthServer } from "~/fragno/simple-auth-server";
-import { linkStripeCustomer } from "~/fragno/stripe-durable-object";
+import { getStripeFragment, linkStripeCustomer } from "~/fragno/stripe-durable-object";
 import { cn } from "~/lib/utils";
 import { requestContext } from "~/request-context";
 
@@ -102,19 +102,21 @@ export async function action({
         };
       }
 
-      // Link user to Stripe customer and sync their subscription from Stripe
-      const linkError = await linkStripeCustomer(
-        context.get(requestContext).cloudflare.env,
-        userRepo,
-        {
-          customerId: stripeCustomerId,
-          referenceId: targetUserId,
-        },
-      );
+      // Link the customer; only the durable hook starts a sync for a new link.
+      const stripe = getStripeFragment(context.get(requestContext).cloudflare.env);
+      const linkError = await linkStripeCustomer(stripe, userRepo, {
+        customerId: stripeCustomerId,
+        referenceId: targetUserId,
+      });
       if (linkError !== null && linkError !== "") {
         return { success: false, error: linkError };
       }
 
+      // Existing links may be stale or have a failed hook; an active hook is left to finish.
+      await stripe.requestCustomerSync({
+        customerId: stripeCustomerId,
+        referenceId: targetUserId,
+      });
       return { success: true, userId: targetUserId };
     } catch (error) {
       console.error("Error syncing subscription:", error);
