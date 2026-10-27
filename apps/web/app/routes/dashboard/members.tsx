@@ -69,9 +69,29 @@ export default function DashboardMembers({
           </TableHeader>
           <TableBody>
             {members.map((member) => (
-              <TableRow key={member.id + member.subscriptionId}>
+              <TableRow key={member.id}>
                 <TableCell>{member.email}</TableCell>
-                <TableCell>{member.subscriptionId}</TableCell>
+                <TableCell>
+                  {member.subscriptionId ?? "—"}
+                  {member.subscriptions.length > 1 && (
+                    <details className="mt-2 text-sm">
+                      <summary className="cursor-pointer text-muted-foreground">
+                        Subscription history ({member.subscriptions.length})
+                      </summary>
+                      <ul className="mt-2 space-y-2">
+                        {member.subscriptions.map((subscription) => (
+                          <li key={subscription.id}>
+                            <p className="font-mono text-xs">{subscription.id}</p>
+                            <p className="text-muted-foreground">
+                              {subscription.status} · {toMembershipType(subscription.priceId)} ·
+                              period ends {new Date(subscription.periodEnd).toLocaleDateString()}
+                            </p>
+                          </li>
+                        ))}
+                      </ul>
+                    </details>
+                  )}
+                </TableCell>
                 <TableCell>
                   {member.stripeCustomerId === null || member.stripeCustomerId === ""
                     ? "-"
