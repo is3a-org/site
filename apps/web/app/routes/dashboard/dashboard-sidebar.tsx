@@ -6,7 +6,7 @@ import {
   SidebarRail,
   useSidebar,
 } from "@is3a/design-system/sidebar";
-import { Home, MapPin, Users, HandCoins, Sparkles, ClipboardList } from "lucide-react";
+import { Home, MapPin, Users, Sparkles, ClipboardList } from "lucide-react";
 import type { JSX } from "react";
 import { Link } from "react-router";
 
@@ -35,15 +35,9 @@ const navItems = [
     adminOnly: true,
   },
   {
-    title: "Users",
-    url: "/dashboard/admin/users",
-    icon: Users,
-    adminOnly: true,
-  },
-  {
-    title: "Members",
+    title: "People",
     url: "/dashboard/admin/members",
-    icon: HandCoins,
+    icon: Users,
     adminOnly: true,
   },
   {

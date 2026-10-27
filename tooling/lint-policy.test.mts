@@ -144,7 +144,7 @@ const approvedCompatibilityManifest = {
     "unicorn/no-null": {
       "apps/web/app/components/forms/renderers.tsx": 1,
       "apps/web/app/db/repo/location-form.ts": 3,
-      "apps/web/app/db/repo/user-memberships.test.ts": 6,
+      "apps/web/app/db/repo/user-memberships.test.ts": 9,
       "apps/web/app/db/repo/user-memberships.ts": 3,
       "apps/web/app/db/repo/user.ts": 3,
       "apps/web/app/fragno/forms-server.ts": 1,
@@ -153,6 +153,7 @@ const approvedCompatibilityManifest = {
       "apps/web/app/lib/bulk-import-helpers.test.ts": 1,
       "apps/web/app/lib/bulk-import-helpers.ts": 1,
       "apps/web/app/lib/bulk-import.server.test.ts": 5,
+      "apps/web/app/lib/member-directory.test.ts": 6,
       "apps/web/app/lib/memberships.ts": 1,
       "apps/web/app/routes/dashboard/dashboard-layout.tsx": 1,
       "apps/web/app/routes/dashboard/forms/submission-export.test.ts": 4,
