@@ -285,7 +285,7 @@ function ImportProgress({
             render={<Link to="/dashboard/admin/members" />}
             nativeButton={false}
           >
-            View members
+            View people
           </Button>
           <Link className="text-sm underline underline-offset-4" to={`?import=${job.id}`}>
             Saved import link

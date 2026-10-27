@@ -20,3 +20,16 @@ export function formatRelativeTime(date: string | Date, locale = "en-US"): strin
     year: "numeric",
   });
 }
+
+// UTC keeps server-rendered dates identical to the hydrated client's.
+const calendarDateFormat = new Intl.DateTimeFormat("en-GB", {
+  day: "numeric",
+  month: "short",
+  year: "numeric",
+  timeZone: "UTC",
+});
+
+/** A calendar date such as "1 Jan 2027". */
+export function formatCalendarDate(date: Date): string {
+  return calendarDateFormat.format(date);
+}
